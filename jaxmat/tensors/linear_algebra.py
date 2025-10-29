@@ -104,7 +104,7 @@ def pq_invariants(sig):
     return p, q
 
 
-@partial(jax.jit, static_argnums=1)
+# @partial(jax.jit, static_argnums=1)
 def eig33(A, rtol=1e-16):
     r"""
     Computes the eigenvalues and eigenvalue derivatives of a 3 x 3 real symmetric matrix.
