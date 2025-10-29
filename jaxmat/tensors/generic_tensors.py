@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 import equinox as eqx
 import jax
 import jax.numpy as jnp
@@ -6,22 +8,22 @@ from . import linear_algebra
 
 
 class Tensor(eqx.Module):
-    dim: int
-    rank: int
-    _tensor: jax.Array
+    dim: ClassVar[int] = 3
+    rank: ClassVar[int] = 2
+    _array: jax.Array
 
     def __init__(self, tensor: jax.Array | None = None, array: jax.Array | None = None):
 
         if tensor is not None:
             if tensor.shape[-2:] != self.shape[-2:]:
                 raise ValueError(f"Wrong shape {tensor.shape} <> {self.shape}")
-            self._tensor = jnp.asarray(tensor)
+            self._array = self._as_array(tensor)
         elif array is not None:
             if array.shape != self.array_shape:
                 raise ValueError(f"Wrong shape {array.shape} <> {self.array_shape}")
-            self._tensor = self._as_tensor(jnp.asarray(array))
+            self._array = jnp.asarray(array)
         else:
-            self._tensor = jnp.zeros(self.shape)
+            self._array = jnp.zeros(self.array_shape)
 
     @property
     def shape(self):
@@ -29,7 +31,7 @@ class Tensor(eqx.Module):
 
     @property
     def tensor(self):
-        return self._tensor
+        return self._as_tensor(self._array)
 
     @property
     def T(self):
@@ -37,20 +39,20 @@ class Tensor(eqx.Module):
 
     @property
     def array(self):
-        return self._as_array(self.tensor)
+        return self._array
 
     @property
     def array_shape(self):
         return (self.dim**self.rank,)
 
     def __getitem__(self, idx):
-        return self._tensor[idx]
+        return self.tensor[idx]
 
     def __jax_array__(self):
-        return self._tensor
+        return self.tensor
 
     def __array__(self, dtype=None):
-        return jnp.asarray(self._tensor, dtype=dtype)
+        return jnp.asarray(self.tensor, dtype=dtype)
 
     def __add__(self, other):
         cls = self._weaken_with(other)
@@ -80,14 +82,14 @@ class Tensor(eqx.Module):
     def __neg__(self):
         return self.__class__(tensor=-self.tensor)
 
-    # def __repr__(self):
-    #     return f"{self.__class__.__name__}=\n{self.tensor}"
+    def __repr__(self):
+        return f"{self.tensor}"
 
     def _as_array(self, tensor):
         return tensor.ravel()
 
     def _as_tensor(self, array):
-        return array.reshape(self.shape)
+        return array.reshape(*array.shape[:-1], self.shape)
 
     def _weaken_with(self, other):
         return self.__class__
@@ -107,7 +109,9 @@ class Tensor(eqx.Module):
         output_indices = "".join([first for first, _ in pairs])
         tensor_indices = "".join([second for _, second in pairs])
 
-        einsum_str = ",".join(rotation_pairs) + "," + tensor_indices + "->" + output_indices
+        einsum_str = (
+            ",".join(rotation_pairs) + "," + tensor_indices + "->" + output_indices
+        )
 
         rotated_tensor = jnp.einsum(einsum_str, *([R] * self.rank), self.tensor)
 
@@ -115,50 +119,45 @@ class Tensor(eqx.Module):
 
 
 class Tensor2(Tensor):
-    dim = 3
-    rank = 2
-
     @classmethod
     def identity(cls):
         return cls(tensor=jnp.eye(cls.dim))
 
     def _as_array(self, tensor):
+        tensor = jnp.asarray(tensor)
         d = self.dim
-        if tensor.ndim == 2:
-            vec = [tensor[i, i] for i in range(d)]
-            for i in range(d):
-                for j in range(i + 1, d):
-                    vec.append(tensor[i, j])
-                    vec.append(tensor[j, i])
-            return jnp.array(vec)
-        elif tensor.ndim == 3:
-            vec = [tensor[:, i, i] for i in range(d)]
-            for i in range(d):
-                for j in range(i + 1, d):
-                    vec.append(tensor[:, i, j])
-                    vec.append(tensor[:, j, i])
-            return jnp.array(vec).T
+        vec = jnp.zeros(tensor.shape[:-2] + self.array_shape)
+        buff = 0
+        for i in range(d):
+            vec = vec.at[..., i].set(tensor[..., i, i])
+            for j in range(i + 1, d):
+                vec = vec.at[..., d + buff].set(tensor[..., i, j])
+                vec = vec.at[..., d + buff + 1].set(tensor[..., j, i])
+                buff += 2
+        return vec
 
     def _as_tensor(self, array):
         d = self.dim
-        tensor = jnp.zeros((d, d))
+        tensor = jnp.zeros((*array.shape[:-1], d, d))
         # Diagonal terms
         for i in range(d):
-            tensor = tensor.at[i, i].set(array[i])
+            tensor = tensor.at[..., i, i].set(array[..., i])
 
         # Off-diagonal terms
         offset = d
         for i in range(d):
             for j in range(i + 1, d):
-                tensor = tensor.at[i, j].set(array[offset])
-                tensor = tensor.at[j, i].set(array[offset + 1])
+                tensor = tensor.at[..., i, j].set(array[..., offset])
+                tensor = tensor.at[..., j, i].set(array[..., offset + 1])
                 offset += 2
 
         return tensor
 
     @property
     def sym(self):
-        return SymmetricTensor2(tensor=0.5 * (self.tensor + jnp.swapaxes(self.tensor, -1, -2)))
+        return SymmetricTensor2(
+            tensor=0.5 * (self.tensor + jnp.swapaxes(self.tensor, -1, -2))
+        )
 
     @property
     def inv(self):
@@ -185,42 +184,37 @@ class SymmetricTensor2(Tensor2):
 
     def _as_array(self, tensor):
         d = self.dim
-
-        if tensor.ndim == 2:
-            vec = [tensor[i, i] for i in range(d)]
-            for i in range(d):
-                for j in range(i + 1, d):
-                    vec.append(jnp.sqrt(2) * tensor[i, j])
-            return jnp.array(vec)
-        elif tensor.ndim == 3:
-            vec = [tensor[:, i, i] for i in range(d)]
-            for i in range(d):
-                for j in range(i + 1, d):
-                    vec.append(jnp.sqrt(2) * tensor[:, i, j])
-            return jnp.array(vec).T
+        vec = jnp.zeros(tensor.shape[:-2] + self.array_shape)
+        buff = 0
+        for i in range(d):
+            vec = vec.at[..., i].set(tensor[..., i, i])
+            for j in range(i + 1, d):
+                vec = vec.at[..., d + buff].set(jnp.sqrt(2) * tensor[..., i, j])
+                buff += 1
+        return vec
 
     def _as_tensor(self, array):
         d = self.dim
-        tensor = jnp.zeros((d, d))
+        tensor = jnp.zeros((*array.shape[:-1], d, d))
 
         # Diagonal entries
         for i in range(d):
-            tensor = tensor.at[i, i].set(array[i])
+            tensor = tensor.at[..., i, i].set(array[..., i])
 
         # Off-diagonal entries (upper triangle) scaled by 1/sqrt(2)
         offset = d
         for i in range(d):
             for j in range(i + 1, d):
-                val = array[offset] / jnp.sqrt(2)
-                tensor = tensor.at[i, j].set(val)
-                tensor = tensor.at[j, i].set(val)  # symmetry
+                val = array[..., offset] / jnp.sqrt(2)
+                tensor = tensor.at[..., i, j].set(val)
+                tensor = tensor.at[..., j, i].set(val)  # symmetry
                 offset += 1
 
         return tensor
 
     def __matmul__(self, other):
         # Multiplication of symmetric tensors cannot be ensured to remain symmetric
-        return Tensor2(tensor=self.tensor @ jnp.asarray(other))
+        return Tensor2(tensor=jnp.asarray(self.tensor) @ jnp.asarray(other))
 
     def _weaken_with(self, other):
         if isinstance(other, self.__class__):
@@ -310,7 +304,9 @@ class SymmetricTensor4(Tensor):
         return tensor
 
     def __matmul__(self, other):
-        return other.__class__(tensor=jnp.tensordot(jnp.asarray(self), jnp.asarray(other).T))
+        return other.__class__(
+            tensor=jnp.tensordot(jnp.asarray(self), jnp.asarray(other).T)
+        )
 
     @property
     def inv(self):

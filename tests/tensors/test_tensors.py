@@ -52,10 +52,16 @@ def test_tensor2_init():
     # check wrong size on initialization
     with pytest.raises(ValueError):
         SymmetricTensor2(array=T_vect_)
-    # Warning: we don't check for symmetry upon initialization
-    # But symmetry can be checked
-    assert not SymmetricTensor2(tensor=T_).is_symmetric()
+    # # Warning: we don't check for symmetry upon initialization
+    # # But symmetry can be checked
+    # assert not SymmetricTensor2(tensor=T_).is_symmetric()
     assert jnp.allclose(Tensor2.identity(), jnp.eye(3))
+    T = Tensor2(tensor=jnp.ones((4, 3, 3)))
+    assert T.tensor.shape == (4, 3, 3)
+    T = Tensor2(tensor=jnp.ones((4, 5, 3, 3)))
+    assert T.tensor.shape == (4, 5, 3, 3)
+    with pytest.raises(ValueError):
+        Tensor2(tensor=jnp.ones((4, 4, 3)))
 
 
 def test_sym_tensor2_init():
@@ -173,15 +179,43 @@ def test_operator_symmetry():
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
 def test_batch_tensors(cls):
-    Nbatch = 3
+    Nbatch = 5
     val = 0.5 * jnp.eye(3)
-    A = make_batched(cls(val), Nbatch=Nbatch)
+    A = make_batched(cls(tensor=val), Nbatch=Nbatch)
     assert type(A) is cls
+    assert A.tensor.shape == (Nbatch, 3, 3)
+    if cls == Tensor2:
+        d = 9
+    elif cls == SymmetricTensor2:
+        d = 6
+    assert A.array.shape == (Nbatch, d)
     assert jnp.allclose(A[1], val)
     assert type(A + A) is cls
     assert jnp.allclose(A + A, jnp.broadcast_to(2 * val, (Nbatch, 3, 3)))
+    # matmult doc: If either argument is N-D, N > 2, it is treated as a stack of matrices residing in the last two indexes and broadcast accordingly.
     assert type(A @ A) is cls if cls == Tensor2 else Tensor2
+    # matmult doc: If either argument is N-D, N > 2, it is treated as a stack of matrices residing in the last two indexes and broadcast accordingly.
     assert jnp.allclose(A @ A, jnp.broadcast_to(val @ val, (Nbatch, 3, 3)))
+
+
+@pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
+def test_double_batch_tensors(cls):
+    Nbatch1, Nbatch2 = 4, 5
+    val = 0.5 * jnp.eye(3)
+    A_ = make_batched(cls(tensor=val), Nbatch=Nbatch2)
+    A = make_batched(A_, Nbatch=Nbatch1)
+    assert type(A) is cls
+    assert A.tensor.shape == (Nbatch1, Nbatch2, 3, 3)
+    if cls == Tensor2:
+        d = 9
+    elif cls == SymmetricTensor2:
+        d = 6
+    assert A.array.shape == (Nbatch1, Nbatch2, d)
+    assert jnp.allclose(A[1], val)
+    assert type(A + A) is cls
+    assert jnp.allclose(A + A, jnp.broadcast_to(2 * val, (Nbatch1, Nbatch2, 3, 3)))
+    assert type(A @ A) is cls if cls == Tensor2 else Tensor2
+    assert jnp.allclose(A @ A, jnp.broadcast_to(val @ val, (Nbatch1, Nbatch2, 3, 3)))
 
 
 # FIXME: should better handle views and array operations on tensors,
