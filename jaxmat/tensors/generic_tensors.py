@@ -4,7 +4,7 @@ import equinox as eqx
 import jax
 import jax.numpy as jnp
 
-from . import linear_algebra
+from jaxmat.tensors import linear_algebra
 
 
 class Tensor(eqx.Module):
@@ -19,7 +19,7 @@ class Tensor(eqx.Module):
                 raise ValueError(f"Wrong shape {tensor.shape} <> {self.shape}")
             self._array = self._as_array(tensor)
         elif array is not None:
-            if array.shape != self.array_shape:
+            if array.shape[-1:] != self.array_shape[-1:]:
                 raise ValueError(f"Wrong shape {array.shape} <> {self.array_shape}")
             self._array = jnp.asarray(array)
         else:
@@ -222,6 +222,7 @@ class SymmetricTensor2(Tensor2):
         return Tensor2
 
 
+# @lru_cache(maxsize=None)
 def symmetric_kelvin_mandel_index_map(d):
     """
     Returns:
@@ -243,6 +244,56 @@ def symmetric_kelvin_mandel_index_map(d):
             ij_to_km[(j, i)] = (idx, sqrt2)  # symmetry
             idx += 1
     return km_to_ij, ij_to_km
+
+
+def symmetric_kelvin_mandel_index_map(d):
+    """
+    Returns:
+        - km_to_ij: list mapping KM index → (i,j)
+        - ij_to_km: dict mapping (i,j) → KM index
+    """
+    km_to_ij = []
+    ij_to_km = {}
+    sqrt2 = jnp.sqrt(2.0)
+    i_diag = jnp.arange(d)
+    j_diag = i_diag
+    i_off, j_off = jnp.triu_indices(d, k=1)
+    km_i = jnp.concatenate([i_diag, i_off], dtype=int)
+    km_j = jnp.concatenate([j_diag, j_off], dtype=int)
+    print(km_i)
+    scale = jnp.concatenate([jnp.ones((d,)), jnp.full(i_off.shape, fill_value=sqrt2)])
+    km_to_ij = [((i, j), s) for i, j, s in zip(km_i, km_j, scale)]
+    # for i in range(d):
+    #     ij_to_km[(i, i)] = (idx, 1.0)
+    #     km_to_ij.append(((i, i), 1.0))
+    #     idx += 1
+    # for i in range(d):
+    #     for j in range(i + 1, d):
+    #         km_to_ij.append(((i, j), sqrt2))
+    #         ij_to_km[(i, j)] = (idx, sqrt2)
+    #         ij_to_km[(j, i)] = (idx, sqrt2)  # symmetry
+    #         idx += 1
+    return km_to_ij, None
+
+
+# km_to_ij, _ = symmetric_kelvin_mandel_index_map(3)
+# print(tuple(reversed(km_to_ij[0][0])))
+
+
+def symmetric_kelvin_mandel_index_map_jit(d: int):
+    """Vectorized map (same ordering & scaling)."""
+    km_to_ij = []
+    sqrt2 = jnp.sqrt(2.0)
+    i_diag = jnp.arange(d)
+    j_diag = i_diag
+    i_off, j_off = jnp.triu_indices(d, k=1)
+    km_i = jnp.concatenate([i_diag, i_off], dtype=int)
+    km_j = jnp.concatenate([j_diag, j_off], dtype=int)
+    scale = jnp.concatenate([jnp.ones((d,)), jnp.full(i_off.shape, fill_value=sqrt2)])
+    return jnp.stack([km_i, km_j], axis=1), scale
+
+
+KM_MAP, KM_SCALE = symmetric_kelvin_mandel_index_map_jit(3)
 
 
 class SymmetricTensor4(Tensor):
@@ -274,33 +325,51 @@ class SymmetricTensor4(Tensor):
         return jnp.allclose(self, self.T)
 
     def _as_array(self, tensor: jax.Array) -> jax.Array:
-        d = self.dim
         n = self.array_shape[0]
-        km_to_ij, _ = symmetric_kelvin_mandel_index_map(d)
-        array = jnp.zeros((n, n))
 
-        for a, (ij, Na) in enumerate(km_to_ij):
-            for b, (kl, Nb) in enumerate(km_to_ij):
-                array = array.at[a, b].set(Na * Nb * tensor[*ij, *kl])
-        return array
+        # Generate all pair combinations (a,b),)
+        Nkm = KM_MAP.shape[0]
+
+        a_idx, b_idx = jnp.meshgrid(jnp.arange(Nkm), jnp.arange(Nkm), indexing="ij")
+        ij = KM_MAP[a_idx]  # shape (Nkm, Nkm, 2)
+        kl = KM_MAP[b_idx]  # shape (Nkm, Nkm, 2)
+
+        # Extract indices
+        i, j = ij[..., 0], ij[..., 1]
+        k, l = kl[..., 0], kl[..., 1]
+
+        # Gather tensor values and apply scaling
+        array = KM_SCALE[a_idx] * KM_SCALE[b_idx] * tensor[i, j, k, l]
+
+        return array  # shape (Nkm, Nkm)
 
     def _as_tensor(self, array: jax.Array) -> jax.Array:
         """
         Converts a KM matrix (n,n) back to full symmetric 4th-order tensor (d,d,d,d)
         """
         d = self.dim
-        km_to_ij, _ = symmetric_kelvin_mandel_index_map(d)
+        # km_to_ij, scale = symmetric_kelvin_mandel_index_map_jit(d)
+        # tensor = jnp.zeros((d, d, d, d))
+        Nkm = KM_MAP.shape[0]
+
+        # Compute all pair combinations
+        a_idx, b_idx = jnp.meshgrid(jnp.arange(Nkm), jnp.arange(Nkm), indexing="ij")
+        ij = KM_MAP[a_idx]  # shape (Nkm, Nkm, 2)
+        kl = KM_MAP[b_idx]  # shape (Nkm, Nkm, 2)
+        vals = array[a_idx, b_idx] / KM_SCALE[a_idx] / KM_SCALE[b_idx]  # (Nkm, Nkm)
+
+        # Expand dimensions for broadcasting
+        i, j = ij[..., 0], ij[..., 1]  # (Nkm, Nkm)
+        k, l = kl[..., 0], kl[..., 1]
+
+        # Initialize tensor
         tensor = jnp.zeros((d, d, d, d))
 
-        for a, (ij, Na) in enumerate(km_to_ij):
-            for b, (kl, Nb) in enumerate(km_to_ij):
-                val = array[a, b] / (Na * Nb)
-
-                # Assign to all symmetric permutations
-                for ii, jj in {ij, reversed(ij)}:
-                    for kk, ll in {kl, reversed(kl)}:
-                        tensor = tensor.at[ii, jj, kk, ll].set(val)
-                        tensor = tensor.at[kk, ll, ii, jj].set(val)
+        # All symmetric permutations: (i,j,k,l), (i,j,l,k), (j,i,k,l), (j,i,l,k)
+        tensor = tensor.at[i, j, k, l].set(vals)
+        tensor = tensor.at[i, j, l, k].set(vals)
+        tensor = tensor.at[j, i, k, l].set(vals)
+        tensor = tensor.at[j, i, l, k].set(vals)
         return tensor
 
     def __matmul__(self, other):

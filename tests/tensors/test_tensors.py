@@ -150,6 +150,32 @@ def test_tensor4():
     assert jnp.allclose(J @ K, 0)
 
 
+
+def test_tensor4_creation():
+    Id = SymmetricTensor4.identity()
+    J = SymmetricTensor4.J()
+    K = SymmetricTensor4.K()
+
+
+import timeit
+
+# print(timeit.timeit(test_tensor4_creation, number=10))
+
+
+# def test_tensor2_perf(N=100):
+#     d = 3
+#     tensors = jnp.arange(N * d**2).reshape(N, d, d)
+#     T = Tensor2(tensor=tensors)
+#     T_ = Tensor2(array=T.array)
+#     assert jnp.allclose(T, T_)
+
+
+# test_tensor2_init()
+# import timeit
+
+# print(timeit.timeit(test_tensor2_perf, number=10))
+
+
 def test_isotropic_tensor():
     kappa = 1.0
     mu = 1.0
