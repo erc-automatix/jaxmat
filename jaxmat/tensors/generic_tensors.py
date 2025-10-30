@@ -8,26 +8,36 @@ from jaxmat.tensors import linear_algebra
 
 
 class Tensor(eqx.Module):
-    dim: ClassVar[int] = 3
-    rank: ClassVar[int] = 2
+    dim = None
+    rank = None
+    base_shape = None
+    base_array_shape = None
     _array: jax.Array
+    _batch_shape: Tuple[int, ...] = eqx.static_field()
 
     def __init__(self, tensor: jax.Array | None = None, array: jax.Array | None = None):
 
         if tensor is not None:
-            if tensor.shape[-2:] != self.shape[-2:]:
-                raise ValueError(f"Wrong shape {tensor.shape} <> {self.shape}")
+            if tensor.shape[-self.rank :] != self.base_shape:
+                raise ValueError(
+                    f"Wrong shape {tensor.shape[-self.rank :]} <> {self.base_shape}"
+                )
             self._array = self._as_array(tensor)
+            self._batch_shape = tensor.shape[: -self.rank]
         elif array is not None:
-            if array.shape[-1:] != self.array_shape[-1:]:
-                raise ValueError(f"Wrong shape {array.shape} <> {self.array_shape}")
+            if array.shape[-self.array_rank :] != self.base_array_shape:
+                raise ValueError(
+                    f"Wrong shape {array.shape[-self.array_rank :]} <> {self.base_array_shape}"
+                )
             self._array = jnp.asarray(array)
+            self._batch_shape = array.shape[: -self.array_rank]
         else:
-            self._array = jnp.zeros(self.array_shape)
+            self._array = jnp.zeros(self.base_array_shape)
+            self._batch_shape = ()
 
     @property
     def shape(self):
-        return (self.dim,) * self.rank
+        return self.tensor.shape
 
     @property
     def tensor(self):
@@ -43,7 +53,15 @@ class Tensor(eqx.Module):
 
     @property
     def array_shape(self):
-        return (self.dim**self.rank,)
+        return self._array.shape
+
+    @property
+    def batch_shape(self):
+        return self.array_shape[: -self.array_rank]
+
+    @property
+    def array_rank(self):
+        return len(self.base_array_shape)
 
     def __getitem__(self, idx):
         return self.tensor[idx]
@@ -119,6 +137,11 @@ class Tensor(eqx.Module):
 
 
 class Tensor2(Tensor):
+    dim = 3
+    rank = 2
+    base_shape = (dim, dim)
+    base_array_shape = (dim**rank,)
+
     @classmethod
     def identity(cls):
         return cls(tensor=jnp.eye(cls.dim))
@@ -126,7 +149,7 @@ class Tensor2(Tensor):
     def _as_array(self, tensor):
         tensor = jnp.asarray(tensor)
         d = self.dim
-        vec = jnp.zeros(tensor.shape[:-2] + self.array_shape)
+        vec = jnp.zeros(tensor.shape[: -self.rank] + self.base_array_shape)
         buff = 0
         for i in range(d):
             vec = vec.at[..., i].set(tensor[..., i, i])
@@ -138,7 +161,7 @@ class Tensor2(Tensor):
 
     def _as_tensor(self, array):
         d = self.dim
-        tensor = jnp.zeros((*array.shape[:-1], d, d))
+        tensor = jnp.zeros(array.shape[: -self.array_rank] + (d, d))
         # Diagonal terms
         for i in range(d):
             tensor = tensor.at[..., i, i].set(array[..., i])
@@ -159,14 +182,14 @@ class Tensor2(Tensor):
             tensor=0.5 * (self.tensor + jnp.swapaxes(self.tensor, -1, -2))
         )
 
-    # @property
-    # def inv(self):
-    #     return self.__class__(tensor=linear_algebra.inv33(self.tensor))
+    @property
+    def inv(self):
+        return self.__class__(tensor=linear_algebra.inv33(self.tensor))
 
-    # @property
-    # def eigenvalues(self):
-    #     eivenvalues, eigendyads = linear_algebra.eig33(self.tensor)
-    #     return eivenvalues, jnp.asarray([SymmetricTensor2(N) for N in eigendyads])
+    @property
+    def eigenvalues(self):
+        eivenvalues, eigendyads = linear_algebra.eig33(self.tensor)
+        return eivenvalues, jnp.asarray([SymmetricTensor2(N) for N in eigendyads])
 
     @property
     def T(self):
@@ -175,16 +198,15 @@ class Tensor2(Tensor):
 
 
 class SymmetricTensor2(Tensor2):
-    @property
-    def array_shape(self):
-        return (self.dim * (self.dim + 1) // 2,)
+    dim = 3
+    base_array_shape = (dim * (dim + 1) // 2,)
 
     def is_symmetric(self):
         return jnp.allclose(self, self.T)
 
     def _as_array(self, tensor):
         d = self.dim
-        vec = jnp.zeros(tensor.shape[:-2] + self.array_shape)
+        vec = jnp.zeros(tensor.shape[: -self.rank] + self.base_array_shape)
         buff = 0
         for i in range(d):
             vec = vec.at[..., i].set(tensor[..., i, i])
@@ -195,7 +217,7 @@ class SymmetricTensor2(Tensor2):
 
     def _as_tensor(self, array):
         d = self.dim
-        tensor = jnp.zeros((*array.shape[:-1], d, d))
+        tensor = jnp.zeros(array.shape[: -self.array_rank] + (d, d))
 
         # Diagonal entries
         for i in range(d):
@@ -277,6 +299,9 @@ def symmetric_kelvin_mandel_index_map(d: int):
 class SymmetricTensor4(Tensor):
     dim = 3
     rank = 4
+    array_rank = 2
+    base_shape = (dim, dim, dim, dim)
+    base_array_shape = (dim * (dim + 1) // 2, dim * (dim + 1) // 2)
 
     @classmethod
     def identity(cls):

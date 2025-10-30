@@ -15,6 +15,81 @@ from jaxmat.tensors import (
 )
 
 
+@pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
+def test_tensor_shapes(cls):
+    if issubclass(cls, SymmetricTensor2):
+        array_shape = (6,)
+    elif issubclass(cls, Tensor2):
+        array_shape = (9,)
+    T_ = jnp.eye(3)
+    T = cls(tensor=T_)
+    for T in [cls(tensor=T_), cls(array=T_.flatten()[: array_shape[0]])]:
+        assert T.rank == 2
+        assert T.base_shape == (3, 3)
+        assert T.array_rank == 1
+        assert T.base_array_shape == array_shape
+        assert T.batch_shape == ()
+        assert T.shape == (3, 3)
+        assert T.array_shape == array_shape
+
+    for batch_dim in [(), (10,), (5, 5)]:
+        Tb_ = jnp.broadcast_to(T_, batch_dim + T_.shape)
+        for T in [
+            cls(tensor=Tb_),
+            cls(array=Tb_.reshape(*batch_dim, -1)[..., : array_shape[0]]),
+        ]:
+            assert T.rank == 2
+            assert T.base_shape == (3, 3)
+            assert T.array_rank == 1
+            assert T.base_array_shape == array_shape
+            assert T.batch_shape == batch_dim
+            assert T.shape == batch_dim + (3, 3)
+            assert T.array_shape == batch_dim + array_shape
+
+
+import equinox as eqx
+
+
+def test_tensor_jacobian():
+    # def energy_array(X):
+    #     return X.array
+
+    # def energy_tensor(X):
+    #     return X.tensor
+
+    # def energy(X):
+    #     return X
+
+    # print(T)
+    # assert jax.jacfwd(energy_array)(T).shape == (9, 3, 3)
+    # assert jax.jacfwd(energy_tensor)(T).shape == (3, 3, 3, 3)
+    # print(jax.jacfwd(energy)(T).tensor.shape)
+    # assert jax.jacfwd(energy)(T).shape == (3, 3, 3, 3)
+
+    T = Tensor2.identity()
+
+    def energy_module(X):
+        return X
+
+    def energy_tensor(X):
+        return X.tensor
+
+    # 1) derivative w.r.t. tensor
+    J_tensor = jax.jacfwd(energy_tensor)(T)
+    print("J_tensor.shape:", J_tensor.shape)  # -> (3,3,3,3)
+
+    # 2) derivative w.r.t. module
+    J_module = eqx.filter_jacfwd(energy_module)(T)
+    print("J_module.tensor.shape:", J_module.tensor.shape)  # -> (3,3,3,3)
+
+    # 3) derivative w.r.t. array
+    J_array = jax.jacfwd(lambda X: X._array)(T)
+    print("J_array.shape:", J_array.shape)  # -> (9,9)
+
+
+test_tensor_jacobian()
+
+
 def _tensor2_init(tensor_type, T_, T_vect_):
     T = tensor_type(tensor=T_)
     assert jnp.allclose(T, T_)
@@ -148,7 +223,6 @@ def test_tensor4():
     assert jnp.allclose(J @ J, J)
     assert jnp.allclose(K @ K, K)
     assert jnp.allclose(J @ K, 0)
-
 
 
 def test_tensor4_creation():

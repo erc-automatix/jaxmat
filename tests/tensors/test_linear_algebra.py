@@ -51,7 +51,7 @@ def batch_build_A(diag, quats):
 
 
 def batch_eigvals(A_batch):
-    return jax.vmap(eig33)(A_batch)
+    return jax.jit(jax.vmap(eig33))(A_batch)
 
 
 diags_rand = jnp.array(np.random.default_rng().random((3, 3)))
@@ -76,7 +76,7 @@ def fixture_quaternions():
 def test_eigenvalue(diagonal, quaternions):
     A_batch = batch_build_A(diagonal, quaternions)
     for A in A_batch:
-        eigvals, dyads = eig33(A)
+        eigvals, dyads = jax.jit(eig33)(A)
         A_reconstructed = sum([lamb * v for (lamb, v) in zip(eigvals, dyads)])
         assert jnp.allclose(jnp.sort(diagonal), eigvals)
         assert jnp.allclose(A, A_reconstructed)
@@ -93,24 +93,26 @@ def test_isotropic_function(matrix_fun, scalar_fun, diagonal, quaternions):
     A_batch = batch_build_A(jnp.abs(diagonal), quaternions)
     for A in A_batch:
         fA = matrix_fun(A)
-        fA_ = isotropic_function(scalar_fun, A)
+        fA_ = jax.jit(isotropic_function, static_argnums=0)(scalar_fun, A)
         assert jnp.allclose(fA, fA_)
 
 
 def test_sqrtm(diagonal, quaternions):
     A_batch = batch_build_A(jnp.abs(diagonal), quaternions)
     for A in A_batch:
-        fA = sqrtm(A)
-        fA_ = isotropic_function(jnp.sqrt, A)
+        fA = jax.jit(sqrtm)(A)
+        fA_ = jax.jit(isotropic_function, static_argnums=0)(jnp.sqrt, A)
         assert jnp.allclose(fA, fA_)
-        fA = inv_sqrtm(A)
-        fA_ = isotropic_function(lambda x: 1 / jnp.sqrt(x), A)
+        fA = jax.jit(inv_sqrtm)(A)
+        fA_ = jax.jit(isotropic_function, static_argnums=0)(
+            lambda x: 1 / jnp.sqrt(x), A
+        )
         assert jnp.allclose(fA, fA_)
 
 
 def test_inv33():
     A_batch = [jnp.array(np.random.default_rng().random((3, 3))) for _ in range(3)]
     for A in A_batch:
-        iA = inv33(A)
+        iA = jax.jit(inv33)(A)
         iA_ = jnp.linalg.inv(A)
         assert jnp.allclose(iA, iA_)
