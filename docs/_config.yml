@@ -86,7 +86,7 @@ sphinx:
       show_navbar_depth: 1
       home_page_in_toc: true
       show_toc_level: 3
-      repository_url: https://github.com/bleyerj/jaxmat
+      repository_url: https://github.com/erc-automatix/jaxmat
       use_edit_page_button: true
       use_repository_button: true
       use_download_button: false
