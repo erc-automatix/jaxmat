@@ -298,7 +298,7 @@
       
       
       
-      <li><a href="https://github.com/bleyerj/jaxmat" target="_blank"
+      <li><a href="https://github.com/erc-automatix/jaxmat" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -315,7 +315,7 @@
       
       
       
-      <li><a href="https://github.com/bleyerj/jaxmat/edit/main/demos/phenomenological_models/multisurface_plasticity.ipynb" target="_blank"
+      <li><a href="https://github.com/erc-automatix/jaxmat/edit/main/demos/phenomenological_models/multisurface_plasticity.ipynb" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -499,6 +499,178 @@ The <code class="docutils literal notranslate"><span class="pre">__post_init__</
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_surf</span><span class="p">,))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ERROR:2025-11-19 15:00:30,738:jax._src.xla_bridge:444: Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File &quot;/home/bleyerj/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/xla_bridge.py&quot;, line 442, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File &quot;/home/bleyerj/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax_plugins/xla_cuda13/__init__.py&quot;, line 334, in initialize
+    c_api = xb.register_plugin(
+            ^^^^^^^^^^^^^^^^^^^
+  File &quot;/home/bleyerj/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/xla_bridge.py&quot;, line 548, in register_plugin
+    c_api = xla_client.load_pjrt_plugin_dynamically(plugin_name, library_path)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &quot;/home/bleyerj/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jaxlib/xla_client.py&quot;, line 107, in load_pjrt_plugin_dynamically
+    return _xla.load_pjrt_plugin(plugin_name, library_path, c_api=None)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib._jax.XlaRuntimeError: ALREADY_EXISTS: PJRT_Api already exists for device type cuda
+E1119 15:00:30.850076 1538028 cuda_dnn.cc:534] Could not create cudnn handle: CUDNN_STATUS_NOT_INITIALIZED
+E1119 15:00:30.850107 1538028 cuda_dnn.cc:538] Memory usage: 3926720512 bytes free, 4094164992 bytes total.
+E1119 15:00:30.850141 1538028 cuda_dnn.cc:548] Possibly insufficient driver version: 535.274.2
+E1119 15:00:30.850580 1538028 cuda_dnn.cc:534] Could not create cudnn handle: CUDNN_STATUS_NOT_INITIALIZED
+E1119 15:00:30.850609 1538028 cuda_dnn.cc:538] Memory usage: 3926720512 bytes free, 4094164992 bytes total.
+E1119 15:00:30.850630 1538028 cuda_dnn.cc:548] Possibly insufficient driver version: 535.274.2
+E1119 15:00:30.927333 1538028 cuda_dnn.cc:534] Could not create cudnn handle: CUDNN_STATUS_NOT_INITIALIZED
+E1119 15:00:30.927390 1538028 cuda_dnn.cc:538] Memory usage: 3926720512 bytes free, 4094164992 bytes total.
+E1119 15:00:30.927422 1538028 cuda_dnn.cc:548] Possibly insufficient driver version: 535.274.2
+E1119 15:00:30.933707 1538028 cuda_dnn.cc:534] Could not create cudnn handle: CUDNN_STATUS_NOT_INITIALIZED
+E1119 15:00:30.933758 1538028 cuda_dnn.cc:538] Memory usage: 3926720512 bytes free, 4094164992 bytes total.
+E1119 15:00:30.933787 1538028 cuda_dnn.cc:548] Possibly insufficient driver version: 535.274.2
+</pre></div>
+</div>
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">XlaRuntimeError</span><span class="g g-Whitespace">                           </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">4</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="ne">----&gt; </span><span class="mi">4</span> <span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="kn">from</span><span class="w"> </span><span class="nn">optax.tree_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">tree_add</span><span class="p">,</span> <span class="n">tree_zeros_like</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractState</span>
+
+<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">3</span>
+<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.metadata</span>
+<span class="ne">----&gt; </span><span class="mi">3</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">compat</span> <span class="k">as</span> <span class="n">compat</span><span class="p">,</span> <span class="n">internal</span> <span class="k">as</span> <span class="n">internal</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._adjoint</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span>     <span class="n">AbstractAdjoint</span> <span class="k">as</span> <span class="n">AbstractAdjoint</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span>     <span class="n">ImplicitAdjoint</span> <span class="k">as</span> <span class="n">ImplicitAdjoint</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span>     <span class="n">RecursiveCheckpointAdjoint</span> <span class="k">as</span> <span class="n">RecursiveCheckpointAdjoint</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span> <span class="p">)</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._fixed_point</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="g g-Whitespace">     </span><span class="mi">10</span>     <span class="n">AbstractFixedPointSolver</span> <span class="k">as</span> <span class="n">AbstractFixedPointSolver</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">11</span>     <span class="n">fixed_point</span> <span class="k">as</span> <span class="n">fixed_point</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">12</span> <span class="p">)</span>
+
+<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">compat</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._impl</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize</span> <span class="k">as</span> <span class="n">minimize</span><span class="p">,</span> <span class="n">OptimizeResults</span> <span class="k">as</span> <span class="n">OptimizeResults</span>
+
+<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">compat</span><span class="o">/</span><span class="n">_impl</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">8</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="ne">----&gt; </span><span class="mi">8</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.._minimise</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimise</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.._misc</span><span class="w"> </span><span class="kn">import</span> <span class="n">max_norm</span>
+<span class="g g-Whitespace">     </span><span class="mi">10</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.._solution</span><span class="w"> </span><span class="kn">import</span> <span class="n">RESULTS</span>
+
+<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">_minimise</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">9</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="kn">import</span><span class="w"> </span><span class="nn">jax.tree_util</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jtu</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyTree</span><span class="p">,</span> <span class="n">Scalar</span>
+<span class="ne">----&gt; </span><span class="mi">9</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._adjoint</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractAdjoint</span><span class="p">,</span> <span class="n">ImplicitAdjoint</span>
+<span class="g g-Whitespace">     </span><span class="mi">10</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._custom_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aux</span><span class="p">,</span> <span class="n">Fn</span><span class="p">,</span> <span class="n">MaybeAuxFn</span><span class="p">,</span> <span class="n">SolverState</span><span class="p">,</span> <span class="n">Y</span>
+<span class="g g-Whitespace">     </span><span class="mi">11</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._iterate</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractIterativeSolver</span><span class="p">,</span> <span class="n">iterative_solve</span>
+
+<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">_adjoint</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">10</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="kn">import</span><span class="w"> </span><span class="nn">lineax</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">lx</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span> <span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">Array</span><span class="p">,</span> <span class="n">PyTree</span>
+<span class="ne">---&gt; </span><span class="mi">10</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._ad</span><span class="w"> </span><span class="kn">import</span> <span class="n">implicit_jvp</span>
+<span class="g g-Whitespace">     </span><span class="mi">13</span> <span class="k">class</span><span class="w"> </span><span class="nc">AbstractAdjoint</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="g g-Whitespace">     </span><span class="mi">14</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;The abstract base class of all adjoints.&quot;&quot;&quot;</span>
+
+<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">_ad</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">15</span>
+<span class="g g-Whitespace">     </span><span class="mi">12</span> <span class="kn">from</span><span class="w"> </span><span class="nn">equinox.internal</span><span class="w"> </span><span class="kn">import</span> <span class="n">ω</span>
+<span class="g g-Whitespace">     </span><span class="mi">13</span> <span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyTree</span>
+<span class="ne">---&gt; </span><span class="mi">15</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._misc</span><span class="w"> </span><span class="kn">import</span> <span class="n">tree_full_like</span>
+<span class="g g-Whitespace">     </span><span class="mi">18</span> <span class="k">def</span><span class="w"> </span><span class="nf">_is_global_function</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="g g-Whitespace">     </span><span class="mi">19</span>     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="vm">__closure__</span> <span class="ow">is</span> <span class="kc">None</span>
+
+<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">_misc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">138</span>
+<span class="g g-Whitespace">    </span><span class="mi">128</span>     <span class="n">values</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">jfu</span><span class="o">.</span><span class="n">ravel_pytree</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">129</span>     <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">132</span> <span class="k">def</span><span class="w"> </span><span class="nf">feasible_step_length</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span>     <span class="n">current</span><span class="p">:</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
+<span class="g g-Whitespace">    </span><span class="mi">134</span>     <span class="n">proposed_step</span><span class="p">:</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span>     <span class="n">lower_bound</span><span class="p">:</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span>     <span class="n">upper_bound</span><span class="p">:</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="o">*</span><span class="p">,</span>
+<span class="ne">--&gt; </span><span class="mi">138</span>     <span class="n">offset</span><span class="p">:</span> <span class="n">ScalarLike</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">]:</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
+<span class="g g-Whitespace">    </span><span class="mi">140</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;Returns the maximum feasible step length for any current value, its bounds, and a</span>
+<span class="g g-Whitespace">    </span><span class="mi">141</span><span class="sd">     proposed step, as a value for each element of the PyTree.</span>
+<span class="g g-Whitespace">    </span><span class="mi">142</span><span class="sd">     Where taking the full step does not result in a violation of the bounds, a value of</span>
+<span class="sd">   (...)</span>
+<span class="g g-Whitespace">    </span><span class="mi">176</span><span class="sd">         used are typically on the order of 10^-2. Keyword-only argument.</span>
+<span class="g g-Whitespace">    </span><span class="mi">177</span><span class="sd">     &quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">179</span>     <span class="k">def</span><span class="w"> </span><span class="nf">max_step</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">):</span>
+
+<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/numpy/lax_numpy.py:5553,</span> in <span class="ni">array</span><span class="nt">(object, dtype, copy, order, ndmin, device)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5551</span> <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">5552</span>   <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected input type for array: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="ne">-&gt; </span><span class="mi">5553</span> <span class="n">out_array</span><span class="p">:</span> <span class="n">Array</span> <span class="o">=</span> <span class="n">lax_internal</span><span class="o">.</span><span class="n">_convert_element_type</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">5554</span>     <span class="n">out</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">weak_type</span><span class="o">=</span><span class="n">weak_type</span><span class="p">,</span> <span class="n">sharding</span><span class="o">=</span><span class="n">sharding</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5555</span> <span class="k">if</span> <span class="n">ndmin</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">out_array</span><span class="p">):</span>
+<span class="g g-Whitespace">   </span><span class="mi">5556</span>   <span class="n">out_array</span> <span class="o">=</span> <span class="n">lax</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">out_array</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndmin</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">out_array</span><span class="p">)))</span>
+
+<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/lax/lax.py:1727,</span> in <span class="ni">_convert_element_type</span><span class="nt">(operand, new_dtype, weak_type, sharding, warn_on_complex_to_real_cast)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1725</span>   <span class="k">return</span> <span class="n">operand</span>
+<span class="g g-Whitespace">   </span><span class="mi">1726</span> <span class="k">else</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1727</span>   <span class="k">return</span> <span class="n">convert_element_type_p</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">1728</span>       <span class="n">operand</span><span class="p">,</span> <span class="n">new_dtype</span><span class="o">=</span><span class="n">new_dtype</span><span class="p">,</span> <span class="n">weak_type</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">weak_type</span><span class="p">),</span>
+<span class="g g-Whitespace">   </span><span class="mi">1729</span>       <span class="n">sharding</span><span class="o">=</span><span class="n">sharding</span><span class="p">)</span>
+
+<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/core.py:531,</span> in <span class="ni">Primitive.bind</span><span class="nt">(self, *args, **params)</span>
+<span class="g g-Whitespace">    </span><span class="mi">529</span> <span class="k">def</span><span class="w"> </span><span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">530</span>   <span class="n">args</span> <span class="o">=</span> <span class="n">args</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_canonicalization</span> <span class="k">else</span> <span class="nb">map</span><span class="p">(</span><span class="n">canonicalize_value</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">531</span>   <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_true_bind</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/core.py:551,</span> in <span class="ni">Primitive._true_bind</span><span class="nt">(self, *args, **params)</span>
+<span class="g g-Whitespace">    </span><span class="mi">549</span> <span class="n">trace_ctx</span><span class="o">.</span><span class="n">set_trace</span><span class="p">(</span><span class="n">eval_trace</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">550</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">551</span>   <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bind_with_trace</span><span class="p">(</span><span class="n">prev_trace</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">552</span> <span class="k">finally</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">553</span>   <span class="n">trace_ctx</span><span class="o">.</span><span class="n">set_trace</span><span class="p">(</span><span class="n">prev_trace</span><span class="p">)</span>
+
+<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/lax/lax.py:4897,</span> in <span class="ni">_convert_element_type_bind_with_trace</span><span class="nt">(trace, args, params)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4895</span> <span class="k">def</span><span class="w"> </span><span class="nf">_convert_element_type_bind_with_trace</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<span class="g g-Whitespace">   </span><span class="mi">4896</span>   <span class="n">sharding</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sharding&#39;</span><span class="p">]</span>
+<span class="ne">-&gt; </span><span class="mi">4897</span>   <span class="n">operand</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">Primitive</span><span class="o">.</span><span class="n">bind_with_trace</span><span class="p">(</span><span class="n">convert_element_type_p</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4898</span>   <span class="k">if</span> <span class="n">sharding</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">sharding</span><span class="o">.</span><span class="n">_is_concrete</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">4899</span>     <span class="k">with</span> <span class="n">core</span><span class="o">.</span><span class="n">set_current_trace</span><span class="p">(</span><span class="n">trace</span><span class="p">):</span>
+
+<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/core.py:556,</span> in <span class="ni">Primitive.bind_with_trace</span><span class="nt">(self, trace, args, params)</span>
+<span class="g g-Whitespace">    </span><span class="mi">555</span> <span class="k">def</span><span class="w"> </span><span class="nf">bind_with_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<span class="ne">--&gt; </span><span class="mi">556</span>   <span class="k">return</span> <span class="n">trace</span><span class="o">.</span><span class="n">process_primitive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/core.py:1060,</span> in <span class="ni">EvalTrace.process_primitive</span><span class="nt">(self, primitive, args, params)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1058</span> <span class="n">args</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">full_lower</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1059</span> <span class="n">check_eval_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<span class="ne">-&gt; </span><span class="mi">1060</span> <span class="k">return</span> <span class="n">primitive</span><span class="o">.</span><span class="n">impl</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/dispatch.py:88,</span> in <span class="ni">apply_primitive</span><span class="nt">(prim, *args, **params)</span>
+<span class="g g-Whitespace">     </span><span class="mi">86</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">jax_jit</span><span class="o">.</span><span class="n">swap_thread_local_state_disable_jit</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">87</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">---&gt; </span><span class="mi">88</span>   <span class="n">outs</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">89</span> <span class="k">finally</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">90</span>   <span class="n">lib</span><span class="o">.</span><span class="n">jax_jit</span><span class="o">.</span><span class="n">swap_thread_local_state_disable_jit</span><span class="p">(</span><span class="n">prev</span><span class="p">)</span>
+
+    <span class="p">[</span><span class="o">...</span> <span class="n">skipping</span> <span class="n">hidden</span> <span class="mi">11</span> <span class="n">frame</span><span class="p">]</span>
+
+<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/compiler.py:335,</span> in <span class="ni">backend_compile</span><span class="nt">(backend, module, executable_devices, options, host_callbacks)</span>
+<span class="g g-Whitespace">    </span><span class="mi">326</span>     <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">327</span>         <span class="n">built_c</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">328</span>         <span class="n">executable_devices</span><span class="o">=</span><span class="n">executable_devices</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+<span class="g g-Whitespace">    </span><span class="mi">329</span>         <span class="n">compile_options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">330</span>         <span class="n">host_callbacks</span><span class="o">=</span><span class="n">host_callbacks</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">331</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">332</span>   <span class="c1"># Some backends don&#39;t have `host_callbacks` option yet</span>
+<span class="g g-Whitespace">    </span><span class="mi">333</span>   <span class="c1"># TODO(sharadmv): remove this fallback when all backends allow `compile`</span>
+<span class="g g-Whitespace">    </span><span class="mi">334</span>   <span class="c1"># to take in `host_callbacks`</span>
+<span class="ne">--&gt; </span><span class="mi">335</span>   <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">336</span>       <span class="n">built_c</span><span class="p">,</span> <span class="n">executable_devices</span><span class="o">=</span><span class="n">executable_devices</span><span class="p">,</span> <span class="n">compile_options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="g g-Whitespace">    </span><span class="mi">337</span> <span class="k">except</span> <span class="n">xc</span><span class="o">.</span><span class="n">XlaRuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">338</span>   <span class="k">for</span> <span class="n">error_handler</span> <span class="ow">in</span> <span class="n">_XLA_RUNTIME_ERROR_HANDLERS</span><span class="p">:</span>
+
+<span class="ne">XlaRuntimeError</span>: FAILED_PRECONDITION: DNN library initialization failed. Look at the errors above for more details.
 </pre></div>
 </div>
 </div>

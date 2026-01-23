@@ -284,7 +284,7 @@
 <div class="article-header-buttons">
 
 
-<a href="https://github.com/bleyerj/jaxmat" target="_blank"
+<a href="https://github.com/erc-automatix/jaxmat" target="_blank"
    class="btn btn-sm btn-source-repository-button"
    title="Source repository"
    data-bs-placement="bottom" data-bs-toggle="tooltip"
@@ -370,12 +370,11 @@ document.write(`
 
 <span class="n">linear_solver</span> <span class="o">=</span> <span class="n">lx</span><span class="o">.</span><span class="n">AutoLinearSolver</span><span class="p">(</span><span class="n">well_posed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">solver</span><span class="p">,</span> <span class="n">adjoint</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">optx</span><span class="o">.</span><span class="n">GaussNewton</span><span class="p">(</span>
+    <span class="n">optx</span><span class="o">.</span><span class="n">Newton</span><span class="p">(</span>
         <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
         <span class="n">atol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
         <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
     <span class="p">),</span>
-    <span class="c1"># optx.RecursiveCheckpointAdjoint(),</span>
     <span class="n">optx</span><span class="o">.</span><span class="n">ImplicitAdjoint</span><span class="p">(</span><span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">),</span>
 <span class="p">)</span>
 
@@ -533,21 +532,11 @@ document.write(`
 <a class="viewcode-back" href="../../api/jaxmat.loader.html#jaxmat.loader.solve_mechanical_state">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">solve_mechanical_state</span><span class="p">(</span><span class="n">eps0</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">loading_data</span><span class="p">:</span> <span class="n">ImposedLoading</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">res_fn</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-        <span class="n">res</span><span class="p">,</span> <span class="n">new_state</span> <span class="o">=</span> <span class="n">residual</span><span class="p">(</span>
-            <span class="n">material</span><span class="p">,</span> <span class="n">loading_data</span><span class="p">,</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">eps</span><span class="p">),</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span>
-        <span class="p">)</span>
-        <span class="c1"># J, _ = eqx.filter_jacfwd(</span>
-        <span class="c1">#     lambda eps, state: residual(material, loading_data, eps, state, dt),</span>
-        <span class="c1">#     has_aux=True,</span>
-        <span class="c1"># )(eps.tensor, state)</span>
-        <span class="c1"># jax.debug.print(&quot;{}&quot;, J.tensor)</span>
+        <span class="n">res</span><span class="p">,</span> <span class="n">new_state</span> <span class="o">=</span> <span class="n">residual</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">loading_data</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">new_state</span>
 
-    <span class="n">sol</span> <span class="o">=</span> <span class="n">optx</span><span class="o">.</span><span class="n">root_find</span><span class="p">(</span>
-        <span class="n">res_fn</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">eps0</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">adjoint</span><span class="o">=</span><span class="n">adjoint</span>
-    <span class="p">)</span>
-    <span class="n">eps_</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">value</span>
-    <span class="n">eps</span> <span class="o">=</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">eps_</span><span class="p">)</span>
+    <span class="n">sol</span> <span class="o">=</span> <span class="n">optx</span><span class="o">.</span><span class="n">root_find</span><span class="p">(</span><span class="n">res_fn</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">eps0</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">adjoint</span><span class="o">=</span><span class="n">adjoint</span><span class="p">)</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">value</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">new_state</span> <span class="o">=</span> <span class="n">residual</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">loading_data</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">eps</span><span class="p">,</span> <span class="n">new_state</span><span class="p">,</span> <span class="n">sol</span><span class="o">.</span><span class="n">stats</span></div>
 
