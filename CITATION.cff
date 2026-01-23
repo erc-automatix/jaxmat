@@ -20,8 +20,8 @@ authors:
       Université Paris-Saclay, CEA, Laboratoire Matière en
       Conditions Extrêmes
     orcid: 'https://orcid.org/0000-0001-6422-5805'
-repository-code: 'https://github.com/bleyerj/jaxmat'
-url: 'https://bleyerj.github.io/jaxmat/'
+repository-code: 'https://github.com/erc-automatix/jaxmat'
+url: 'https://erc-automatix.github.io/jaxmat/'
 abstract: >-
   jaxmat is an open-source library for implementing material
   constitutive models in a way that integrates seamlessly
