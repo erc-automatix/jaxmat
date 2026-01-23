@@ -29,7 +29,19 @@ You may need to update `nvidia-cublas-cu12` as there are some issues with the ve
 pip install --upgrade nvidia-cublas-cu12
 ```
 
-## About the author
+## Citation
 
-[Jeremy Bleyer](https://bleyerj.github.io/) is a researcher in Solid and Structural Mechanics at [Laboratoire Navier](https://navier-lab.fr), a joint research  (UMR 8205) of [Ecole Nationale des Ponts et Chaussées - IP Paris](http://www.enpc.fr),
-[Université Gustave Eiffel](https://www.univ-gustave-eiffel.fr/) and [CNRS](http://www.cnrs.fr).
+The project can be cited from Zenodo:
+
+
+[![DOI](https://zenodo.org/badge/1018223703.svg)](https://doi.org/10.5281/zenodo.17611833)
+
+
+
+## Acknowledgements
+
+<p align="center">
+  <img src="images/banner_erc.png" width=800 />
+</p>
+
+*Funded by the European Union (ERC, Automatix, CoG project no 101229452). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council. Neither the European Union nor the granting authority can be held responsible for them.*
