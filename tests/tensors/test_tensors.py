@@ -25,12 +25,12 @@ def test_tensor_shapes(cls):
     T = cls(tensor=T_)
     for T in [cls(tensor=T_), cls(array=T_.flatten()[: array_shape[0]])]:
         assert T.rank == 2
-        assert T.base_shape == (3, 3)
+        assert T.base_tensor_shape == (3, 3)
         assert T.array_rank == 1
         assert T.base_array_shape == array_shape
         assert T.batch_shape == ()
-        assert T.shape == (3, 3)
-        assert T.array_shape == array_shape
+        assert T.shape == array_shape
+        assert T.tensor_shape == (3, 3)
 
     for batch_dim in [(), (10,), (5, 5)]:
         Tb_ = jnp.broadcast_to(T_, batch_dim + T_.shape)
@@ -39,12 +39,12 @@ def test_tensor_shapes(cls):
             cls(array=Tb_.reshape(*batch_dim, -1)[..., : array_shape[0]]),
         ]:
             assert T.rank == 2
-            assert T.base_shape == (3, 3)
+            assert T.base_tensor_shape == (3, 3)
             assert T.array_rank == 1
             assert T.base_array_shape == array_shape
             assert T.batch_shape == batch_dim
-            assert T.shape == batch_dim + (3, 3)
-            assert T.array_shape == batch_dim + array_shape
+            assert T.shape == batch_dim + array_shape
+            assert T.tensor_shape == batch_dim + (3, 3)
 
 
 import equinox as eqx
@@ -79,15 +79,12 @@ def test_tensor_jacobian():
     print("J_tensor.shape:", J_tensor.shape)  # -> (3,3,3,3)
 
     # 2) derivative w.r.t. module
-    J_module = eqx.filter_jacfwd(energy_module)(T)
-    print("J_module.tensor.shape:", J_module.tensor.shape)  # -> (3,3,3,3)
+    # J_module = eqx.filter_jacfwd(energy_module)(T)
+    # print("J_module.tensor.shape:", J_module._array)  # -> (3,3,3,3)
 
     # 3) derivative w.r.t. array
-    J_array = jax.jacfwd(lambda X: X._array)(T)
+    J_array = jax.jacfwd(lambda X: X.array)(T)
     print("J_array.shape:", J_array.shape)  # -> (9,9)
-
-
-test_tensor_jacobian()
 
 
 def _tensor2_init(tensor_type, T_, T_vect_):
@@ -153,7 +150,7 @@ def test_sym_tensor2_init():
     S2_ = jnp.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]], dtype=jnp.float64)
     S = SymmetricTensor2(tensor=S_)
     S2 = SymmetricTensor2(tensor=S2_)
-    assert isinstance(S @ S2, Tensor2)
+    assert isinstance(S @ S2, Tensor2) and not isinstance(S @ S2, SymmetricTensor2)
     assert not jnp.allclose(S @ S2, S2 @ S)
     assert isinstance((S @ S2).sym, SymmetricTensor2)
     assert jnp.allclose((S @ S2).sym, (S2 @ S).sym)
@@ -188,7 +185,6 @@ def test_stretch_tensor():
     R, U = polar(F)
     C = (F.T @ F).sym
     B = (F @ F.T).sym
-    # print(C, B)
     assert jnp.allclose(F, R @ U)
     assert jnp.allclose(C, U @ U)
     assert jnp.allclose(Tensor2.identity(), R.T @ R)
@@ -197,7 +193,6 @@ def test_stretch_tensor():
     assert jnp.allclose(B, V @ V)
     U_ = stretch_tensor(F)
     assert jnp.allclose(U, U_)
-    V, R_ = polar(F.tensor, mode="VR")
 
 
 def test_tensor4():
@@ -226,14 +221,22 @@ def test_tensor4():
 
 
 def test_tensor4_creation():
-    Id = SymmetricTensor4.identity()
-    J = SymmetricTensor4.J()
-    K = SymmetricTensor4.K()
+    # Id = SymmetricTensor4.identity()
+    # J = SymmetricTensor4.J()
+    I2 = SymmetricTensor2.identity()
+    # print(I2)
+    # I2 = jnp.eye(3)
+    I = jnp.einsum("ij,kl->ijkl", I2, I2) / 3
+    z = jnp.zeros((6, 6))
+    z = z.at[0, 3].set(jnp.sqrt(2.0))
+    I_ = SymmetricTensor4(array=z)
+    print(I_.tensor[0, 1, 0, 0])
+    # K = SymmetricTensor4.K()
 
 
 import timeit
 
-# print(timeit.timeit(test_tensor4_creation, number=10))
+print(timeit.timeit(test_tensor4_creation, number=1))
 
 
 # def test_tensor2_perf(N=100):

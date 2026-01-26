@@ -12,7 +12,7 @@ def polar(F, mode="RU"):
     """Computes the 'RU' or 'VR' polar decomposition of F."""
     C = F.T @ F
     U, U_inv = _sqrtm(jnp.asarray(C))
-    R = Tensor2(F @ U_inv)
+    R = F @ U_inv
     if mode == "RU":
         return R, SymmetricTensor2(U)
     elif mode == "VR":
