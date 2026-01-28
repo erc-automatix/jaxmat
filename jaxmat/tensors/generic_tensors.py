@@ -31,7 +31,7 @@ class Tensor(eqx.Module):
             self._array = self._as_array(tensor)
         elif array is not None:
             if isinstance(array, Tensor):
-                _array = array._array
+                _array = array.array
             else:
                 _array = jnp.asarray(array)
             if _array.shape[-self.array_rank :] != self.base_array_shape:
@@ -58,11 +58,11 @@ class Tensor(eqx.Module):
 
     @property
     def shape(self):
-        return self._array.shape
+        return self.array.shape
 
     @property
     def tensor(self):
-        return self._as_tensor(self._array)
+        return self._as_tensor(self.array)
 
     @property
     def tensor_shape(self):
@@ -245,11 +245,6 @@ class SymmetricTensor4(Tensor):
     def K(cls):
         return cls.identity() - cls.J()
 
-    @property
-    def array_shape(self):
-        vdim = self.dim * (self.dim + 1) // 2
-        return (vdim, vdim)
-
     def is_symmetric(self):
         return jnp.allclose(self, self.T)
 
@@ -258,7 +253,9 @@ class SymmetricTensor4(Tensor):
 
     def __matmul__(self, other):
         return other.__class__(
-            tensor=jnp.tensordot(jnp.asarray(self), jnp.asarray(other).T)
+            # tensor=jnp.tensordot(jnp.asarray(self), jnp.asarray(other).T)
+            array=self.array
+            @ other.array.T
         )
 
     @property
@@ -275,27 +272,107 @@ def _eval_basis(coeffs, basis):
 
 
 class IsotropicTensor4(SymmetricTensor4):
-    kappa: float
-    mu: float
+    """
+    Symmetric 4th-rank isotropic tensor with compressed storage.
+    """
 
-    def __init__(self, kappa, mu):
-        self.kappa = kappa
-        self.mu = mu
-        self._array = self._as_array(self.eval())
+    _coeffs: jax.Array  # (...,2) → [a_J, a_K]
+
+    # ---- static projectors ----
+    Jk, Kk, J4, K4 = mappings.isotropic_projectors(3)
+
+    _kelvin_basis = jnp.stack([Jk, Kk], axis=0)
+    _tensor_basis = jnp.stack([J4, K4], axis=0)
+
+    # ----------------------------
+
+    def __init__(self, *, coeffs=None, array=None, tensor=None, kappa=None, mu=None):
+
+        if coeffs is not None:
+            coeffs = jnp.asarray(coeffs)
+            if coeffs.shape[-1] != 2:
+                raise ValueError("coeffs must be (...,2)")
+            self._coeffs = coeffs
+
+        elif array is not None:
+            array = jnp.asarray(array)
+            self._coeffs = self._project_kelvin(array)
+
+        elif tensor is not None:
+            tensor = jnp.asarray(tensor)
+            self._coeffs = self._project_tensor(tensor)
+
+        elif (kappa is not None) and (mu is not None):
+            self._coeffs = jnp.stack([3 * kappa, 2 * mu], axis=-1)
+
+        else:
+            self._coeffs = jnp.zeros((2,))
+
+        self._array = self.array
 
     @property
-    def basis(self):
-        J = SymmetricTensor4.J()
-        K = SymmetricTensor4.K()
-        return [J, K]
+    def array(self):
+        return jnp.tensordot(self._coeffs, self._kelvin_basis, axes=1)
 
     @property
-    def coeffs(self):
-        return jnp.asarray([3 * self.kappa, 2 * self.mu])
-
-    def eval(self):
-        return _eval_basis(self.coeffs, self.basis)
+    def tensor(self):
+        return jnp.tensordot(self._coeffs, self._tensor_basis, axes=1)
 
     @property
     def inv(self):
-        return IsotropicTensor4(1 / 9 / self.kappa, 1 / 4 / self.mu)
+        return IsotropicTensor4(coeffs=1.0 / self._coeffs)
+
+    # ----------------------------
+    # projection operators
+    # ----------------------------
+
+    def _project_kelvin(self, Ck):
+        # assumes Kelvin orthonormality
+        return jnp.stack(
+            [
+                jnp.einsum("...ij,ij->...", Ck, self.Jk),
+                jnp.einsum("...ij,ij->...", Ck, self.Kk),
+            ],
+            axis=-1,
+        )
+
+    def _project_tensor(self, C):
+        return jnp.stack(
+            [
+                jnp.einsum("...ijkl,ijkl->...", C, self.J4),
+                jnp.einsum("...ijkl,ijkl->...", C, self.K4),
+            ],
+            axis=-1,
+        )
+
+
+# class IsotropicTensor4(SymmetricTensor4):
+#     dim = 3
+#     rank = 4
+#     array_rank = 1
+#     base_tensor_shape = (dim, dim, dim, dim)
+#     base_array_shape = (2,)
+
+#     kappa: float
+#     mu: float
+
+#     _array: jax.Array
+#     _basis = jnp.stack([*mappings.isotropic_projectors(3)], axis=0)
+
+#     def __init__(self, kappa, mu):
+#         self.kappa = kappa
+#         self.mu = mu
+#         self._array = jnp.asarray([3 * self.kappa, 2 * self.mu])
+
+#     @property
+#     def array(self):
+#         return jnp.tensordot(self._array, self._basis, axes=1)
+
+#     def __matmul__(self, other):
+#         return other.__class__(
+#             tensor=jnp.tensordot(jnp.asarray(self), jnp.asarray(other).T)
+#         )
+
+#     @property
+#     def inv(self):
+#         return IsotropicTensor4(1 / 9 / self.kappa, 1 / 4 / self.mu)

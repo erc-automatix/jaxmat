@@ -173,3 +173,20 @@ def kelvin_rank4_map(d: int) -> Tuple[IndexMap4, jax.Array]:
     weights = km_scale[a] * km_scale[b]
 
     return (i, j, k, l), weights
+
+
+def isotropic_projectors(d=3):
+    """Isotropic projectors J and K in (6, 6) Kelvin-Mandel format."""
+    I = jnp.eye(d)
+    I4 = jnp.einsum("ij,kl->ijkl", I, I)
+    I4s = 0.5 * (jnp.einsum("ik,jl->ijkl", I, I) + jnp.einsum("il,jk->ijkl", I, I))
+
+    J4 = (1.0 / d) * I4
+    K4 = I4s - J4
+
+    (i, j, k, l), W = kelvin_rank4_map(d)
+
+    J = W * J4[i, j, k, l]
+    K = W * K4[i, j, k, l]
+
+    return J, K, J4, K4

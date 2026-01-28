@@ -247,7 +247,10 @@ def test_isotropic_tensor():
     kappa = 1.0
     mu = 1.0
     lmbda = kappa - 2 / 3 * mu
-    C = IsotropicTensor4(kappa, mu)
+    C = IsotropicTensor4(kappa=kappa, mu=mu)
+    assert C.shape == (6, 6)
+    assert C.tensor_shape == (3, 3, 3, 3)
+
     C_plane = jnp.asarray(
         [
             [lmbda + 2 * mu, lmbda, lmbda],
@@ -261,15 +264,24 @@ def test_isotropic_tensor():
     assert jnp.allclose(C.array, C_)
 
     C_ = SymmetricTensor4(array=C.array)
-    S = IsotropicTensor4(1 / 9 / kappa, 1 / 4 / mu)
+    S = IsotropicTensor4(coeffs=jnp.asarray([1 / 3 / kappa, 1 / 2 / mu]))
+
     assert jnp.allclose(C_.inv, S)
     assert jnp.allclose(C_.inv, C.inv)
+
+    # test batch version
+    N = 10
+    kappa = jnp.ones((N,))
+    mu = jnp.ones((N,))
+    C = IsotropicTensor4(kappa=kappa, mu=mu)
+    assert C.shape == (N, 6, 6)
+    assert C.tensor_shape == (N, 3, 3, 3, 3)
 
 
 def test_operator_symmetry():
     kappa = 1.0
     mu = 1.0
-    C = IsotropicTensor4(kappa, mu)
+    C = IsotropicTensor4(kappa=kappa, mu=mu)
     K = SymmetricTensor4.K()
     eps = SymmetricTensor2.identity()
     assert type(sym(eps)) is SymmetricTensor2
