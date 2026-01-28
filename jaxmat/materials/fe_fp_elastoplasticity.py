@@ -44,7 +44,7 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
             # relative strain and elastic predictor
             f = F @ F_old.inv
             f_bar = f * safe_fun(lambda J: J ** (-1 / 3), det(f))
-            be_bar_trial = f_bar.T @ be_bar_old @ f_bar
+            be_bar_trial = (f_bar.T @ be_bar_old @ f_bar).sym
 
             def residual(dy, args):
                 # FIXME: currently we don't account for symmetry of be_bar
@@ -54,10 +54,15 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
                 n = self.plastic_surface.normal(s)
                 res = (
                     FB(-yield_criterion / self.elasticity.E, dp),
-                    dev(be_bar - be_bar_trial)
-                    + 2 * dp * jnp.linalg.trace(be_bar) / 3 * n
-                    + Id * (det(be_bar) - 1),
+                    (
+                        dev(be_bar - be_bar_trial)
+                        + 2 * dp * jnp.linalg.trace(be_bar) / 3 * n
+                        + Id * (det(be_bar) - 1)
+                    ).sym,
                 )
+                # import jax
+
+                # jax.debug.print("{}", res[1].shape)
                 return res
 
             dy0 = isv_old.update(p=0, be_bar=be_bar_trial)
