@@ -90,6 +90,7 @@ def test_tensor_jacobian():
 def _tensor2_init(tensor_type, T_, T_vect_):
     T = tensor_type(tensor=T_)
     assert jnp.allclose(T, T_)
+    print(T.array)
     assert jnp.allclose(T.array, T_vect_)
     T2 = tensor_type(array=T_vect_)
     assert jnp.allclose(T2, T_)
@@ -221,22 +222,11 @@ def test_tensor4():
 
 
 def test_tensor4_creation():
-    # Id = SymmetricTensor4.identity()
-    # J = SymmetricTensor4.J()
-    I2 = SymmetricTensor2.identity()
-    # print(I2)
-    # I2 = jnp.eye(3)
-    I = jnp.einsum("ij,kl->ijkl", I2, I2) / 3
-    z = jnp.zeros((6, 6))
-    z = z.at[0, 3].set(jnp.sqrt(2.0))
-    I_ = SymmetricTensor4(array=z)
-    print(I_.tensor[0, 1, 0, 0])
-    # K = SymmetricTensor4.K()
-
-
-import timeit
-
-print(timeit.timeit(test_tensor4_creation, number=1))
+    Id = SymmetricTensor4.identity()
+    J = SymmetricTensor4.J()
+    I2 = jnp.eye(3)
+    J_ = jnp.einsum("ij,kl->ijkl", I2, I2) / 3
+    assert jnp.allclose(J_, J)
 
 
 # def test_tensor2_perf(N=100):
@@ -258,9 +248,18 @@ def test_isotropic_tensor():
     mu = 1.0
     lmbda = kappa - 2 / 3 * mu
     C = IsotropicTensor4(kappa, mu)
-    assert lmbda + 2 * mu == C.array[2, 2]
-    assert lmbda == C.array[0, 1]
-    assert 2 * mu == C.array[4, 4]
+    C_plane = jnp.asarray(
+        [
+            [lmbda + 2 * mu, lmbda, lmbda],
+            [lmbda, lmbda + 2 * mu, lmbda],
+            [lmbda, lmbda, lmbda + 2 * mu],
+        ]
+    )
+    C_ = jax.scipy.linalg.block_diag(
+        C_plane, *([jnp.full((1, 1), fill_value=2 * mu)] * 3)
+    )
+    assert jnp.allclose(C.array, C_)
+
     C_ = SymmetricTensor4(array=C.array)
     S = IsotropicTensor4(1 / 9 / kappa, 1 / 4 / mu)
     assert jnp.allclose(C_.inv, S)

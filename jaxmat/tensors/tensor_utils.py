@@ -14,7 +14,7 @@ def polar(F, mode="RU"):
     U, U_inv = _sqrtm(jnp.asarray(C))
     R = F @ U_inv
     if mode == "RU":
-        return R, SymmetricTensor2(U)
+        return R, SymmetricTensor2(tensor=U)
     elif mode == "VR":
         V = (R @ U @ R.T).sym
         return V, R

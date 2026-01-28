@@ -15,8 +15,10 @@ class Tensor(eqx.Module):
     base_array_shape: Tuple[int, ...] = eqx.field(static=True)
 
     # index maps
-    tensor_indices: Tuple[jax.Array, ...] = eqx.field(static=True)
-    weights: jax.Array = eqx.field(static=True)
+    tensor_indices: Tuple[jax.Array, ...] = eqx.field(
+        static=True
+    )  # each should be of shape base_array_shape
+    weights: jax.Array = eqx.field(static=True)  # should be of shape base_array_shape
 
     _array: jax.Array
 
@@ -48,9 +50,23 @@ class Tensor(eqx.Module):
     # -----------------
     def __init__(self, *, tensor=None, array=None):
         if tensor is not None:
+            if tensor.shape[-self.rank :] != self.base_tensor_shape:
+                raise ValueError(
+                    f"Wrong tensor shape {tensor.shape[-self.rank :]} "
+                    f"<> {self.base_tensor_shape}"
+                )
             self._array = self._as_array(tensor)
         elif array is not None:
-            self._array = jnp.asarray(array)
+            if isinstance(array, Tensor):
+                _array = array._array
+            else:
+                _array = jnp.asarray(array)
+            if _array.shape[-self.array_rank :] != self.base_array_shape:
+                raise ValueError(
+                    f"Wrong array shape {_array.shape[-self.array_rank:]} "
+                    f"<> {self.base_array_shape}"
+                )
+            self._array = _array
         else:
             self._array = jnp.zeros(self.base_array_shape)
 
@@ -65,7 +81,7 @@ class Tensor(eqx.Module):
             array.shape[: -self.array_rank] + self.base_tensor_shape,
             dtype=array.dtype,
         )
-        return out.at[(...,) + self.tensor_indices].add(array.ravel() * self.weights)
+        return out.at[(...,) + self.tensor_indices].add(array * self.weights)
 
     @property
     def shape(self):
@@ -172,8 +188,27 @@ class Tensor(eqx.Module):
 
 
 def full_rank2_map(d):
-    ii, jj = jnp.meshgrid(jnp.arange(d), jnp.arange(d), indexing="ij")
-    return (jnp.array(ii.ravel()), jnp.array(jj.ravel())), jnp.ones_like(ii.ravel())
+    I = []
+    J = []
+
+    # Diagonal first
+    for i in range(d):
+        I.append(i)
+        J.append(i)
+
+    # Off-diagonal pairs
+    for i in range(d):
+        for j in range(i + 1, d):
+            I.append(i)
+            J.append(j)
+            I.append(j)
+            J.append(i)
+
+    I = jnp.array(I, dtype=jnp.int16)
+    J = jnp.array(J, dtype=jnp.int16)
+    W = jnp.ones_like(I, dtype=jnp.float32)
+
+    return (I, J), W
 
 
 def kelvin_rank2_map(d: int):
@@ -223,13 +258,12 @@ def kelvin_rank4_map(d):
 
     a, b = jnp.meshgrid(jnp.arange(N), jnp.arange(N), indexing="ij")
 
-    i = KM[a][..., 0].reshape(-1)
-    j = KM[a][..., 1].reshape(-1)
-    k = KM[b][..., 0].reshape(-1)
-    l = KM[b][..., 1].reshape(-1)
+    i = KM[a][..., 0]
+    j = KM[a][..., 1]
+    k = KM[b][..., 0]
+    l = KM[b][..., 1]
 
-    weights = (km_scale[a] * km_scale[b]).reshape(-1)
-
+    weights = km_scale[a] * km_scale[b]
     return (i, j, k, l), weights
 
 
@@ -246,38 +280,6 @@ class Tensor2(Tensor):
         I_ = jnp.zeros(cls.base_array_shape)
         I_ = I_.at[: cls.dim].set(1.0)
         return cls(array=I_)
-        # return cls(tensor=jnp.eye(cls.dim))
-
-    # def _as_array(self, tensor):
-    #     tensor = jnp.asarray(tensor)
-    #     d = self.dim
-    #     batch_shape = tensor.shape[: -self.rank]
-    #     vec = jnp.zeros(batch_shape + self.base_array_shape)
-    #     buff = 0
-    #     for i in range(d):
-    #         vec = vec.at[..., i].set(tensor[..., i, i])
-    #         for j in range(i + 1, d):
-    #             vec = vec.at[..., d + buff].set(tensor[..., i, j])
-    #             vec = vec.at[..., d + buff + 1].set(tensor[..., j, i])
-    #             buff += 2
-    #     return vec
-
-    # def _as_tensor(self, array):
-    #     d = self.dim
-    #     batch_shape = array.shape[: -self.array_rank]
-    #     tensor = jnp.zeros(batch_shape + self.base_tensor_shape)
-    #     # Diagonal terms
-    #     for i in range(d):
-    #         tensor = tensor.at[..., i, i].set(array[..., i])
-
-    #     # Off-diagonal terms
-    #     offset = d
-    #     for i in range(d):
-    #         for j in range(i + 1, d):
-    #             tensor = tensor.at[..., i, j].set(array[..., offset])
-    #             tensor = tensor.at[..., j, i].set(array[..., offset + 1])
-    #             offset += 2
-    #     return tensor
 
     @property
     def sym(self):
@@ -503,7 +505,7 @@ class IsotropicTensor4(SymmetricTensor4):
     def __init__(self, kappa, mu):
         self.kappa = kappa
         self.mu = mu
-        super().__init__(self.eval())
+        self._array = self._as_array(self.eval())
 
     @property
     def basis(self):
