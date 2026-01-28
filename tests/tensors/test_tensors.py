@@ -14,10 +14,6 @@ from jaxmat.tensors import (
     sym,
 )
 
-t = Tensor2()
-print(type(t.weights))
-print(t.__dict__)
-
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
 def test_tensor_shapes(cls):
