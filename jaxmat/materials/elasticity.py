@@ -66,7 +66,7 @@ class LinearElasticIsotropic(AbstractLinearElastic):
 
         where $\mathbb{J}$ and $\mathbb{K}$ are the hydrostatic and deviatoric projectors.
         """
-        return IsotropicTensor4(self.kappa, self.mu)
+        return IsotropicTensor4(kappa=self.kappa, mu=self.mu)
 
     @property
     def kappa(self):
