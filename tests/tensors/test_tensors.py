@@ -14,6 +14,10 @@ from jaxmat.tensors import (
     sym,
 )
 
+t = Tensor2()
+print(type(t.weights))
+print(t.__dict__)
+
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
 def test_tensor_shapes(cls):
@@ -45,46 +49,6 @@ def test_tensor_shapes(cls):
             assert T.batch_shape == batch_dim
             assert T.shape == batch_dim + array_shape
             assert T.tensor_shape == batch_dim + (3, 3)
-
-
-import equinox as eqx
-
-
-def test_tensor_jacobian():
-    # def energy_array(X):
-    #     return X.array
-
-    # def energy_tensor(X):
-    #     return X.tensor
-
-    # def energy(X):
-    #     return X
-
-    # print(T)
-    # assert jax.jacfwd(energy_array)(T).shape == (9, 3, 3)
-    # assert jax.jacfwd(energy_tensor)(T).shape == (3, 3, 3, 3)
-    # print(jax.jacfwd(energy)(T).tensor.shape)
-    # assert jax.jacfwd(energy)(T).shape == (3, 3, 3, 3)
-
-    T = Tensor2.identity()
-
-    def energy_module(X):
-        return X
-
-    def energy_tensor(X):
-        return X.tensor
-
-    # 1) derivative w.r.t. tensor
-    J_tensor = jax.jacfwd(energy_tensor)(T)
-    print("J_tensor.shape:", J_tensor.shape)  # -> (3,3,3,3)
-
-    # 2) derivative w.r.t. module
-    # J_module = eqx.filter_jacfwd(energy_module)(T)
-    # print("J_module.tensor.shape:", J_module._array)  # -> (3,3,3,3)
-
-    # 3) derivative w.r.t. array
-    J_array = jax.jacfwd(lambda X: X.array)(T)
-    print("J_array.shape:", J_array.shape)  # -> (9,9)
 
 
 def _tensor2_init(tensor_type, T_, T_vect_):
@@ -125,9 +89,6 @@ def test_tensor2_init():
     # check wrong size on initialization
     with pytest.raises(ValueError):
         SymmetricTensor2(array=T_vect_)
-    # # Warning: we don't check for symmetry upon initialization
-    # # But symmetry can be checked
-    # assert not SymmetricTensor2(tensor=T_).is_symmetric()
     assert jnp.allclose(Tensor2.identity(), jnp.eye(3))
     T = Tensor2(tensor=jnp.ones((4, 3, 3)))
     assert T.tensor.shape == (4, 3, 3)
@@ -182,8 +143,10 @@ def test_symmetries():
 def test_stretch_tensor():
     gamma = 0.75
     Id = SymmetricTensor2.identity()
-    F = Id + Tensor2(tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64))
-    R, U = polar(F)
+    F = Id + Tensor2(
+        tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64)
+    )
+    R, U = jax.jit(polar)(F)
     C = (F.T @ F).sym
     B = (F @ F.T).sym
     assert jnp.allclose(F, R @ U)
@@ -227,20 +190,6 @@ def test_tensor4_creation():
     I2 = jnp.eye(3)
     J_ = jnp.einsum("ij,kl->ijkl", I2, I2) / 3
     assert jnp.allclose(J_, J)
-
-
-# def test_tensor2_perf(N=100):
-#     d = 3
-#     tensors = jnp.arange(N * d**2).reshape(N, d, d)
-#     T = Tensor2(tensor=tensors)
-#     T_ = Tensor2(array=T.array)
-#     assert jnp.allclose(T, T_)
-
-
-# test_tensor2_init()
-# import timeit
-
-# print(timeit.timeit(test_tensor2_perf, number=10))
 
 
 def test_isotropic_tensor():

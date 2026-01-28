@@ -47,11 +47,6 @@ def dev(A):
     return A - Id * (tr(A) / A.dim)
 
 
-def dev_vect(A):
-    K = SymmetricTensor4.K().array
-    return K @ A
-
-
 def stretch_tensor(F):
     """Computes the strech tensor U = sqrtm(F.T @ F)."""
     return polar(F)[1]
