@@ -56,10 +56,10 @@ def safe_sqrt(x, eps=1e-16):
     Returns
     --------
     array-like
-        The square root of `x` for `x > eps`, otherwise 0.
+        The square root of `x` for `x > eps`, otherwise `eps`.
     """
-    nonzero_x = jnp.where(x > eps, x, 0.0)
-    return jnp.where(x > eps, jnp.sqrt(nonzero_x), 0.0)
+    nonzero_x = jnp.where(x > eps, x, eps)
+    return jnp.where(x > eps, jnp.sqrt(nonzero_x), eps)
 
 
 def safe_norm(x, eps=1e-16, **kwargs):
