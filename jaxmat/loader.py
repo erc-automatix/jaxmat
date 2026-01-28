@@ -5,6 +5,8 @@ import jax
 import jax.numpy as jnp
 import lineax as lx
 import optimistix as optx
+from typing import Literal
+from jaxmat.tensors import SymmetricTensor2, Tensor2
 
 from jaxmat.tensors import SymmetricTensor2
 
@@ -126,21 +128,16 @@ def residual(material, loader: ImposedLoading, eps: jnp.ndarray, state: dict, dt
 
     # Flatten mask to array accounting for symmetry class of strain
     if isinstance(eps, SymmetricTensor2):
-
-        def to_array(x):
-            return SymmetricTensor2(tensor=x).array
+        to_array = lambda x: SymmetricTensor2(tensor=x)
     else:
-
-        def to_array(x):
-            return x
-
+        to_array = lambda x: Tensor2(tensor=x)
     strain_mask = to_array(strain_mask)
 
     sig, state = material.constitutive_update(eps, state, dt)
 
     # Same flattening for residuals
-    deps = to_array(eps - eps_vals)
-    dsig = to_array(sig - sig_vals)
+    deps = to_array(eps.tensor - eps_vals)
+    dsig = to_array(sig.tensor - sig_vals)
 
     eps_residual = jnp.where(strain_mask, deps, 0.0)
     sig_residual = jnp.where(jnp.logical_not(strain_mask), dsig, 0.0)
