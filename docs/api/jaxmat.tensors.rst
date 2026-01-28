@@ -9,6 +9,7 @@ Submodules
 
    jaxmat.tensors.generic_tensors
    jaxmat.tensors.linear_algebra
+   jaxmat.tensors.mappings
    jaxmat.tensors.tensor_utils
    jaxmat.tensors.utils
 
