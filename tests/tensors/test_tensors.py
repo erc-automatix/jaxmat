@@ -50,7 +50,6 @@ def test_tensor_shapes(cls):
 def _tensor2_init(tensor_type, T_, T_vect_):
     T = tensor_type(tensor=T_)
     assert jnp.allclose(T, T_)
-    print(T.array)
     assert jnp.allclose(T.array, T_vect_)
     T2 = tensor_type(array=T_vect_)
     assert jnp.allclose(T2, T_)
@@ -153,6 +152,9 @@ def test_stretch_tensor():
     assert jnp.allclose(B, V @ V)
     U_ = stretch_tensor(F)
     assert jnp.allclose(U, U_)
+
+
+test_stretch_tensor()
 
 
 def test_tensor4():

@@ -101,22 +101,23 @@ class Tensor(eqx.Module):
         return cls(tensor=self.tensor - other_array)
 
     def __mul__(self, other):
-        return self.__class__(tensor=jnp.asarray(other) * self.tensor)
+        return self.__class__(array=jnp.asarray(other) * self.array)
 
     def __truediv__(self, other):
-        return self.__class__(tensor=self.tensor / jnp.asarray(other))
+        return self.__class__(array=self.array / jnp.asarray(other))
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
     def __matmul__(self, other):
+        """If either argument is N-D, N > 2, it is treated as a stack of matrices residing in the last two indexes and broadcast accordingly."""
         return self.__class__(tensor=jnp.asarray(self) @ jnp.asarray(other))
 
     def __rmatmul__(self, other):
         return self.__class__(tensor=jnp.asarray(other) @ self.tensor)
 
     def __neg__(self):
-        return self.__class__(tensor=-self.tensor)
+        return self.__class__(array=-self.array)
 
     def __repr__(self):
         return f"{self.tensor}"
@@ -164,8 +165,16 @@ class Tensor2(Tensor):
 
     @property
     def sym(self):
+        upper_indices = jnp.concatenate(
+            (jnp.arange(self.dim), jnp.arange(self.dim, self.dim**2, 2))
+        )
+        lower_indices = jnp.concatenate(
+            (jnp.arange(self.dim), jnp.arange(self.dim + 1, self.dim**2, 2))
+        )
+        array = self.array[..., upper_indices]
+        array_T = self.array[..., lower_indices]
         return SymmetricTensor2(
-            tensor=0.5 * (self.tensor + jnp.swapaxes(self.tensor, -1, -2))
+            array=0.5 * (array + array_T) * SymmetricTensor2.weights
         )
 
     @property
@@ -179,8 +188,15 @@ class Tensor2(Tensor):
 
     @property
     def T(self):
+        upper_indices = jnp.arange(self.dim, self.dim**2, 2)
+        lower_indices = jnp.arange(self.dim + 1, self.dim**2, 2)
+        swapped_indices = jnp.hstack(
+            [lower_indices[:, jnp.newaxis], upper_indices[:, jnp.newaxis]]
+        )
+        new_indices = jnp.concatenate((jnp.arange(self.dim), swapped_indices.ravel()))
         # we transpose only the last two indices in case of a batched tensor
-        return self.__class__(tensor=jnp.swapaxes(self.tensor, -1, -2))
+        array_T = self.array[..., new_indices]
+        return self.__class__(array=array_T)
 
     def double_contract(self, other):
         """Double contraction between two Tensor2 objects."""

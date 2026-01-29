@@ -22,7 +22,7 @@ def polar(F, mode="RU"):
 
 def sym(A):
     """Computes the symmetric part of a tensor."""
-    return 0.5 * (A + A.T)
+    return A.sym
 
 
 def skew(A):

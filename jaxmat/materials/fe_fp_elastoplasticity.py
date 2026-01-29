@@ -47,7 +47,6 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
             be_bar_trial = (f_bar.T @ be_bar_old @ f_bar).sym
 
             def residual(dy, args):
-                # FIXME: currently we don't account for symmetry of be_bar
                 dp, be_bar = dy.p, dy.be_bar
                 s = self.elasticity.mu * dev(be_bar)
                 yield_criterion = self.plastic_surface(s) - self.yield_stress(p_old + dp)
@@ -60,9 +59,6 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
                         + Id * (det(be_bar) - 1)
                     ).sym,
                 )
-                # import jax
-
-                # jax.debug.print("{}", res[1].shape)
                 return res
 
             dy0 = isv_old.update(p=0, be_bar=be_bar_trial)
