@@ -22,6 +22,13 @@ from .hyperelasticity import (
     HyperelasticPotential,
     VolumetricPart,
 )
+from .elastoplasticity import (
+    vonMisesIsotropicHardening,
+    GeneralIsotropicHardening,
+    GeneralHardening,
+)
+from .fe_fp_elastoplasticity import FeFpJ2Plasticity
+from .viscoplasticity import ArmstrongFrederickViscoplasticity, GenericViscoplasticity
 from .plastic_surfaces import (
     AbstractPlasticSurface,
     DruckerPrager,

@@ -49,9 +49,9 @@ class Tensor(eqx.Module):
 
     def __init__(self, *, tensor=None, array=None):
         if tensor is not None:
-            if tensor.shape[-self.rank :] != self.base_tensor_shape:
+            if tensor.shape[(-1)*self.rank :] != self.base_tensor_shape:
                 raise ValueError(
-                    f"Wrong tensor shape {tensor.shape[-self.rank :]} "
+                    f"Wrong tensor shape {tensor.shape[(-1)*self.rank :]} "
                     f"<> {self.base_tensor_shape}"
                 )
             self._array = self._as_array(tensor)
