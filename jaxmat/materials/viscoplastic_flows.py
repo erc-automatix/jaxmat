@@ -123,7 +123,7 @@ class ArmstrongFrederickHardening(AbstractKinematicHardening):
         """
 
         def evolution(X, C, gamma):
-            return 2 / 3 * C * epsp_dot - gamma * X * p_dot
+            return epsp_dot * (2 / 3 * C) - X * gamma * p_dot
 
         return jax.vmap(evolution)(X, self.C, self.gamma)
 
@@ -132,4 +132,4 @@ class ArmstrongFrederickHardening(AbstractKinematicHardening):
 
         $$\bsig-\frac{2}{3}C\sum_{i=1}^\text{nvars}a_i$$
         """
-        return sig - jnp.sum(X, axis=0)
+        return (sig - jnp.sum(X, axis=0)).sym

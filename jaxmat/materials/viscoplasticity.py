@@ -94,13 +94,19 @@ class ArmstrongFrederickViscoplasticity(SmallStrainBehavior):
                 sig = eval_stress(deps, dy)
                 sig_eff = self.kinematic_hardening.sig_eff(sig, y.X)
                 yield_criterion = sig_eq(sig_eff) - self.yield_stress(y.p)
-                n = self.plastic_surface.normal(sig_eff)
-                res = (
-                    dy.p - dt * self.viscous_flow(yield_criterion),
-                    dy.epsp - n * dy.p,
-                    (dy.X - self.kinematic_hardening(y.X, dy.p, dy.epsp))
-                    / jnp.sum(self.kinematic_hardening.C),
-                )
+                n = self.plastic_surface.normal(sig_eff.sym)
+                # res = (
+                #     dy.p - dt * self.viscous_flow(yield_criterion),
+                #     dy.epsp - n * dy.p,
+                #     (dy.X - self.kinematic_hardening(y.X, dy.p, dy.epsp)).sym
+                #     / jnp.sum(self.kinematic_hardening.C),
+                # )
+                res = tree_zeros_like(dy)
+                res.update(p=dy.p, epsp=dy.epsp, X=dy.X)
+                jax.debug.print("res {}", jax.tree.flatten(res))
+                jax.debug.print(
+                    "dy {}", jax.tree.flatten(dy)
+                )  # dy.p.shape, dy.epsp.shape, dy.X.shape)
                 return res, y
 
             dy0 = tree_zeros_like(isv_old)
