@@ -7,6 +7,34 @@ import jax.numpy as jnp
 from jaxmat.tensors import linear_algebra, mappings
 
 
+def _binary_op(self, other, op):
+    if type(self) is type(other):
+        return eqx.tree_at(
+            lambda t: t._array,
+            self,
+            op(self.array, other.array),
+        )
+
+    elif isinstance(self, type(other)):  # self is a child of other
+        return eqx.tree_at(
+            lambda t: t._array,
+            other,
+            op(self.weaken().array, other.array),
+        )
+
+    elif isinstance(other, type(self)):  # other is a child of self
+        return eqx.tree_at(
+            lambda t: t._array,
+            self,
+            op(self.array, other.weaken().array),
+        )
+
+    else:
+        cls = self._weaken_with(other)
+        other_array = jnp.asarray(other).reshape(self.tensor.shape)
+        return cls(tensor=op(self.tensor, other_array))
+
+
 class Tensor(eqx.Module):
     dim: int = eqx.field(static=True)
     rank: int = eqx.field(static=True)
@@ -91,20 +119,16 @@ class Tensor(eqx.Module):
         return self.tensor
 
     def __add__(self, other):
-        cls = self._weaken_with(other)
-        other_array = jnp.asarray(other).reshape(self.tensor.shape)
-        return cls(tensor=self.tensor + other_array)
+        return _binary_op(self, other, lambda a, b: a + b)
 
     def __sub__(self, other):
-        cls = self._weaken_with(other)
-        other_array = jnp.asarray(other).reshape(self.tensor.shape)
-        return cls(tensor=self.tensor - other_array)
+        return _binary_op(self, other, lambda a, b: a - b)
 
     def __mul__(self, other):
-        return self.__class__(array=jnp.asarray(other) * self.array)
+        return eqx.tree_at(lambda t: t._array, self, jnp.asarray(other) * self.array)
 
     def __truediv__(self, other):
-        return self.__class__(array=self.array / jnp.asarray(other))
+        return eqx.tree_at(lambda t: t._array, self, self.array / jnp.asarray(other))
 
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -177,6 +201,13 @@ class Tensor2(Tensor):
             array=0.5 * (array + array_T) * SymmetricTensor2.weights
         )
 
+    def weaken(self):
+        return self
+
+    @property
+    def tr(self):
+        return jnp.sum(self.array[: self.dim])
+
     @property
     def inv(self):
         return self.__class__(tensor=linear_algebra.inv33(self.tensor))
@@ -208,6 +239,17 @@ class SymmetricTensor2(Tensor2):
     base_array_shape = (dim * (dim + 1) // 2,)
 
     tensor_indices, weights = mappings.kelvin_rank2_map(3)
+
+    def weaken(self):
+        """Weaken to Tensor2."""
+        diag_indices = jnp.arange(self.dim)
+        upper_indices = jnp.arange(self.dim, self.dim**2, 2)
+        lower_indices = jnp.arange(self.dim + 1, self.dim**2, 2)
+        array = jnp.zeros(self.batch_shape + Tensor2.base_array_shape)
+        array = array.at[diag_indices].set(self.array[diag_indices])
+        array = array.at[upper_indices].set(self.array[self.dim :] / jnp.sqrt(2.0))
+        array = array.at[lower_indices].set(self.array[self.dim :] / jnp.sqrt(2.0))
+        return Tensor2(array=array)
 
     def is_symmetric(self):
         return jnp.allclose(self, self.T)

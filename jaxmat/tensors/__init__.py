@@ -4,6 +4,17 @@ from .generic_tensors import (
     SymmetricTensor4,
     Tensor,
     Tensor2,
+    IsotropicTensor4,
+)
+from .tensor_utils import (
+    polar,
+    stretch_tensor,
+    tr,
+    dev,
+    skew,
+    sym,
+    axl,
+    eigenvalues,
 )
 from .linear_algebra import (
     main_invariants,

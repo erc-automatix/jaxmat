@@ -39,7 +39,7 @@ def axl(A):
 
 def tr(A):
     """Trace of a n-dim 2nd-rank tensor."""
-    return jnp.trace(A)
+    return A.tr
 
 
 def dev(A):
