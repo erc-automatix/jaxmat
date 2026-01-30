@@ -99,7 +99,7 @@ def test_sym_tensor2_init():
         [0, 3, 5, jnp.sqrt(2) * 1, jnp.sqrt(2) * 2, jnp.sqrt(2) * 4], dtype=jnp.float64
     )
     # this passes
-    Tensor2(tensor=S_)
+    St = Tensor2(tensor=S_)
     # this does not
     with pytest.raises(ValueError):
         Tensor2(array=S_vect_)
@@ -111,13 +111,16 @@ def test_sym_tensor2_init():
     assert not jnp.allclose(S @ S2, S2 @ S)
     assert isinstance((S @ S2).sym, SymmetricTensor2)
     assert jnp.allclose((S @ S2).sym, (S2 @ S).sym)
+    assert jnp.allclose(S.weaken(), St)
 
 
 def test_symmetries():
     gamma = 0.75
     Id = SymmetricTensor2.identity()
-    F = Tensor2(tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64))
-    f1 = F + Id
+    F = Tensor2(
+        tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64)
+    )
+    f1 = F - Id
     f2 = Id + F
     g1 = F @ Id
     g2 = Id @ F
@@ -173,6 +176,7 @@ def test_tensor4():
 
     J = SymmetricTensor4.J()
     K = SymmetricTensor4.K()
+    assert type(J - K) is SymmetricTensor4
     assert type(2.0 * J + 2.0 * K) is SymmetricTensor4
     assert jnp.allclose(2 * J + 2 * K, 2 * Id)
     assert jnp.allclose(J @ B, jnp.trace(B) / 3 * Id2)
