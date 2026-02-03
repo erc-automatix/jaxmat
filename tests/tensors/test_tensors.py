@@ -4,15 +4,18 @@ import pytest
 
 from jaxmat.state import make_batched
 from jaxmat.tensors import (
-    IsotropicTensor4,
     SymmetricTensor2,
-    SymmetricTensor4,
     Tensor2,
-    dev,
+    SymmetricTensor4,
+    Tensor4,
+    IsotropicTensor4,
+    CubicTensor4,
     polar,
     stretch_tensor,
     sym,
 )
+from jaxmat.tensors.mappings import cubic_projectors
+from jaxmat.state import make_batched
 
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
@@ -157,12 +160,24 @@ def test_stretch_tensor():
     assert jnp.allclose(U, U_)
 
 
-test_stretch_tensor()
+def test_tensor4_init():
+    key = jax.random.PRNGKey(0)
+    a = jax.random.normal(key, (3, 3))
+    A = Tensor2(tensor=a)
+    T_ = jnp.outer(A.array, A.array)
+    T = Tensor4(array=T_)
+    assert jnp.allclose(T, jnp.einsum("ij,kl->ijkl", a, a))
+    assert jnp.allclose((T @ T), A.double_contract(A) * T)
+    a = 0.5 * (a + a.T)
+    A = SymmetricTensor2(tensor=a)
+    T_ = jnp.outer(A.array, A.array)
+    T = SymmetricTensor4(array=T_)
+    assert jnp.allclose(T, jnp.einsum("ij,kl->ijkl", a, a))
+    assert jnp.allclose((T @ T), A.double_contract(A) * T)
 
 
-def test_tensor4():
+def test_tensor4_identities():
     Id = SymmetricTensor4.identity()
-    Id2 = SymmetricTensor2.identity()
     key = jax.random.PRNGKey(0)
     A_ = jax.random.normal(key, (6, 6))
     A_ = 0.5 * (A_ + A_.T)
@@ -174,16 +189,32 @@ def test_tensor4():
     assert jnp.allclose((A @ Id).array, A_)
     assert jnp.allclose(Id @ B, B)
 
+
+def test_isotropic_tensor4():
+    Id = SymmetricTensor4.identity()
+    Id2 = SymmetricTensor2.identity()
+    J_ = 1 / 3 * jnp.einsum("ij,kl->ijkl", Id2, Id2)
     J = SymmetricTensor4.J()
     K = SymmetricTensor4.K()
+    key = jax.random.PRNGKey(0)
+    b_ = jax.random.normal(key, (3, 3))
+    b_ = 0.5 * (b_ + b_.T)
+    B = SymmetricTensor2(tensor=b_)
     assert type(J - K) is SymmetricTensor4
     assert type(2.0 * J + 2.0 * K) is SymmetricTensor4
+    assert jnp.allclose(J, J_)
     assert jnp.allclose(2 * J + 2 * K, 2 * Id)
     assert jnp.allclose(J @ B, jnp.trace(B) / 3 * Id2)
     assert jnp.allclose(K @ B, dev(B))
     assert jnp.allclose(J @ J, J)
     assert jnp.allclose(K @ K, K)
     assert jnp.allclose(J @ K, 0)
+    assert jnp.isclose(Id.fourth_contract(Id), 6.0)
+    assert jnp.isclose(J.fourth_contract(J), 1.0)
+    assert jnp.isclose(K.fourth_contract(K), 5.0)
+
+
+test_isotropic_tensor4()
 
 
 def test_tensor4_creation():
@@ -194,7 +225,7 @@ def test_tensor4_creation():
     assert jnp.allclose(J_, J)
 
 
-def test_isotropic_tensor():
+def test_isotropic_elasticity():
     kappa = 1.0
     mu = 1.0
     lmbda = kappa - 2 / 3 * mu
@@ -229,17 +260,67 @@ def test_isotropic_tensor():
     assert C.tensor_shape == (N, 3, 3, 3, 3)
 
 
+def test_cubic_projectors():
+    key = jax.random.PRNGKey(0)
+    b_ = jax.random.normal(key, (3, 3))
+    b = SymmetricTensor2(tensor=b_)
+    J, Ka, Kb, _, _, _ = cubic_projectors(3)
+    Ka = SymmetricTensor4(array=Ka)
+    Kb = SymmetricTensor4(array=Kb)
+    bdiag = jnp.diag(jnp.diag(b))
+    boff = b - bdiag
+    dev_diag = bdiag - 1 / 3 * jnp.linalg.trace(bdiag) * jnp.eye(3)
+    dev_off = boff - 1 / 3 * jnp.linalg.trace(boff) * jnp.eye(3)
+    jnp.allclose(Ka @ b, dev_diag)
+    jnp.allclose(Kb @ b, dev_off)
+
+
+def test_cubic_tensor4():
+    # ---------------------------
+    # 1. Initialization with coeffs
+    # ---------------------------
+    coeffs = jnp.array([1.0, 2.0, 3.0])
+    C1 = CubicTensor4(coeffs=coeffs)
+
+    # Check stored coefficients
+    assert jnp.allclose(C1.coeffs, coeffs)
+
+    # ---------------------------
+    # 2. Initialization with physical kwargs
+    # ---------------------------
+    kappa, mua, mub = 1.0 / 3.0, 2.0 / 2.0, 3.0 / 2.0
+    C2 = CubicTensor4(kappa=kappa, mua=mua, mub=mub)
+
+    # Coefficients should match
+    assert jnp.allclose(C2.coeffs, coeffs)
+
+    # Kelvin array should match C1
+    assert jnp.allclose(C2.array, C1.array)
+    assert jnp.allclose(C2.tensor, C1.tensor)
+
+    # 4. Check composition and inversion
+    # ---------------------------
+    Cinv = C1.inv
+    # inv coefficients = 1 / coeffs
+    assert jnp.allclose(Cinv.coeffs, 1.0 / coeffs)
+
+    # Composition should be diagonal in projector basis
+    # Using einsum: (C * Cinv) should yield identity in Kelvin basis
+    Id_kelvin = jnp.einsum("a,ab,b->ab", C1.coeffs, jnp.eye(3), Cinv.coeffs)
+    assert jnp.allclose(Id_kelvin, jnp.eye(3))
+
+
 def test_operator_symmetry():
     kappa = 1.0
     mu = 1.0
     C = IsotropicTensor4(kappa=kappa, mu=mu)
     K = SymmetricTensor4.K()
-    eps = SymmetricTensor2.identity()
-    assert type(sym(eps)) is SymmetricTensor2
-    assert type(dev(eps)) is SymmetricTensor2
-    assert type(K @ eps) is SymmetricTensor2
-    assert type(C @ eps) is SymmetricTensor2
-    assert type(C @ K @ eps) is SymmetricTensor2
+    id = SymmetricTensor2.identity()
+    assert type(sym(id)) is SymmetricTensor2
+    assert type(dev(id)) is SymmetricTensor2
+    assert type(K @ id) is SymmetricTensor2
+    assert type(C @ id) is SymmetricTensor2
+    assert type(C @ K @ id) is SymmetricTensor2
 
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])

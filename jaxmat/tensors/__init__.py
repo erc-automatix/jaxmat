@@ -1,10 +1,12 @@
 from .generic_tensors import (
     IsotropicTensor4,
     SymmetricTensor2,
+    Tensor4,
     SymmetricTensor4,
     Tensor,
     Tensor2,
     IsotropicTensor4,
+    CubicTensor4,
 )
 from .tensor_utils import (
     polar,

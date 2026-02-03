@@ -106,6 +106,51 @@ def kelvin_rank2_map(d: int) -> Tuple[IndexMap2, jax.Array]:
     return (I, J), W
 
 
+def full_rank4_map(d: int) -> Tuple[IndexMap4, jax.Array]:
+    r"""
+    Construct an index map for a full (non-symmetric) rank-4 tensor (Tensor4).
+
+    The mapping is defined as:
+
+    $$C_{\alpha\beta} = C_{ijkl}$$
+
+    where $\alpha$ and $\beta$ are the Kelvin coefficients of the $(i,j)$ and $(k,l)$ index pairs.
+
+    For $d = 3$, this produces a $9\times 9$ representation of a 4th-rank tensor
+
+    Parameters
+    ----------
+    d : int
+        Spatial dimension.
+
+    Returns
+    -------
+    (I, J, K, L) : tuple[jax.Array, jax.Array, jax.Array, jax.Array]
+        Index arrays of shape (N, N) where N = d*d, mapping:
+
+        ``tensor[..., I[a,b], J[a,b], K[a,b], L[a,b]] <-> array[..., a, b]``
+
+    W : jax.Array
+        Weight array of shape (N, N), filled with ones.
+    """
+
+    # Rank-2 full (non-symmetric) map
+    (I2, J2), W2 = full_rank2_map(d)
+    N = I2.shape[0]  # N = d*d
+
+    a, b = jnp.meshgrid(jnp.arange(N), jnp.arange(N), indexing="ij")
+
+    I = I2[a]
+    J = J2[a]
+    K = I2[b]
+    L = J2[b]
+
+    # No Kelvin scaling for full Tensor4
+    W = jnp.ones((N, N), dtype=jnp.float32)
+
+    return (I, J, K, L), W
+
+
 def kelvin_rank4_map(d: int) -> Tuple[IndexMap4, jax.Array]:
     r"""
     Construct an index map for a symmetric rank-4 tensor in Kelvin-Mandel notation.
@@ -114,9 +159,10 @@ def kelvin_rank4_map(d: int) -> Tuple[IndexMap4, jax.Array]:
 
     $$C_{\alpha\beta} = s_{\alpha} s_{\beta} C_{ijkl}$$
 
-    where $\alpha$ and $\beta$ are the Kelvin weights (1 and $\sqrt{2}$ for shear components) of the $(i,j)$ and $(k,l)$ index pairs.
+    where $\alpha$ and $\beta$ are the Kelvin coefficients (weights $s_{\alpha},s_{\beta}$ are 1 and $\sqrt{2}$
+    for shear components) of the $(i,j)$ and $(k,l)$ index pairs.
 
-    For $d = 3$, this produces a $6\times 6$ representation of a 4th-order tensor with minor symmetries.
+    For $d = 3$, this produces a $6\times 6$ representation of a 4th-rank tensor with minor symmetries.
 
     Parameters
     ----------
@@ -139,40 +185,22 @@ def kelvin_rank4_map(d: int) -> Tuple[IndexMap4, jax.Array]:
     -----
     This mapping enforces minor symmetry (ij) and (kl) by construction.
     """
-    sqrt2 = jnp.sqrt(2.0)
+    # Rank-2 Kelvin map
+    (I2, J2), W2 = kelvin_rank2_map(d)
+    N = I2.shape[0]
 
-    # Kelvin rank-2 base
-    i_diag = jnp.arange(d)
-    j_diag = i_diag
-
-    # Hard-coded off-diagonal ordering for d=3
-    # (generalizable, kept explicit for stability)
-    i_off = jnp.array([0, 0, 1])
-    j_off = jnp.array([1, 2, 2])
-
-    km_i = jnp.concatenate([i_diag, i_off])
-    km_j = jnp.concatenate([j_diag, j_off])
-
-    km_scale = jnp.concatenate(
-        [
-            jnp.ones(d),
-            jnp.full(i_off.shape, sqrt2),
-        ]
-    )
-
-    KM = jnp.stack([km_i, km_j], axis=1)  # (N,2)
-    N = KM.shape[0]
-
+    # Build rank-4 index grids
     a, b = jnp.meshgrid(jnp.arange(N), jnp.arange(N), indexing="ij")
 
-    i = KM[a][..., 0]
-    j = KM[a][..., 1]
-    k = KM[b][..., 0]
-    l = KM[b][..., 1]
+    I = I2[a]
+    J = J2[a]
+    K = I2[b]
+    L = J2[b]
 
-    weights = km_scale[a] * km_scale[b]
+    # Kelvin–Mandel weights
+    W = W2[a] * W2[b]
 
-    return (i, j, k, l), weights
+    return (I, J, K, L), W
 
 
 def isotropic_projectors(d=3):
@@ -190,3 +218,43 @@ def isotropic_projectors(d=3):
     K = W * K4[i, j, k, l]
 
     return J, K, J4, K4
+
+
+def cubic_projectors(d=3):
+    """
+    Cubic symmetry projectors in 6x6 Kelvin-Mandel format.
+
+    Returns
+    -------
+    J, Ka, Kb : jax.Array
+        6x6 Kelvin-Mandel projectors
+    J4, Ka4, Kb4 : jax.Array
+        4th-rank tensor projectors (d,d,d,d)
+    """
+    I = jnp.eye(d)
+    I4 = jnp.einsum("ij,kl->ijkl", I, I)
+    I4s = 0.5 * (jnp.einsum("ik,jl->ijkl", I, I) + jnp.einsum("il,jk->ijkl", I, I))
+
+    # 1. Spherical projector
+    J4 = (1.0 / d) * I4
+
+    # 2. Cubic invariant tensor
+    Lambda = jnp.zeros((d, d, d, d))
+    for i in range(d):
+        Lambda = Lambda.at[i, i, i, i].set(1.0)
+
+    # 3. Cubic decomposition of deviatoric part
+    # Ka = Lambda - J = deviatoric projector of diagonal part
+    Ka4 = Lambda - J4
+
+    # Remaining part is off-diagonal shear projector
+    Kb4 = I4s - Lambda
+
+    # Kelvin mapping
+    (i, j, k, l), W = kelvin_rank4_map(d)
+
+    J = W * J4[i, j, k, l]
+    Ka = W * Ka4[i, j, k, l]
+    Kb = W * Kb4[i, j, k, l]
+
+    return J, Ka, Kb, J4, Ka4, Kb4

@@ -49,7 +49,7 @@ class Tensor(eqx.Module):
 
     def __init__(self, *, tensor=None, array=None):
         if tensor is not None:
-            if tensor.shape[(-1)*self.rank :] != self.base_tensor_shape:
+            if tensor.shape[(-1) * self.rank :] != self.base_tensor_shape:
                 raise ValueError(
                     f"Wrong tensor shape {tensor.shape[(-1)*self.rank :]} "
                     f"<> {self.base_tensor_shape}"
@@ -215,7 +215,9 @@ class Tensor2(Tensor):
     @property
     def eigenvalues(self):
         eigenvalues, eigendyads = linear_algebra.eig33(self.tensor)
-        return eigenvalues, jnp.asarray([SymmetricTensor2(N) for N in eigendyads])
+        return eigenvalues, jnp.asarray(
+            [SymmetricTensor2(tensor=N) for N in eigendyads]
+        )
 
     @property
     def T(self):
@@ -252,7 +254,12 @@ class SymmetricTensor2(Tensor2):
         return Tensor2(array=array)
 
     def is_symmetric(self):
-        return jnp.allclose(self, self.T)
+        return True
+
+    @property
+    def T(self):
+        """Transposed tensor."""
+        return self
 
     def _as_tensor(self, array):
         out = super()._as_tensor(array)
@@ -276,7 +283,41 @@ def enforce_minor_symmetry(C):
     return 0.25 * (C + C_ij + C_kl + C_ij_kl)
 
 
-class SymmetricTensor4(Tensor):
+class Tensor4(Tensor):
+    dim = 3
+    rank = 4
+    array_rank = 2
+    base_tensor_shape = (dim, dim, dim, dim)
+    base_array_shape = (dim**2, dim**2)
+
+    tensor_indices, weights = mappings.full_rank4_map(3)
+
+    @classmethod
+    def identity(cls):
+        d = cls.dim
+        n = d**2
+        return cls(array=jnp.eye(n))
+
+    def is_symmetric(self):
+        return jnp.allclose(self, self.T)
+
+    def _as_tensor(self, array):
+        return super()._as_tensor(array)
+
+    def __matmul__(self, other):
+        """`@` operator is understood as double contraction for 4th-rank tensors"""
+        return other.__class__(array=self.array @ other.array)
+
+    @property
+    def T(self):
+        return self.__class__(array=jnp.swapaxes(self.array, axis1=-1, axis2=-2))
+
+    @property
+    def inv(self):
+        return self.__class__(array=jnp.linalg.inv(self.array))
+
+
+class SymmetricTensor4(Tensor4):
     dim = 3
     rank = 4
     array_rank = 2
@@ -301,62 +342,35 @@ class SymmetricTensor4(Tensor):
     def K(cls):
         return cls.identity() - cls.J()
 
-    def is_symmetric(self):
-        return jnp.allclose(self, self.T)
-
     def _as_tensor(self, array):
         return enforce_minor_symmetry(super()._as_tensor(array))
 
-    def __matmul__(self, other):
-        return other.__class__(
-            # tensor=jnp.tensordot(jnp.asarray(self), jnp.asarray(other).T)
-            array=self.array
-            @ other.array.T
-        )
-
-    @property
-    def T(self):
-        return self.__class__(array=jnp.swapaxes(self.array, axis1=-1, axis2=-2))
-
-    @property
-    def inv(self):
-        return self.__class__(array=jnp.linalg.inv(self.array))
+    def fourth_contract(self, other):
+        """Fourth contraction between two Tensor2 objects."""
+        return jnp.tensordot(self, other, axes=([-4, -3, 2, -1], [-4, -3, -2, -1]))
 
 
 def _eval_basis(coeffs, basis):
     return sum([c * b for (c, b) in zip(coeffs, basis)])
 
 
-class IsotropicTensor4(SymmetricTensor4):
+class AbstractProjectedTensor4(SymmetricTensor4):
     """
-    Symmetric 4th-rank isotropic tensor with compressed storage.
+    Base class for symmetry-reduced 4th-rank tensors.
     """
 
     _coeffs: jax.Array  # (...,2) → [a_J, a_K]
 
-    # ---- static projectors ----
-    Jk, Kk, J4, K4 = mappings.isotropic_projectors(3)
+    _kelvin_basis: jax.Array
+    _tensor_basis: jax.Array
 
-    _kelvin_basis = jnp.stack([Jk, Kk], axis=0)
-    _tensor_basis = jnp.stack([J4, K4], axis=0)
-
-    # ----------------------------
-
-    def __init__(self, *, coeffs=None, kappa=None, mu=None):
-
-        if coeffs is not None:
-            coeffs = jnp.asarray(coeffs)
-            if coeffs.shape[-1] != 2:
-                raise ValueError("coeffs must be (...,2)")
-            self._coeffs = coeffs
-
-        elif (kappa is not None) and (mu is not None):
-            self._coeffs = jnp.stack([3 * kappa, 2 * mu], axis=-1)
-
-        else:
-            self._coeffs = jnp.zeros((2,))
-
+    def __init__(self, coeffs):
+        self._coeffs = jnp.asarray(coeffs)
         self._array = self.array
+
+    @property
+    def coeffs(self):
+        return self._coeffs
 
     @property
     def array(self):
@@ -368,4 +382,47 @@ class IsotropicTensor4(SymmetricTensor4):
 
     @property
     def inv(self):
-        return IsotropicTensor4(coeffs=1.0 / self._coeffs)
+        return type(self)(coeffs=1.0 / self._coeffs)
+
+
+class IsotropicTensor4(AbstractProjectedTensor4):
+    """
+    Symmetric 4th-rank isotropic tensor with compressed storage.
+    """
+
+    # ---- static projectors ----
+    Jk, Kk, J4, K4 = mappings.isotropic_projectors(3)
+
+    _kelvin_basis = jnp.stack([Jk, Kk], axis=0)
+    _tensor_basis = jnp.stack([J4, K4], axis=0)
+
+    # ----------------------------
+
+    def __init__(self, *, coeffs=None, kappa=None, mu=None):
+
+        if coeffs is None:
+            if (kappa is None) or (mu is None):
+                raise ValueError("Provide either coeffs or (kappa, mu)")
+            coeffs = jnp.stack([3.0 * kappa, 2.0 * mu], axis=-1)
+
+        super().__init__(coeffs=coeffs)
+
+
+class CubicTensor4(AbstractProjectedTensor4):
+    """
+    Cubic-symmetric 4th-rank tensor.
+    """
+
+    Jk, Kak, Kbk, J4, Ka4, Kb4 = mappings.cubic_projectors(3)
+
+    _kelvin_basis = jnp.stack([Jk, Kak, Kbk], axis=0)
+    _tensor_basis = jnp.stack([J4, Ka4, Kb4], axis=0)
+
+    def __init__(self, *, coeffs=None, kappa=None, mua=None, mub=None):
+
+        if coeffs is None:
+            if None in (kappa, mua, mub):
+                raise ValueError("Provide either coeffs or (c1, c2, c3)")
+            coeffs = jnp.stack([3 * kappa, 2 * mua, 2 * mub], axis=-1)
+
+        super().__init__(coeffs=coeffs)
