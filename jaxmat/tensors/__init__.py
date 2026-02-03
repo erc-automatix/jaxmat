@@ -3,8 +3,8 @@ from .generic_tensors import (
     SymmetricTensor2,
     Tensor4,
     SymmetricTensor4,
-    Tensor,
-    Tensor2,
+)
+from .symmetry_classes import (
     IsotropicTensor4,
     CubicTensor4,
 )

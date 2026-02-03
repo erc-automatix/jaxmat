@@ -294,9 +294,7 @@ class Tensor4(Tensor):
 
     @classmethod
     def identity(cls):
-        d = cls.dim
-        n = d**2
-        return cls(array=jnp.eye(n))
+        return cls(array=jnp.eye(cls.base_array_shape[0]))
 
     def is_symmetric(self):
         return jnp.allclose(self, self.T)
@@ -327,12 +325,6 @@ class SymmetricTensor4(Tensor4):
     tensor_indices, weights = mappings.kelvin_rank4_map(3)
 
     @classmethod
-    def identity(cls):
-        d = cls.dim
-        n = d * (d + 1) // 2
-        return cls(array=jnp.eye(n))
-
-    @classmethod
     def J(cls):
         I2 = SymmetricTensor2.identity()
         J = jnp.einsum("ij,kl->ijkl", I2, I2) / cls.dim
@@ -348,10 +340,6 @@ class SymmetricTensor4(Tensor4):
     def fourth_contract(self, other):
         """Fourth contraction between two Tensor2 objects."""
         return jnp.tensordot(self, other, axes=([-4, -3, 2, -1], [-4, -3, -2, -1]))
-
-
-def _eval_basis(coeffs, basis):
-    return sum([c * b for (c, b) in zip(coeffs, basis)])
 
 
 class AbstractProjectedTensor4(SymmetricTensor4):
@@ -383,46 +371,3 @@ class AbstractProjectedTensor4(SymmetricTensor4):
     @property
     def inv(self):
         return type(self)(coeffs=1.0 / self._coeffs)
-
-
-class IsotropicTensor4(AbstractProjectedTensor4):
-    """
-    Symmetric 4th-rank isotropic tensor with compressed storage.
-    """
-
-    # ---- static projectors ----
-    Jk, Kk, J4, K4 = mappings.isotropic_projectors(3)
-
-    _kelvin_basis = jnp.stack([Jk, Kk], axis=0)
-    _tensor_basis = jnp.stack([J4, K4], axis=0)
-
-    # ----------------------------
-
-    def __init__(self, *, coeffs=None, kappa=None, mu=None):
-
-        if coeffs is None:
-            if (kappa is None) or (mu is None):
-                raise ValueError("Provide either coeffs or (kappa, mu)")
-            coeffs = jnp.stack([3.0 * kappa, 2.0 * mu], axis=-1)
-
-        super().__init__(coeffs=coeffs)
-
-
-class CubicTensor4(AbstractProjectedTensor4):
-    """
-    Cubic-symmetric 4th-rank tensor.
-    """
-
-    Jk, Kak, Kbk, J4, Ka4, Kb4 = mappings.cubic_projectors(3)
-
-    _kelvin_basis = jnp.stack([Jk, Kak, Kbk], axis=0)
-    _tensor_basis = jnp.stack([J4, Ka4, Kb4], axis=0)
-
-    def __init__(self, *, coeffs=None, kappa=None, mua=None, mub=None):
-
-        if coeffs is None:
-            if None in (kappa, mua, mub):
-                raise ValueError("Provide either coeffs or (c1, c2, c3)")
-            coeffs = jnp.stack([3 * kappa, 2 * mua, 2 * mub], axis=-1)
-
-        super().__init__(coeffs=coeffs)

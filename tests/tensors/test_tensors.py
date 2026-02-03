@@ -14,7 +14,7 @@ from jaxmat.tensors import (
     stretch_tensor,
     sym,
 )
-from jaxmat.tensors.mappings import cubic_projectors
+from jaxmat.tensors.symmetry_classes import cubic_projectors
 from jaxmat.state import make_batched
 
 
@@ -177,17 +177,33 @@ def test_tensor4_init():
 
 
 def test_tensor4_identities():
-    Id = SymmetricTensor4.identity()
+    Id = Tensor4.identity()
+    Ids = SymmetricTensor4.identity()
+    id_ = jnp.eye(3)
+    Id_ = jnp.einsum("ik,jl->ijkl", id_, id_)
+    assert jnp.allclose(Id, Id_)
+    Ids_ = 0.5 * (
+        jnp.einsum("ik,jl->ijkl", id_, id_) + jnp.einsum("il,jk->ijkl", id_, id_)
+    )
+    assert jnp.allclose(Ids, Ids_)
+
     key = jax.random.PRNGKey(0)
-    A_ = jax.random.normal(key, (6, 6))
-    A_ = 0.5 * (A_ + A_.T)
+    A_ = jax.random.normal(key, (9, 9))
     b_ = jax.random.normal(key, (3, 3))
-    b_ = 0.5 * (b_ + b_.T)
-    A = SymmetricTensor4(array=A_)
-    B = SymmetricTensor2(tensor=b_)
+    A = Tensor4(array=A_)
+    B = Tensor2(tensor=b_)
     assert jnp.allclose(A @ Id, A)
     assert jnp.allclose((A @ Id).array, A_)
     assert jnp.allclose(Id @ B, B)
+
+    A_ = jax.random.normal(key, (6, 6))
+    A_ = 0.5 * (A_ + A_.T)
+    b_ = 0.5 * (b_ + b_.T)
+    A = SymmetricTensor4(array=A_)
+    B = SymmetricTensor2(tensor=b_)
+    assert jnp.allclose(A @ Ids, A)
+    assert jnp.allclose((A @ Ids).array, A_)
+    assert jnp.allclose(Ids @ B, B)
 
 
 def test_isotropic_tensor4():
@@ -243,6 +259,7 @@ def test_isotropic_elasticity():
     C_ = jax.scipy.linalg.block_diag(
         C_plane, *([jnp.full((1, 1), fill_value=2 * mu)] * 3)
     )
+    print(C_, C.array)
     assert jnp.allclose(C.array, C_)
 
     C_ = SymmetricTensor4(array=C.array)
