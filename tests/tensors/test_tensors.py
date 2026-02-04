@@ -10,11 +10,15 @@ from jaxmat.tensors import (
     Tensor4,
     IsotropicTensor4,
     CubicTensor4,
+    TransverseIsotropicTensor4,
     polar,
     stretch_tensor,
     sym,
 )
-from jaxmat.tensors.symmetry_classes import cubic_projectors
+from jaxmat.tensors.symmetry_classes import (
+    cubic_projectors,
+    transverse_isotropic_projectors,
+)
 from jaxmat.state import make_batched
 
 
@@ -326,7 +330,74 @@ def test_cubic_tensor4():
     # Check projection
     C_ = SymmetricTensor4(array=C1.array)
     assert jnp.allclose(C1, CubicTensor4.project(C_))
-    print(C1.array, CubicTensor4.project(C_).array)
+
+
+def test_transverse_isotropic_projectors():
+    key = jax.random.PRNGKey(0)
+    axis = jax.random.normal(key, shape=(3,))
+    axis /= jnp.linalg.norm(axis)
+    E1, E2, E3, E4, F, G = transverse_isotropic_projectors(axis)
+    # E1 rules
+    assert jnp.allclose(E1, E1 @ E1)
+    assert jnp.allclose(0.0, E1 @ E2)
+    assert jnp.allclose(E3, E1 @ E3)
+    assert jnp.allclose(0.0, E1 @ E4)
+    assert jnp.allclose(0.0, E1 @ F)
+    assert jnp.allclose(0.0, E1 @ G)
+    # E2 rules
+    assert jnp.allclose(0.0, E2 @ E1)
+    assert jnp.allclose(E2, E2 @ E2)
+    assert jnp.allclose(0.0, E2 @ E3)
+    assert jnp.allclose(E4, E2 @ E4)
+    assert jnp.allclose(0.0, E2 @ F)
+    assert jnp.allclose(0.0, E2 @ G)
+    # E3 rules
+    assert jnp.allclose(0.0, E3 @ E1)
+    assert jnp.allclose(E3, E3 @ E2)
+    assert jnp.allclose(0.0, E3 @ E3)
+    assert jnp.allclose(E1, E3 @ E4)
+    assert jnp.allclose(0.0, E3 @ F)
+    assert jnp.allclose(0.0, E3 @ G)
+    # E4 rules
+    assert jnp.allclose(E4, E4 @ E1)
+    assert jnp.allclose(0.0, E4 @ E2)
+    assert jnp.allclose(E2, E4 @ E3)
+    assert jnp.allclose(0.0, E4 @ E4)
+    assert jnp.allclose(0.0, E4 @ F)
+    assert jnp.allclose(0.0, E4 @ G)
+    # F rules
+    assert jnp.allclose(0.0, F @ E1)
+    assert jnp.allclose(0.0, F @ E2)
+    assert jnp.allclose(0.0, F @ E3)
+    assert jnp.allclose(0.0, F @ E4)
+    assert jnp.allclose(F, F @ F)
+    assert jnp.allclose(0.0, F @ G)
+    # G rules
+    assert jnp.allclose(0.0, G @ E1)
+    assert jnp.allclose(0.0, G @ E2)
+    assert jnp.allclose(0.0, G @ E3)
+    assert jnp.allclose(0.0, G @ E4)
+    assert jnp.allclose(0.0, G @ F)
+    assert jnp.allclose(G, G @ G)
+
+
+def test_transverse_isotropic_tensor4():
+    # Initialization
+    coeffs = jnp.arange(6.0)
+    key = jax.random.PRNGKey(0)
+    axis = jax.random.normal(key, shape=(3,))
+    axis /= jnp.linalg.norm(axis)
+    C = TransverseIsotropicTensor4(axis, coeffs)
+    C_ = SymmetricTensor4(array=C.array)
+    # Check stored coefficients
+    assert jnp.allclose(C.coeffs, coeffs)
+
+    # Check inversion
+    Cinv = C.inv
+    assert jnp.allclose(Cinv, C_.inv)
+
+    # Check projection
+    assert jnp.allclose(C, TransverseIsotropicTensor4.project(axis, C_))
 
 
 def test_operator_symmetry():

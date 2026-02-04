@@ -7,6 +7,7 @@ from .generic_tensors import (
 from .symmetry_classes import (
     IsotropicTensor4,
     CubicTensor4,
+    TransverseIsotropicTensor4,
 )
 from .tensor_utils import (
     polar,
