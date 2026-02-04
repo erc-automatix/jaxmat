@@ -1,6 +1,6 @@
 [project]
 name = "jaxmat"
-version = "0.0.2"
+version = "0.0.3"
 description = "Automated material constitutive modeling in JAX"
 readme = "README.md"
 authors = [
