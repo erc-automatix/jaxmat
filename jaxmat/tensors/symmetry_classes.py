@@ -1,10 +1,47 @@
+from abc import abstractmethod
+import jax
 import jax.numpy as jnp
 from jaxmat.tensors.generic_tensors import (
     SymmetricTensor4,
     SymmetricTensor2,
-    AbstractProjectedTensor4,
 )
 from jaxmat.tensors.mappings import kelvin_rank4_map
+
+
+class AbstractProjectedTensor4(SymmetricTensor4):
+    """
+    Base class for symmetry-reduced 4th-rank tensors.
+    """
+
+    _coeffs: jax.Array  # (...,2) → [a_J, a_K]
+
+    _kelvin_basis: jax.Array
+    _tensor_basis: jax.Array
+
+    def __init__(self, coeffs):
+        self._coeffs = jnp.asarray(coeffs)
+        self._array = self.array
+
+    @property
+    def coeffs(self):
+        return self._coeffs
+
+    @property
+    def array(self):
+        return jnp.tensordot(self._coeffs, self._kelvin_basis, axes=1)
+
+    @property
+    def tensor(self):
+        return jnp.tensordot(self._coeffs, self._tensor_basis, axes=1)
+
+    @property
+    def inv(self):
+        return type(self)(coeffs=1.0 / self._coeffs)
+
+    @classmethod
+    @abstractmethod
+    def project(cls, C):
+        pass
 
 
 def isotropic_projectors():
@@ -19,7 +56,7 @@ def isotropic_projectors():
     return J4, K4
 
 
-def cubic_projectors(d=3):
+def cubic_projectors():
     """
     Cubic symmetry projectors in 6x6 Kelvin-Mandel format.
 
@@ -30,33 +67,23 @@ def cubic_projectors(d=3):
     J4, Ka4, Kb4 : jax.Array
         4th-rank tensor projectors (d,d,d,d)
     """
-    I = jnp.eye(d)
-    I4 = jnp.einsum("ij,kl->ijkl", I, I)
-    I4s = 0.5 * (jnp.einsum("ik,jl->ijkl", I, I) + jnp.einsum("il,jk->ijkl", I, I))
-
-    # 1. Spherical projector
-    J4 = (1.0 / d) * I4
+    J, _ = isotropic_projectors()
 
     # 2. Cubic invariant tensor
+    d = 3
     Lambda = jnp.zeros((d, d, d, d))
     for i in range(d):
         Lambda = Lambda.at[i, i, i, i].set(1.0)
+    Lambda = SymmetricTensor4(tensor=Lambda)
 
     # 3. Cubic decomposition of deviatoric part
     # Ka = Lambda - J = deviatoric projector of diagonal part
-    Ka4 = Lambda - J4
+    Ka = Lambda - J
 
     # Remaining part is off-diagonal shear projector
-    Kb4 = I4s - Lambda
+    Kb = SymmetricTensor4.identity() - Lambda
 
-    # Kelvin mapping
-    (i, j, k, l), W = kelvin_rank4_map(d)
-
-    J = W * J4[i, j, k, l]
-    Ka = W * Ka4[i, j, k, l]
-    Kb = W * Kb4[i, j, k, l]
-
-    return J, Ka, Kb, J4, Ka4, Kb4
+    return J, Ka, Kb
 
 
 class IsotropicTensor4(AbstractProjectedTensor4):
@@ -81,16 +108,23 @@ class IsotropicTensor4(AbstractProjectedTensor4):
 
         super().__init__(coeffs=coeffs)
 
+    @classmethod
+    def project(cls, C):
+        """Projects a 4th rank tensor onto the isotropic symmetry class."""
+        kappa = C.fourth_contract(cls.J) / 3.0
+        mu = C.fourth_contract(cls.K) / 10.0
+        return IsotropicTensor4(kappa=kappa, mu=mu)
+
 
 class CubicTensor4(AbstractProjectedTensor4):
     """
     Cubic-symmetric 4th-rank tensor.
     """
 
-    Jk, Kak, Kbk, J4, Ka4, Kb4 = cubic_projectors()
+    J, Ka, Kb = cubic_projectors()
 
-    _kelvin_basis = jnp.stack([Jk, Kak, Kbk], axis=0)
-    _tensor_basis = jnp.stack([J4, Ka4, Kb4], axis=0)
+    _kelvin_basis = jnp.stack([J.array, Ka.array, Kb.array], axis=0)
+    _tensor_basis = jnp.stack([J.tensor, Ka.tensor, Kb.tensor], axis=0)
 
     def __init__(self, *, coeffs=None, kappa=None, mua=None, mub=None):
 
@@ -100,3 +134,11 @@ class CubicTensor4(AbstractProjectedTensor4):
             coeffs = jnp.stack([3 * kappa, 2 * mua, 2 * mub], axis=-1)
 
         super().__init__(coeffs=coeffs)
+
+    @classmethod
+    def project(cls, C):
+        """Projects a 4th rank tensor onto the cubic symmetry class."""
+        kappa = C.fourth_contract(cls.J) / 3.0
+        mua = C.fourth_contract(cls.Ka) / 4.0
+        mub = C.fourth_contract(cls.Kb) / 6.0
+        return CubicTensor4(kappa=kappa, mua=mua, mub=mub)

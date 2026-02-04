@@ -325,33 +325,3 @@ class SymmetricTensor4(Tensor4):
         """Fourth contraction between two Tensor2 objects."""
         return jnp.tensordot(self, other, axes=([-4, -3, 2, -1], [-4, -3, -2, -1]))
 
-
-class AbstractProjectedTensor4(SymmetricTensor4):
-    """
-    Base class for symmetry-reduced 4th-rank tensors.
-    """
-
-    _coeffs: jax.Array  # (...,2) → [a_J, a_K]
-
-    _kelvin_basis: jax.Array
-    _tensor_basis: jax.Array
-
-    def __init__(self, coeffs):
-        self._coeffs = jnp.asarray(coeffs)
-        self._array = self.array
-
-    @property
-    def coeffs(self):
-        return self._coeffs
-
-    @property
-    def array(self):
-        return jnp.tensordot(self._coeffs, self._kelvin_basis, axes=1)
-
-    @property
-    def tensor(self):
-        return jnp.tensordot(self._coeffs, self._tensor_basis, axes=1)
-
-    @property
-    def inv(self):
-        return type(self)(coeffs=1.0 / self._coeffs)

@@ -230,9 +230,6 @@ def test_isotropic_tensor4():
     assert jnp.isclose(K.fourth_contract(K), 5.0)
 
 
-test_isotropic_tensor4()
-
-
 def test_tensor4_creation():
     Id = SymmetricTensor4.identity()
     J = SymmetricTensor4.J()
@@ -259,10 +256,10 @@ def test_isotropic_elasticity():
     C_ = jax.scipy.linalg.block_diag(
         C_plane, *([jnp.full((1, 1), fill_value=2 * mu)] * 3)
     )
-    print(C_, C.array)
     assert jnp.allclose(C.array, C_)
 
     C_ = SymmetricTensor4(array=C.array)
+    assert jnp.allclose(C, IsotropicTensor4.project(C_))
     S = IsotropicTensor4(coeffs=jnp.asarray([1 / 3 / kappa, 1 / 2 / mu]))
 
     assert jnp.allclose(C_.inv, S)
@@ -281,15 +278,15 @@ def test_cubic_projectors():
     key = jax.random.PRNGKey(0)
     b_ = jax.random.normal(key, (3, 3))
     b = SymmetricTensor2(tensor=b_)
-    J, Ka, Kb, _, _, _ = cubic_projectors(3)
+    J, Ka, Kb = cubic_projectors()
     Ka = SymmetricTensor4(array=Ka)
     Kb = SymmetricTensor4(array=Kb)
     bdiag = jnp.diag(jnp.diag(b))
     boff = b - bdiag
     dev_diag = bdiag - 1 / 3 * jnp.linalg.trace(bdiag) * jnp.eye(3)
     dev_off = boff - 1 / 3 * jnp.linalg.trace(boff) * jnp.eye(3)
-    jnp.allclose(Ka @ b, dev_diag)
-    jnp.allclose(Kb @ b, dev_off)
+    assert jnp.allclose(Ka @ b, dev_diag)
+    assert jnp.allclose(Kb @ b, dev_off)
 
 
 def test_cubic_tensor4():
@@ -325,6 +322,11 @@ def test_cubic_tensor4():
     # Using einsum: (C * Cinv) should yield identity in Kelvin basis
     Id_kelvin = jnp.einsum("a,ab,b->ab", C1.coeffs, jnp.eye(3), Cinv.coeffs)
     assert jnp.allclose(Id_kelvin, jnp.eye(3))
+
+    # Check projection
+    C_ = SymmetricTensor4(array=C1.array)
+    assert jnp.allclose(C1, CubicTensor4.project(C_))
+    print(C1.array, CubicTensor4.project(C_).array)
 
 
 def test_operator_symmetry():
