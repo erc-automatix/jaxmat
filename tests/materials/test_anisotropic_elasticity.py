@@ -2,7 +2,8 @@ import jax
 import jax.numpy as jnp
 
 import jaxmat.materials as jm
-from jaxmat.tensors import SymmetricTensor2, SymmetricTensor4, utils
+from jaxmat.tensors import SymmetricTensor2, SymmetricTensor4
+from jaxmat.tensors import rotation
 
 
 def test_small_strain_orthotropic_rotation():
@@ -38,7 +39,7 @@ def test_small_strain_orthotropic_rotation():
 
     angle = jnp.pi / 2
     axis = jnp.array([0, 0, 1])
-    R = utils.rotation_matrix_direct(angle, axis)
+    R = rotation.from_axis_angle(angle, axis)
 
     material = jm.ElasticBehavior(elasticity=elasticity)
     mat_state = material.init_state()
@@ -118,6 +119,6 @@ def test_transverse_isotropy():
 
     # test symmetry by rotation around isotropy axis
     angle = jnp.pi / 3
-    R = utils.rotation_matrix_direct(angle, axis)
+    R = rotation.from_axis_angle(angle, axis)
     C_ = SymmetricTensor4(array=elasticity.C.array)
     assert jnp.allclose(elasticity.C, C_.rotate(R))
