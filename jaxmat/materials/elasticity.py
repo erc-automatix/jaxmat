@@ -1,10 +1,13 @@
 from abc import abstractmethod
-
-import equinox as eqx
+import jax
 import jax.numpy as jnp
 import jax.scipy as jsc
-
-from jaxmat.tensors import IsotropicTensor4, SymmetricTensor4
+import equinox as eqx
+from jaxmat.tensors import (
+    SymmetricTensor4,
+    IsotropicTensor4,
+    TransverseIsotropicTensor4,
+)
 from jaxmat.utils import enforce_dtype
 
 from .behavior import SmallStrainBehavior
@@ -96,21 +99,57 @@ class LinearElasticIsotropic(AbstractLinearElastic):
         return self.E * self.nu / (1 + self.nu) / (1 - 2 * self.nu)
 
 
+class LinearElasticTransverseIsotropic(AbstractLinearElastic):
+    """A transversely isotropic linear elastic model."""
+
+    axis: jax.Array = enforce_dtype()
+    EL: float = enforce_dtype()
+    r"""Longitudinal Young modulus $E_{L}$"""
+    ET: float = enforce_dtype()
+    r"""Transverse Young modulus $E_{T}$"""
+    nuL: float = enforce_dtype()
+    r"""Longitudinal Poisson ratio $\nu_{L}$"""
+    nuT: float = enforce_dtype()
+    r"""Transverse Poisson ratio $\nu_{T}$"""
+    muL: float = enforce_dtype()
+    r"""Longitudinal shear modulus $\mu_{L}$"""
+
+    @property
+    def C(self):
+        r"""4th-rank transversely isotropic stiffness tensor"""
+        alpha_ = 1 / self.EL
+        beta_ = (1 - self.nuT) / self.ET
+        muT = self.ET / 2 / (1 + self.nuT)
+        gamma_ = -jnp.sqrt(2) * self.nuL / self.EL
+        Delta_ = alpha_ * beta_ - gamma_**2
+        coeffs = jnp.array(
+            [
+                beta_ / Delta_,
+                alpha_ / Delta_,
+                -gamma_ / Delta_,
+                -gamma_ / Delta_,
+                2 * muT,
+                2 * self.muL,
+            ]
+        )
+        return TransverseIsotropicTensor4(axis=self.axis, coeffs=coeffs)
+
+
 class LinearElasticOrthotropic(AbstractLinearElastic):
     """An orthotropic linear elastic model."""
 
     EL: float = enforce_dtype()
     r"""Longitudinal Young modulus $E_{L}$"""
     ET: float = enforce_dtype()
-    r"""Longitudinal Young modulus $E_{T}$"""
+    r"""Transverse Young modulus $E_{T}$"""
     EN: float = enforce_dtype()
-    r"""Longitudinal Young modulus $E_{N}$"""
+    r"""Normal Young modulus $E_{N}$"""
     nuLT: float = enforce_dtype()
-    r"""Longitudinal-transverse Poisson coefficient $\nu_{LT}$"""
+    r"""Longitudinal-transverse Poisson ratio $\nu_{LT}$"""
     nuLN: float = enforce_dtype()
-    r"""Longitudinal-normal Poisson coefficient $\nu_{LN}$"""
+    r"""Longitudinal-normal Poisson ratio $\nu_{LN}$"""
     nuTN: float = enforce_dtype()
-    r"""Transverse-normal Poisson coefficient $\nu_{TN}$"""
+    r"""Transverse-normal Poisson ratio $\nu_{TN}$"""
     muLT: float = enforce_dtype()
     r"""Longitudinal-transverse shear modulus $\mu_{LT}$"""
     muLN: float = enforce_dtype()

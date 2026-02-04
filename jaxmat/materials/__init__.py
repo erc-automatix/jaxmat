@@ -4,6 +4,7 @@ from .elasticity import (
     ElasticBehavior,
     LinearElastic,
     LinearElasticIsotropic,
+    LinearElasticTransverseIsotropic,
     LinearElasticOrthotropic,
 )
 from .elastoplasticity import (
