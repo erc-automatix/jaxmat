@@ -151,26 +151,10 @@ class Tensor(eqx.Module):
 
     def rotate(self, R):
         """Rotate the tensor by applying rotation matrix to each index."""
-        # Use different character ranges to avoid collision (works only for rank <= 13)
-        # Rotation matrices: ab, cd, ef, gh, ...
-        # Tensor indices: ijkl...
-        # Output indices: ijkl...
-
-        # Generate pairs of indices (a,b), (c,d), (e,f), ...
-        assert self.rank <= 13
-        pairs = [(chr(97 + 2 * i), chr(97 + 2 * i + 1)) for i in range(self.rank)]
-
-        rotation_pairs = [first + second for first, second in pairs]
-        output_indices = "".join([first for first, _ in pairs])
-        tensor_indices = "".join([second for _, second in pairs])
-
-        einsum_str = (
-            ",".join(rotation_pairs) + "," + tensor_indices + "->" + output_indices
-        )
-
-        rotated_tensor = jnp.einsum(einsum_str, *([R] * self.rank), self.tensor)
-
-        return self.__class__(tensor=rotated_tensor)
+        T = self.tensor
+        for ax in range(self.rank):
+            T = jnp.moveaxis(jnp.tensordot(R, T, (1, ax)), 0, ax)
+        return type(self)(tensor=T)
 
 
 class Tensor2(Tensor):
