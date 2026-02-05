@@ -13,6 +13,7 @@ parts:
         - file: demos/quickstart/batched_computation.ipynb
         - file: demos/quickstart/material_parameters_batching.ipynb
         - file: demos/quickstart/performance.ipynb
+        - file: demos/quickstart/tensors.ipynb
         - file: pytrees.md
   - caption: Examples
     chapters:
