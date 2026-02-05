@@ -75,7 +75,12 @@ class Tensor(eqx.Module):
         return gathered * self.weights
 
     def _as_tensor(self, array):
-        array = jnp.asarray(array)
+        if isinstance(
+            array, Tensor
+        ):  # needed when computing tangent operators from derivatives
+            array = array.array
+        else:
+            array = jnp.asarray(array)
         out = jnp.zeros(
             array.shape[: -self.array_rank] + self.base_tensor_shape,
             dtype=array.dtype,
@@ -298,6 +303,10 @@ class Tensor4(Tensor):
     def inv(self):
         return self.__class__(array=jnp.linalg.inv(self.array))
 
+    def fourth_contract(self, other):
+        """Fourth contraction between two Tensor4 objects."""
+        return jnp.tensordot(self, other, axes=([-4, -3, 2, -1], [-4, -3, -2, -1]))
+
 
 class SymmetricTensor4(Tensor4):
     dim = 3
@@ -308,20 +317,5 @@ class SymmetricTensor4(Tensor4):
 
     tensor_indices, weights = mappings.kelvin_rank4_map(3)
 
-    @classmethod
-    def J(cls):
-        I2 = SymmetricTensor2.identity()
-        J = jnp.einsum("ij,kl->ijkl", I2, I2) / cls.dim
-        return cls(tensor=J)
-
-    @classmethod
-    def K(cls):
-        return cls.identity() - cls.J()
-
     def _as_tensor(self, array):
         return enforce_minor_symmetry(super()._as_tensor(array))
-
-    def fourth_contract(self, other):
-        """Fourth contraction between two Tensor2 objects."""
-        return jnp.tensordot(self, other, axes=([-4, -3, 2, -1], [-4, -3, -2, -1]))
-

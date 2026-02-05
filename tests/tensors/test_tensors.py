@@ -214,8 +214,8 @@ def test_isotropic_tensor4():
     Id = SymmetricTensor4.identity()
     Id2 = SymmetricTensor2.identity()
     J_ = 1 / 3 * jnp.einsum("ij,kl->ijkl", Id2, Id2)
-    J = SymmetricTensor4.J()
-    K = SymmetricTensor4.K()
+    J = IsotropicTensor4.J
+    K = IsotropicTensor4.K
     key = jax.random.PRNGKey(0)
     b_ = jax.random.normal(key, (3, 3))
     b_ = 0.5 * (b_ + b_.T)
@@ -235,8 +235,7 @@ def test_isotropic_tensor4():
 
 
 def test_tensor4_creation():
-    Id = SymmetricTensor4.identity()
-    J = SymmetricTensor4.J()
+    J = IsotropicTensor4.J
     I2 = jnp.eye(3)
     J_ = jnp.einsum("ij,kl->ijkl", I2, I2) / 3
     assert jnp.allclose(J_, J)
@@ -404,7 +403,7 @@ def test_operator_symmetry():
     kappa = 1.0
     mu = 1.0
     C = IsotropicTensor4(kappa=kappa, mu=mu)
-    K = SymmetricTensor4.K()
+    K = IsotropicTensor4.K
     id = SymmetricTensor2.identity()
     assert type(sym(id)) is SymmetricTensor2
     assert type(dev(id)) is SymmetricTensor2
@@ -432,6 +431,31 @@ def test_batch_tensors(cls):
     assert type(A @ A) is cls if cls == Tensor2 else Tensor2
     # matmult doc: If either argument is N-D, N > 2, it is treated as a stack of matrices residing in the last two indexes and broadcast accordingly.
     assert jnp.allclose(A @ A, jnp.broadcast_to(val @ val, (Nbatch, 3, 3)))
+
+
+def test_batch_tensors_conversion():
+    Nbatch = 5
+    A = SymmetricTensor2(array=jnp.zeros((Nbatch, 6)))
+    assert jnp.allclose(A, 0.0)
+    B = SymmetricTensor2(tensor=jnp.zeros((Nbatch, 3, 3)))
+    assert jnp.allclose(B, 0.0)
+
+
+def test_tangent_tensor():
+    C = IsotropicTensor4(kappa=1, mu=1.0)
+
+    def energy(eps):
+        return 0.5 * eps.double_contract(C @ eps)
+
+    eps = SymmetricTensor2.identity()
+    sig = jax.grad(energy)
+    sig = lambda eps: C @ eps
+    Ct = jax.jacfwd(sig)(eps)
+    assert type(Ct) is SymmetricTensor2
+    assert Ct.shape == (6, 6)
+    assert Ct.tensor.shape == (6, 3, 3)
+    assert Ct.batch_shape == (6,)
+    assert jnp.allclose(SymmetricTensor4(array=Ct), C)
 
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])

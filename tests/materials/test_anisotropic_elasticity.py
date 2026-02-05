@@ -39,7 +39,7 @@ def test_small_strain_orthotropic_rotation():
 
     angle = jnp.pi / 2
     axis = jnp.array([0, 0, 1])
-    R = rotation.from_axis_angle(angle, axis)
+    R = rotation.from_axis_angle(axis, angle)
 
     material = jm.ElasticBehavior(elasticity=elasticity)
     mat_state = material.init_state()
@@ -90,6 +90,9 @@ def test_small_strain_orthotropic_rotation():
     assert jnp.allclose(sig_rotated, sig_C_rotated)
 
 
+test_small_strain_orthotropic_rotation()
+
+
 def test_transverse_isotropy():
     EL = 12.0e3
     ET = 0.8e3
@@ -119,6 +122,6 @@ def test_transverse_isotropy():
 
     # test symmetry by rotation around isotropy axis
     angle = jnp.pi / 3
-    R = rotation.from_axis_angle(angle, axis)
+    R = rotation.from_axis_angle(axis, angle)
     C_ = SymmetricTensor4(array=elasticity.C.array)
     assert jnp.allclose(elasticity.C, C_.rotate(R))

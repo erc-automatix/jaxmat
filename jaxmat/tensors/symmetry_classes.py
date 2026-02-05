@@ -5,7 +5,6 @@ from jaxmat.tensors.generic_tensors import (
     SymmetricTensor4,
     SymmetricTensor2,
 )
-from jaxmat.tensors.mappings import kelvin_rank4_map
 
 
 class AbstractProjectedTensor4(SymmetricTensor4):
@@ -15,8 +14,7 @@ class AbstractProjectedTensor4(SymmetricTensor4):
 
     _coeffs: jax.Array  # (...,2) → [a_J, a_K]
 
-    _kelvin_basis: jax.Array
-    _tensor_basis: jax.Array
+    _basis: jax.Array
 
     def __init__(self, coeffs):
         self._coeffs = jnp.asarray(coeffs)
@@ -28,11 +26,11 @@ class AbstractProjectedTensor4(SymmetricTensor4):
 
     @property
     def array(self):
-        return jnp.tensordot(self._coeffs, self._kelvin_basis, axes=1)
+        return jnp.tensordot(self._coeffs, self._basis.array, axes=1)
 
     @property
     def tensor(self):
-        return jnp.tensordot(self._coeffs, self._tensor_basis, axes=1)
+        return jnp.tensordot(self._coeffs, self._basis.tensor, axes=1)
 
     @property
     def inv(self):
@@ -55,10 +53,10 @@ def isotropic_projectors():
     id = SymmetricTensor2.identity()
     Id = SymmetricTensor4.identity()
 
-    Ibar = jnp.einsum("ij,kl", id, id)
-    J = SymmetricTensor4(tensor=Ibar / 3.0)
+    # Ibar = jnp.einsum("ij,kl", id, id)
+    Ibar = jnp.outer(id.array, id.array)
+    J = SymmetricTensor4(array=Ibar / 3.0)
     K = Id - J
-
     return J, K
 
 
@@ -74,11 +72,7 @@ def cubic_projectors():
     J, _ = isotropic_projectors()
 
     # 2. Cubic invariant tensor
-    d = 3
-    Lambda = jnp.zeros((d, d, d, d))
-    for i in range(d):
-        Lambda = Lambda.at[i, i, i, i].set(1.0)
-    Lambda = SymmetricTensor4(tensor=Lambda)
+    Lambda = SymmetricTensor4(array=jnp.diag(jnp.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0])))
 
     # 3. Cubic decomposition of deviatoric part
     # Ka = Lambda - J = deviatoric projector of diagonal part
@@ -123,9 +117,10 @@ class IsotropicTensor4(AbstractProjectedTensor4):
 
     # ---- static projectors ----
     J, K = isotropic_projectors()
+    _basis = SymmetricTensor4(array=jnp.stack([J.array, K.array], axis=0))
 
-    _kelvin_basis = jnp.stack([J.array, K.array], axis=0)
-    _tensor_basis = jnp.stack([J.tensor, K.tensor], axis=0)
+    # _kelvin_basis = jnp.stack([J.array, K.array], axis=0)
+    # _tensor_basis = jnp.stack([J.tensor, K.tensor], axis=0)
 
     # ----------------------------
 
@@ -153,8 +148,9 @@ class CubicTensor4(AbstractProjectedTensor4):
 
     J, Ka, Kb = cubic_projectors()
 
-    _kelvin_basis = jnp.stack([J.array, Ka.array, Kb.array], axis=0)
-    _tensor_basis = jnp.stack([J.tensor, Ka.tensor, Kb.tensor], axis=0)
+    _basis = SymmetricTensor4(array=jnp.stack([J.array, Ka.array, Kb.array], axis=0))
+    # _kelvin_basis = jnp.stack([J.array, Ka.array, Kb.array], axis=0)
+    # _tensor_basis = jnp.stack([J.tensor, Ka.tensor, Kb.tensor], axis=0)
 
     def __init__(self, *, coeffs=None, kappa=None, mua=None, mub=None):
 
@@ -191,8 +187,9 @@ class TransverseIsotropicTensor4(AbstractProjectedTensor4):
         self.axis = axis
         basis = transverse_isotropic_projectors(self.axis)
         self.E1, self.E2, self.E3, self.E4, self.F, self.G = basis
-        self._kelvin_basis = jnp.stack([b.array for b in basis], axis=0)
-        self._tensor_basis = jnp.stack([b.tensor for b in basis], axis=0)
+        self._basis = SymmetricTensor4(
+            array=jnp.stack([b.array for b in basis], axis=0)
+        )
         super().__init__(coeffs=coeffs)
 
     @property
