@@ -117,11 +117,11 @@ plt.show()
 # In order to evaluate the response of a mechanical behavior, we need a mechanical state. Each
 # material provides an `init_state` method to initialize its corresponding mechanical state with
 # default initial values (usually 0). Below, we see that the present state contains a `strain` and a
-# `stress`, each of them being a symmetric 2nd-rank tensor. In addition, it also contains an
-# `internal` field, which is itself a state consisting of many internal state variables. In the
-# present case, both the cumulated plastic strain $p$ and the total plastic strain $\bepsp$ are
-# declared as internal state variables.
-#
+# `stress`, each of them being a symmetric 2nd-rank tensor, see [here for more details on tensors in
+# `jaxmat`.](./tensors.md). In addition, it also contains an `internal` field, which is itself a
+# state consisting of many internal state variables. In the present case, both the cumulated plastic
+# strain $p$ and the total plastic strain $\bepsp$ are declared as internal state variables.
+
 # %%
 state = material.init_state()
 print(state.__dict__)
