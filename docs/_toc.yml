@@ -35,7 +35,6 @@ parts:
     chapters:
       - file: concepts.md
       - file: computational.md
-      - file: tensors.md
       - file: sharp_bits.md
   - caption: API
     chapters:
