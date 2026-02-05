@@ -14,7 +14,7 @@ from .utils import safe_norm, safe_sqrt
 
 def dim(A):
     r"""Dimension ``dim`` of a n-rank matrix $\bA$, assuming ``shape=(dim, dim, ..., dim)``."""
-    return A.shape[0]
+    return jnp.asarray(A).shape[0]
 
 
 def tr(A):
