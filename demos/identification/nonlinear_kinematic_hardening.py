@@ -237,8 +237,8 @@ plt.show()
 # cyclic stress response as a function of a given shear strain time series. Starting from a initial
 # state, we use `jax.lax.scan` to replace Python `for` loops and output the computed shear stress in
 # the $x,y$ direction.
-#
-#
+
+
 # %%
 @eqx.filter_jit
 def compute_evolution(material, gamma_list, dt=0.0):
@@ -334,6 +334,10 @@ plt.show()
 # the gradient:
 #
 #
+# The overall optimizer is built using `optax.chain`, where each transformation acts sequentially
+# on the gradient:
+
+
 # %%
 @eqx.filter_jit
 def loss(trainable, args):
@@ -428,9 +432,10 @@ plt.show()
 # the same since they have been considered frozen parameters. Second, we can see that the hardening
 # rate parameter $b$ has been correctly identified. The kinematic hardening modulus $H$ is less well
 # identified, probably because of the lack of data points in the hardening regime and high level of
-# noise. Regarding the yield stress, the final yield stress is here `sig0+sigu` which is approximately
-# $667 \text{ MPa}$, instead of a ground truth value of $600 \text{ MPa}$. TThe initial yield stress
-# $\sigma_0$ which has been identified to be $192 \text{ MPa}$, close to $200 \text{ MPa}$.
+# noise. Regarding the yield stress, the final yield stress is here `sig0+sigu` which is
+# approximately $667 \text{ MPa}$, instead of a ground truth value of $600 \text{ MPa}$. The
+# initial yield stress $\sigma_0$ which has been identified to be $192 \text{ MPa}$, close to $200
+# \text{ MPa}$.
 
 # %%
 print_eqx_fields(
