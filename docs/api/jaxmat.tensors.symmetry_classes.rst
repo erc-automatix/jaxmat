@@ -5,3 +5,4 @@ jaxmat.tensors.symmetry_classes module
    :members:
    :show-inheritance:
    :undoc-members:
+

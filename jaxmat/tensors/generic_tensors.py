@@ -454,6 +454,9 @@ class Tensor4(Tensor):
         """Fourth contraction between two Tensor4 objects."""
         return jnp.tensordot(self, other, axes=([-4, -3, 2, -1], [-4, -3, -2, -1]))
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(shape={self.tensor.shape})"
+
 
 class SymmetricTensor4(Tensor4):
     """

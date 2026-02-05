@@ -54,9 +54,9 @@ class SmallStrainState(AbstractState):
         Nested state object representing internal variables (e.g., plastic strain,
         hardening variables, etc.). Defaults to None.
     strain : :class:`SymmetricTensor2`
-        Symmetric second-order strain tensor $\beps$ (small-strain assumption).
+        Symmetric second-rank strain tensor $\beps$ (small-strain assumption).
     stress : :class:`SymmetricTensor2`
-        Symmetric second-order Cauchy stress tensor $\bsig$.
+        Symmetric second-rank Cauchy stress tensor $\bsig$.
 
     Notes
     -----

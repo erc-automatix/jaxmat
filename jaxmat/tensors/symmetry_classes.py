@@ -8,11 +8,30 @@ from jaxmat.tensors.generic_tensors import (
 
 
 class AbstractProjectedTensor4(SymmetricTensor4):
-    """
-    Base class for symmetry-reduced 4th-rank tensors.
+    r"""
+    Base class for symmetry-reduced fourth-rank tensors.
+
+    The tensor is represented as a linear combination of a small number of
+    symmetry-projector basis tensors,
+
+    $$\mathbb{C} = \sum_{i=1}^{n_{\text{basis}}} c_i \mathbb{B}_i$$
+
+    where the coefficients $c_i$ are the minimal stored data. The basis
+    $(\mathbb{B}_i)$ is stored as a stacked ``SymmetricTensor4``.
+
+    Parameters
+    ----------
+    coeffs : array_like, shape ``(..., n_basis)``
+        Expansion coefficients in the chosen symmetry basis.
+
+    Notes
+    -----
+    Both ``array`` and ``tensor`` representations are constructed lazily from
+    the coefficients. Subclasses must define ``_basis`` and implement
+    ``project``.
     """
 
-    _coeffs: jax.Array  # (...,2) → [a_J, a_K]
+    _coeffs: jax.Array
 
     _basis: jax.Array
 
@@ -22,7 +41,20 @@ class AbstractProjectedTensor4(SymmetricTensor4):
 
     @property
     def coeffs(self):
+        """
+        Expansion coefficients in the symmetry basis.
+
+        Returns
+        -------
+        jax.Array
+            Shape ``(..., n_basis)``.
+        """
         return self._coeffs
+
+    @property
+    def n_basis(self):
+        """Number of basis elements."""
+        return len(self._coeffs)
 
     @property
     def array(self):
@@ -39,16 +71,29 @@ class AbstractProjectedTensor4(SymmetricTensor4):
     @classmethod
     @abstractmethod
     def project(cls, C):
+        """
+        Project a fourth-rank tensor onto the symmetry class.
+
+        Parameters
+        ----------
+        C : SymmetricTensor4 or Tensor4
+
+        Returns
+        -------
+        AbstractProjectedTensor4
+        """
         pass
 
 
 def isotropic_projectors():
-    """Isotropic symmetry projectors.
+    """
+    Construct isotropic fourth-rank projectors.
 
     Returns
     -------
     J, K : SymmetricTensor4
-        The two isotropic projectors
+        Volumetric and deviatoric projectors forming an orthogonal
+        decomposition of the identity.
     """
     id = SymmetricTensor2.identity()
     Id = SymmetricTensor4.identity()
@@ -62,19 +107,20 @@ def isotropic_projectors():
 
 def cubic_projectors():
     """
-    Cubic symmetry projectors.
+    Construct cubic symmetry projectors.
 
     Returns
     -------
     J, Ka, Kb : SymmetricTensor4
-        The three cubic projectors
+        Projectors onto volumetric, diagonal deviatoric, and shear
+        subspaces, respectively.
     """
     J, _ = isotropic_projectors()
 
-    # 2. Cubic invariant tensor
+    # Cubic invariant tensor
     Lambda = SymmetricTensor4(array=jnp.diag(jnp.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0])))
 
-    # 3. Cubic decomposition of deviatoric part
+    # Cubic decomposition of deviatoric part
     # Ka = Lambda - J = deviatoric projector of diagonal part
     Ka = Lambda - J
 
@@ -86,12 +132,17 @@ def cubic_projectors():
 
 def transverse_isotropic_projectors(axis):
     """
-    Transverse isotropic symmetry projectors around `axis`.
+    Construct transverse isotropic (Walpole) projectors.
+
+    Parameters
+    ----------
+    axis : array_like, shape (3,)
+        Symmetry axis (unit vector).
 
     Returns
     -------
     E1, E2, E3, E4, F, G : SymmetricTensor4
-        The 6 Walpole basis tensors
+        Six basis tensors spanning the transverse isotropic subspace.
     """
     P = SymmetricTensor2(tensor=jnp.outer(axis, axis))
     Q = SymmetricTensor2(tensor=(jnp.eye(3) - P) / jnp.sqrt(2.0))
@@ -111,18 +162,28 @@ def transverse_isotropic_projectors(axis):
 
 
 class IsotropicTensor4(AbstractProjectedTensor4):
-    """
-    Symmetric 4th-rank isotropic tensor with compressed storage.
+    r"""
+    Isotropic fourth-rank tensor.
+
+    Parameterized by bulk and shear moduli and expressed in the basis
+    of volumetric ($\mathbb{J}$) and deviatoric ($\mathbb{K}$) projectors.
+
+    Parameters
+    ----------
+    coeffs : array_like, optional
+        Direct basis coefficients.
+    kappa : float or array_like, optional
+        Bulk modulus $\kappa$.
+    mu : float or array_like, optional
+        Shear modulus $\mu$.
+
+    Notes
+    -----
+    Coefficients are internally stored as $\{3\kappa,2\mu\}$.
     """
 
-    # ---- static projectors ----
     J, K = isotropic_projectors()
     _basis = SymmetricTensor4(array=jnp.stack([J.array, K.array], axis=0))
-
-    # _kelvin_basis = jnp.stack([J.array, K.array], axis=0)
-    # _tensor_basis = jnp.stack([J.tensor, K.tensor], axis=0)
-
-    # ----------------------------
 
     def __init__(self, *, coeffs=None, kappa=None, mu=None):
 
@@ -135,22 +196,48 @@ class IsotropicTensor4(AbstractProjectedTensor4):
 
     @classmethod
     def project(cls, C):
-        """Projects a 4th rank tensor onto the isotropic symmetry class."""
+        """
+        Project a tensor onto the isotropic symmetry class.
+
+        Parameters
+        ----------
+        C : SymmetricTensor4
+
+        Returns
+        -------
+        IsotropicTensor4
+        """
         kappa = C.fourth_contract(cls.J) / 3.0
         mu = C.fourth_contract(cls.K) / 10.0
         return IsotropicTensor4(kappa=kappa, mu=mu)
 
 
 class CubicTensor4(AbstractProjectedTensor4):
-    """
-    Cubic-symmetric 4th-rank tensor.
+    r"""
+    Cubic-symmetric fourth-rank tensor.
+
+    Represented in the basis of three orthogonal projectors corresponding to
+    volumetric, diagonal deviatoric, and shear parts.
+
+    Parameters
+    ----------
+    coeffs : array_like, optional
+        Direct basis coefficients.
+    kappa : float or array_like, optional
+        Cubic bulk modulus $\kappa$
+    mua : float or array_like, optional
+        Diagonal deviatoric modulus $\mu_a$
+    mub : float or array_like, optional
+        Shear modulus $\mu_b$
+
+    Notes
+    -----
+    Coefficients are internally stored as $\{3\kappa,2\mu_a,2\mu_b\}$.
     """
 
     J, Ka, Kb = cubic_projectors()
 
     _basis = SymmetricTensor4(array=jnp.stack([J.array, Ka.array, Kb.array], axis=0))
-    # _kelvin_basis = jnp.stack([J.array, Ka.array, Kb.array], axis=0)
-    # _tensor_basis = jnp.stack([J.tensor, Ka.tensor, Kb.tensor], axis=0)
 
     def __init__(self, *, coeffs=None, kappa=None, mua=None, mub=None):
 
@@ -163,7 +250,17 @@ class CubicTensor4(AbstractProjectedTensor4):
 
     @classmethod
     def project(cls, C):
-        """Projects a 4th rank tensor onto the cubic symmetry class."""
+        """
+        Project a tensor onto the cubic symmetry class.
+
+        Parameters
+        ----------
+        C : SymmetricTensor4
+
+        Returns
+        -------
+        CubicTensor4
+        """
         kappa = C.fourth_contract(cls.J) / 3.0
         mua = C.fourth_contract(cls.Ka) / 4.0
         mub = C.fourth_contract(cls.Kb) / 6.0
@@ -172,7 +269,21 @@ class CubicTensor4(AbstractProjectedTensor4):
 
 class TransverseIsotropicTensor4(AbstractProjectedTensor4):
     """
-    Transverse isotropic-symmetric 4th-rank tensor about `axis`.
+    Transversely isotropic fourth-rank tensor.
+
+    Defined with respect to a symmetry axis and expanded in the six Walpole
+    basis tensors.
+
+    Parameters
+    ----------
+    axis : array_like, shape (3,)
+        Symmetry axis.
+    coeffs : array_like, shape (6,)
+        Basis coefficients.
+
+    Notes
+    -----
+    The inverse is computed analytically in the Walpole basis.
     """
 
     axis: jax.Array
@@ -194,6 +305,13 @@ class TransverseIsotropicTensor4(AbstractProjectedTensor4):
 
     @property
     def inv(self):
+        """
+        Inverse operator within the transverse isotropic subspace.
+
+        Returns
+        -------
+        TransverseIsotropicTensor4
+        """
         a = self.coeffs[:4]
         A = jnp.asarray([[a[0], a[2]], [a[3], a[1]]])
         invA = jnp.linalg.inv(A)
@@ -205,7 +323,19 @@ class TransverseIsotropicTensor4(AbstractProjectedTensor4):
 
     @classmethod
     def project(cls, axis, C):
-        """Projects a 4th rank tensor onto the transverse isotropy symmetry class for a given axis."""
+        """
+        Project a tensor onto the transverse isotropic symmetry class.
+
+        Parameters
+        ----------
+        axis : array_like, shape (3,)
+            Symmetry axis.
+        C : SymmetricTensor4
+
+        Returns
+        -------
+        TransverseIsotropicTensor4
+        """
         E1, E2, E3, E4, F, G = transverse_isotropic_projectors(axis)
         c1 = C.fourth_contract(E1)
         c2 = C.fourth_contract(E2)
