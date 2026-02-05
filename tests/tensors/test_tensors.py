@@ -118,7 +118,7 @@ def test_sym_tensor2_init():
     assert not jnp.allclose(S @ S2, S2 @ S)
     assert isinstance((S @ S2).sym, SymmetricTensor2)
     assert jnp.allclose((S @ S2).sym, (S2 @ S).sym)
-    assert jnp.allclose(S.weaken(), St)
+    assert jnp.allclose(S._weaken(), St)
 
 
 def test_symmetries():
@@ -178,6 +178,13 @@ def test_tensor4_init():
     T = SymmetricTensor4(array=T_)
     assert jnp.allclose(T, jnp.einsum("ij,kl->ijkl", a, a))
     assert jnp.allclose((T @ T), A.double_contract(A) * T)
+
+
+def test_tensor4_transposition():
+    key = jax.random.PRNGKey(0)
+    A_ = jax.random.normal(key, (9, 9))
+    A = Tensor4(array=A_)
+    assert jnp.allclose(A.T, jnp.swapaxes(jnp.swapaxes(A, 0, 2), 1, 3))
 
 
 def test_tensor4_identities():

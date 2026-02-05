@@ -155,7 +155,7 @@ def kelvin_rank4_map(d: int) -> Tuple[IndexMap4, jax.Array]:
     r"""
     Construct an index map for a symmetric rank-4 tensor in Kelvin-Mandel notation.
 
-    The 4th-order Kelvin tensor is defined as:
+    The 4th-rank Kelvin tensor is defined as:
 
     $$C_{\alpha\beta} = s_{\alpha} s_{\beta} C_{ijkl}$$
 

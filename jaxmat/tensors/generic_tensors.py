@@ -8,6 +8,24 @@ from jaxmat.tensors import linear_algebra, mappings
 
 
 def _binary_op(self, other, op):
+    """
+    Apply a binary elementwise operation between two tensors.
+
+    Parameters
+    ----------
+    self : Tensor
+        Left operand.
+    other : Tensor or array_like
+        Right operand. If a Tensor, representations are aligned before
+        applying the operation. Otherwise interpreted as a dense tensor.
+    op : callable
+        Binary operation acting on array representations.
+
+    Returns
+    -------
+    Tensor
+        Result with appropriate tensor type and broadcasting.
+    """
     if type(self) is type(other):
         return eqx.tree_at(
             lambda t: t._array,
@@ -19,14 +37,14 @@ def _binary_op(self, other, op):
         return eqx.tree_at(
             lambda t: t._array,
             other,
-            op(self.weaken().array, other.array),
+            op(self._weaken().array, other.array),
         )
 
     elif isinstance(other, type(self)):  # other is a child of self
         return eqx.tree_at(
             lambda t: t._array,
             self,
-            op(self.array, other.weaken().array),
+            op(self.array, other._weaken().array),
         )
 
     else:
@@ -36,14 +54,40 @@ def _binary_op(self, other, op):
 
 
 class Tensor(eqx.Module):
+    """
+    Base class for JAX-compatible tensors with compressed storage.
+
+    Tensors are internally stored in an ``array`` representation for efficient
+    computation and converted on demand to their dense ``tensor`` form.
+    Conversions are defined by precomputed index mappings and weights.
+
+    Supports batching, arithmetic operations, contractions, and JIT compilation.
+
+    Parameters
+    ----------
+    tensor : array_like, optional
+        Dense tensor of shape ``(..., base_tensor_shape)``.
+    array : array_like or Tensor, optional
+        Compressed representation of shape ``(..., base_array_shape)``.
+
+    Notes
+    -----
+    Batch dimensions always precede tensor dimensions.
+    Most arithmetic operations are performed in array space.
+    """
+
     dim: int = eqx.field(static=True)
+    """Vectorial space dimension. Currently only ``dim=3`` is supported."""
     rank: int = eqx.field(static=True)
+    """Rank of the tensor."""
     base_tensor_shape: Tuple[int, ...] = eqx.field(static=True)
+    """Shape of the base tensor representation. ``(dim,)*rank``."""
     base_array_shape: Tuple[int, ...] = eqx.field(static=True)
+    """Shape of the base array representation."""
 
     # index maps
-    tensor_indices: Tuple[jax.Array, ...]  # should be of shape base_array_shape
-    weights: jax.Array  # should be of shape base_array_shape
+    _tensor_indices: Tuple[jax.Array, ...]  # should be of shape base_array_shape
+    _weights: jax.Array  # should be of shape base_array_shape
 
     _array: jax.Array
 
@@ -71,8 +115,8 @@ class Tensor(eqx.Module):
 
     def _as_array(self, tensor):
         tensor = jnp.asarray(tensor)
-        gathered = tensor[(...,) + self.tensor_indices]
-        return gathered * self.weights
+        gathered = tensor[(...,) + self._tensor_indices]
+        return gathered * self._weights
 
     def _as_tensor(self, array):
         if isinstance(
@@ -85,37 +129,43 @@ class Tensor(eqx.Module):
             array.shape[: -self.array_rank] + self.base_tensor_shape,
             dtype=array.dtype,
         )
-        return out.at[(...,) + self.tensor_indices].add(array * self.weights)
+        return out.at[(...,) + self._tensor_indices].add(array * self._weights)
 
     @property
-    def shape(self):
-        return self.array.shape
+    def array(self):
+        """The underlying array representation."""
+        return self._array
 
     @property
     def tensor(self):
+        """The corresponding tensor representation."""
         return self._as_tensor(self.array)
 
     @property
+    def shape(self):
+        """Shape of the underlying array representation."""
+        return self.array.shape
+
+    @property
     def tensor_shape(self):
+        """Shape of the corresponding tensor representation."""
         return self.batch_shape + self.base_tensor_shape
+
+    @property
+    def batch_shape(self):
+        """Shape of the batch dimensions."""
+        return self.shape[: -self.array_rank]
+
+    @property
+    def array_rank(self):
+        """Rank of the base array representation (e.g. 1 for 2nd-rank tensors, 2 for 4th rank tensors)."""
+        return len(self.base_array_shape)
 
     @property
     @abc.abstractmethod
     def T(self):
         """Transposed tensor."""
         return
-
-    @property
-    def array(self):
-        return self._array
-
-    @property
-    def batch_shape(self):
-        return self.shape[: -self.array_rank]
-
-    @property
-    def array_rank(self):
-        return len(self.base_array_shape)
 
     def __getitem__(self, idx):
         return self.tensor[idx]
@@ -155,7 +205,18 @@ class Tensor(eqx.Module):
         return self.__class__
 
     def rotate(self, R):
-        """Rotate the tensor by applying rotation matrix to each index."""
+        """Rotate the tensor by applying rotation matrix `R` to each index.
+
+        Parameters
+        ----------
+        R : array_like, shape (dim, dim)
+            Rotation matrix.
+
+        Returns
+        -------
+        Tensor
+            Rotated tensor.
+        """
         T = self.tensor
         for ax in range(self.rank):
             T = jnp.moveaxis(jnp.tensordot(R, T, (1, ax)), 0, ax)
@@ -163,21 +224,48 @@ class Tensor(eqx.Module):
 
 
 class Tensor2(Tensor):
+    """
+    Full second-rank tensor in 3D.
+
+    Stored as a flattened 9-component array corresponding to the dense
+    (3, 3) tensor. Supports standard matrix algebra.
+
+    Notes
+    -----
+    The ``@`` operator overloads simple contraction.
+    """
+
     dim = 3
     rank = 2
     base_tensor_shape = (dim, dim)
     base_array_shape = (dim**rank,)
 
-    tensor_indices, weights = mappings.full_rank2_map(3)
+    _tensor_indices, _weights = mappings.full_rank2_map(3)
 
     @classmethod
     def identity(cls):
+        r"""
+        Identity tensor $I_{ij}=\delta_{ij}$.
+
+        Returns
+        -------
+        Tensor2
+            Second-rank identity.
+        """
         I_ = jnp.zeros(cls.base_array_shape)
         I_ = I_.at[: cls.dim].set(1.0)
         return cls(array=I_)
 
     @property
     def sym(self):
+        r"""
+        Symmetric part of the tensor.
+
+        Returns
+        -------
+        SymmetricTensor2
+            $(A + A^\text{T}) / 2$
+        """
         upper_indices = jnp.concatenate(
             (jnp.arange(self.dim), jnp.arange(self.dim, self.dim**2, 2))
         )
@@ -187,22 +275,44 @@ class Tensor2(Tensor):
         array = self.array[..., upper_indices]
         array_T = self.array[..., lower_indices]
         return SymmetricTensor2(
-            array=0.5 * (array + array_T) * SymmetricTensor2.weights
+            array=0.5 * (array + array_T) * SymmetricTensor2._weights
         )
 
-    def weaken(self):
+    def _weaken(self):
         return self
 
     @property
     def tr(self):
+        """
+        Trace of the tensor.
+
+        Returns
+        -------
+        jax.Array
+        """
         return jnp.sum(self.array[: self.dim])
 
     @property
     def inv(self):
+        """
+        Inverse tensor.
+
+        Returns
+        -------
+        Tensor2
+        """
         return self.__class__(tensor=linear_algebra.inv33(self.tensor))
 
     @property
     def eigenvalues(self):
+        r"""
+        Eigenvalues $\lambda_i$ and eigenprojectors $\boldsymbol{n}_i\otimes\boldsymbol{n}_i$.
+
+        Returns
+        -------
+        eigenvalues : jax.Array
+        projectors : sequence of SymmetricTensor2
+        """
         eigenvalues, eigendyads = linear_algebra.eig33(self.tensor)
         return eigenvalues, jnp.asarray(
             [SymmetricTensor2(tensor=N) for N in eigendyads]
@@ -210,6 +320,14 @@ class Tensor2(Tensor):
 
     @property
     def T(self):
+        """
+        Transposed tensor.
+
+        Returns
+        -------
+        Tensor
+            Tensor with last two indices swapped.
+        """
         upper_indices = jnp.arange(self.dim, self.dim**2, 2)
         lower_indices = jnp.arange(self.dim + 1, self.dim**2, 2)
         swapped_indices = jnp.hstack(
@@ -229,9 +347,9 @@ class SymmetricTensor2(Tensor2):
     dim = 3
     base_array_shape = (dim * (dim + 1) // 2,)
 
-    tensor_indices, weights = mappings.kelvin_rank2_map(3)
+    _tensor_indices, _weights = mappings.kelvin_rank2_map(3)
 
-    def weaken(self):
+    def _weaken(self):
         """Weaken to Tensor2."""
         diag_indices = jnp.arange(self.dim)
         upper_indices = jnp.arange(self.dim, self.dim**2, 2)
@@ -241,9 +359,6 @@ class SymmetricTensor2(Tensor2):
         array = array.at[upper_indices].set(self.array[self.dim :] / jnp.sqrt(2.0))
         array = array.at[lower_indices].set(self.array[self.dim :] / jnp.sqrt(2.0))
         return Tensor2(array=array)
-
-    def is_symmetric(self):
-        return True
 
     @property
     def T(self):
@@ -264,7 +379,7 @@ class SymmetricTensor2(Tensor2):
         return Tensor2
 
 
-def enforce_minor_symmetry(C):
+def _enforce_minor_symmetry(C):
     C_ij = jnp.swapaxes(C, -4, -3)  # j i k l
     C_kl = jnp.swapaxes(C, -2, -1)  # i j l k
     C_ij_kl = jnp.swapaxes(C_ij, -2, -1)  # j i l k
@@ -273,20 +388,35 @@ def enforce_minor_symmetry(C):
 
 
 class Tensor4(Tensor):
+    """
+    Full fourth-rank tensor.
+
+    Stored as a matrix-like array of shape (9, 9) corresponding to double
+    index contraction. Suitable for linear operators on second-rank tensors.
+
+    Notes
+    -----
+    The ``@`` operator denotes double contraction.
+    """
+
     dim = 3
     rank = 4
     array_rank = 2
     base_tensor_shape = (dim, dim, dim, dim)
     base_array_shape = (dim**2, dim**2)
 
-    tensor_indices, weights = mappings.full_rank4_map(3)
+    _tensor_indices, _weights = mappings.full_rank4_map(3)
 
     @classmethod
     def identity(cls):
-        return cls(array=jnp.eye(cls.base_array_shape[0]))
+        r"""
+        Fourth-rank identity operator $I_{ijkl}=\delta_{ik}\delta_{jl}$
 
-    def is_symmetric(self):
-        return jnp.allclose(self, self.T)
+        Returns
+        -------
+        Tensor4
+        """
+        return cls(array=jnp.eye(cls.base_array_shape[0]))
 
     def _as_tensor(self, array):
         return super()._as_tensor(array)
@@ -297,10 +427,27 @@ class Tensor4(Tensor):
 
     @property
     def T(self):
+        r"""
+        Transposed tensor. Transposition is understood with respect to major indices i.e.
+
+        $$(\mathbb{C}^\text{T})_{ijkl}=\mathbb{C}_{klij}$$
+
+        Returns
+        -------
+        Tensor
+            Tensor with index pairs swapped.
+        """
         return self.__class__(array=jnp.swapaxes(self.array, axis1=-1, axis2=-2))
 
     @property
     def inv(self):
+        """
+        Inverse tensor.
+
+        Returns
+        -------
+        Tensor4
+        """
         return self.__class__(array=jnp.linalg.inv(self.array))
 
     def fourth_contract(self, other):
@@ -309,13 +456,31 @@ class Tensor4(Tensor):
 
 
 class SymmetricTensor4(Tensor4):
+    """
+    Fourth-rank tensor with minor symmetries, i.e. $C_{ijkl}=C_{jikl}=C_{ijlk}=C_{jilk}$.
+
+    Stores only independent components as a (6, 6) matrix in 3D,
+    commonly used for elasticity and constitutive operators.
+    """
+
     dim = 3
     rank = 4
     array_rank = 2
     base_tensor_shape = (dim, dim, dim, dim)
     base_array_shape = (dim * (dim + 1) // 2, dim * (dim + 1) // 2)
 
-    tensor_indices, weights = mappings.kelvin_rank4_map(3)
+    _tensor_indices, _weights = mappings.kelvin_rank4_map(3)
 
     def _as_tensor(self, array):
-        return enforce_minor_symmetry(super()._as_tensor(array))
+        return _enforce_minor_symmetry(super()._as_tensor(array))
+
+    @classmethod
+    def identity(cls):
+        r"""
+        Fourth-rank symmetric identity operator $I_{ijkl}=\frac{1}{2}(\delta_{ik}\delta_{jl}+\delta_{il}\delta_{jk})$
+
+        Returns
+        -------
+        SymmetricTensor4
+        """
+        return cls(array=jnp.eye(cls.base_array_shape[0]))
