@@ -256,7 +256,9 @@ elasticity = jm.LinearElasticIsotropic(E=248.28, nu=0.241)
 cc_surface = CamClaySurface(M=0.9)
 pc0 = 1.0
 hardening = Hardening(pc0=pc0, beta=30.0)
-material = ModifiedCamClay(elasticity=elasticity, hardening=hardening, plastic_surface=cc_surface)
+material = ModifiedCamClay(
+    elasticity=elasticity, hardening=hardening, plastic_surface=cc_surface
+)
 
 
 # %% [markdown]
