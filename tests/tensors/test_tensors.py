@@ -124,6 +124,7 @@ def test_sym_tensor2_init():
 def test_symmetries():
     gamma = 0.75
     Id = SymmetricTensor2.identity()
+    print(type(Id))
     F = Tensor2(
         tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64)
     )
@@ -143,6 +144,19 @@ def test_symmetries():
     assert type(2 * Id) is SymmetricTensor2
     assert type(Id + Id) is SymmetricTensor2
     assert type(Id - Id) is SymmetricTensor2
+
+
+def test_operations_with_ndarrays():
+    T = SymmetricTensor2()
+    I = jnp.eye(3)
+    assert type(T + I) is SymmetricTensor2
+    assert type(T - I) is SymmetricTensor2
+    # right multiplication keeps Tensor type
+    assert type(T * jnp.asarray(2.0)) is SymmetricTensor2
+    assert type(T @ I) is Tensor2
+    # left multiplication with jax.Array calls __jax_array__ on tensor
+    assert type(jnp.asarray(2.0) * T) is jax.Array
+    assert type(I @ T) is jax.Array
 
 
 def test_stretch_tensor():

@@ -374,7 +374,7 @@ class SymmetricTensor2(Tensor2):
         return Tensor2(tensor=jnp.asarray(self.tensor) @ jnp.asarray(other))
 
     def _weaken_with(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, self.__class__) or isinstance(other, jax.Array):
             return self.__class__
         return Tensor2
 
