@@ -90,8 +90,6 @@ def test_small_strain_orthotropic_rotation():
     assert jnp.allclose(sig_rotated, sig_C_rotated)
 
 
-test_small_strain_orthotropic_rotation()
-
 
 def test_transverse_isotropy():
     EL = 12.0e3
