@@ -87,7 +87,7 @@ print(f"A batch of {N} material instances:", batched_material)
 # stored for each realization.
 #
 # %%
-state = batched_material.init_state()
+batched_state = batched_material.init_state(N)
 gamma_list = jnp.linspace(0.0, 1e-2, 50)
 tau = jnp.zeros((N, len(gamma_list)))
 
@@ -99,7 +99,7 @@ for i, gamma in enumerate(gamma_list):
     # Compute batch stress update
     new_stress, new_state = eqx.filter_vmap(
         jm.vonMisesIsotropicHardening.constitutive_update, in_axes=(0, None, 0, None)
-    )(batched_material, new_eps, state, 0.0)
+    )(batched_material, new_eps, batched_state, 0.0)
 
     state = new_state
     tau = tau.at[:, i].set(new_stress[:, 0, 1])
