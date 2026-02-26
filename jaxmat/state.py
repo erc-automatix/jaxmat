@@ -137,7 +137,9 @@ class FiniteStrainState(AbstractState):
     @property
     def PK2(self):
         vmap_axes = 0 if self.F.tensor.ndim == 3 else None
-        return eqx.filter_vmap(PK1_to_PK2, in_axes=vmap_axes, out_axes=vmap_axes)(self.F, self.PK1)
+        return eqx.filter_vmap(PK1_to_PK2, in_axes=vmap_axes, out_axes=vmap_axes)(
+            self.F, self.PK1
+        )
 
     @property
     def sig(self):
@@ -167,13 +169,5 @@ def make_batched(module: eqx.Module, Nbatch: int) -> eqx.Module:
         return jnp.broadcast_to(x_, (Nbatch, *x_.shape))
 
     batched_module = jax.tree.map(_broadcast, module)
-
-    # Update `_batch_size` if it exists and is static
-    if hasattr(module, "_batch_size"):
-        if module._batch_size is None:
-            batch_size = (Nbatch,)
-        else:
-            batch_size = (Nbatch, *module._batch_size)
-        object.__setattr__(batched_module, "_batch_size", batch_size)
 
     return batched_module

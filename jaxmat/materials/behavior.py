@@ -20,7 +20,6 @@ class AbstractBehavior(eqx.Module):
     """Implicit solver."""
     adjoint: optx.AbstractAdjoint = eqx.field(static=True, init=False, default=DEFAULT_SOLVERS[1])
     """Adjoint solver."""
-    _batch_size: tuple = eqx.field(static=True, init=False, default=None)
 
     # --- Serializable internal-state class reference ---
     internal_type: type[AbstractState] = eqx.field(static=True, init=False, default=None)
@@ -43,11 +42,10 @@ class AbstractBehavior(eqx.Module):
 
         state = cls(internal=internal)
 
-        if Nbatch is None and self._batch_size is None:
+        if Nbatch is None:
             return state
-
-        Nbatch = self._batch_size[0] if Nbatch is None else Nbatch
-        return make_batched(state, Nbatch)
+        else:
+            return make_batched(state, Nbatch)
 
     @abstractmethod
     def constitutive_update(self, inputs, state, dt):
