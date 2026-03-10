@@ -11,9 +11,7 @@ class Tensor(eqx.Module):
     rank: int
     _tensor: jax.Array
 
-    def __init__(
-        self, tensor: Optional[jax.Array] = None, array: Optional[jax.Array] = None
-    ):
+    def __init__(self, tensor: Optional[jax.Array] = None, array: Optional[jax.Array] = None):
 
         if tensor is not None:
             if tensor.shape[-2:] != self.shape[-2:]:
@@ -110,9 +108,7 @@ class Tensor(eqx.Module):
         output_indices = "".join([first for first, _ in pairs])
         tensor_indices = "".join([second for _, second in pairs])
 
-        einsum_str = (
-            ",".join(rotation_pairs) + "," + tensor_indices + "->" + output_indices
-        )
+        einsum_str = ",".join(rotation_pairs) + "," + tensor_indices + "->" + output_indices
 
         rotated_tensor = jnp.einsum(einsum_str, *([R] * self.rank), self.tensor)
 
@@ -163,9 +159,7 @@ class Tensor2(Tensor):
 
     @property
     def sym(self):
-        return SymmetricTensor2(
-            tensor=0.5 * (self.tensor + jnp.swapaxes(self.tensor, -1, -2))
-        )
+        return SymmetricTensor2(tensor=0.5 * (self.tensor + jnp.swapaxes(self.tensor, -1, -2)))
 
     @property
     def inv(self):
@@ -183,7 +177,6 @@ class Tensor2(Tensor):
 
 
 class SymmetricTensor2(Tensor2):
-
     @property
     def array_shape(self):
         return (self.dim * (self.dim + 1) // 2,)
@@ -318,9 +311,7 @@ class SymmetricTensor4(Tensor):
         return tensor
 
     def __matmul__(self, other):
-        return other.__class__(
-            tensor=jnp.tensordot(jnp.asarray(self), jnp.asarray(other).T)
-        )
+        return other.__class__(tensor=jnp.tensordot(jnp.asarray(self), jnp.asarray(other).T))
 
     @property
     def inv(self):

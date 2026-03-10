@@ -185,20 +185,14 @@ def eig33(A, rtol=1e-16):
 
                 eigvals_dev = lax.cond(
                     lambda_d > 0,
-                    lambda _: jnp.array(
-                        [-lambda_d / 2 - sd, -lambda_d / 2 + sd, lambda_d]
-                    ),
-                    lambda _: jnp.array(
-                        [lambda_d, -lambda_d / 2 - sd, -lambda_d / 2 + sd]
-                    ),
+                    lambda _: jnp.array([-lambda_d / 2 - sd, -lambda_d / 2 + sd, lambda_d]),
+                    lambda _: jnp.array([lambda_d, -lambda_d / 2 - sd, -lambda_d / 2 + sd]),
                     operand=None,
                 )
                 eigvals = eigvals_dev + I1 / 3
                 return eigvals, eigvals
 
-            return lax.cond(
-                cond, branch_two_eigvals, branch_three_eigvals, operand=None
-            )
+            return lax.cond(cond, branch_two_eigvals, branch_three_eigvals, operand=None)
 
         return lax.cond(s < rtol * norm, branch_near_iso, branch_general, operand=None)
 

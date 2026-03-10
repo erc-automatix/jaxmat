@@ -134,9 +134,7 @@ class FiniteStrainState(AbstractState):
     @property
     def PK2(self):
         vmap_axes = 0 if self.F.tensor.ndim == 3 else None
-        return eqx.filter_vmap(PK1_to_PK2, in_axes=vmap_axes, out_axes=vmap_axes)(
-            self.F, self.PK1
-        )
+        return eqx.filter_vmap(PK1_to_PK2, in_axes=vmap_axes, out_axes=vmap_axes)(self.F, self.PK1)
 
     @property
     def sig(self):

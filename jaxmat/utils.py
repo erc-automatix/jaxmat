@@ -5,9 +5,7 @@ import jax.numpy as jnp
 
 def default_value(value, dtype=jnp.float64, **kwargs):
     """Initialize and convert a field with default `value` of imposed `dtype`."""
-    return eqx.field(
-        converter=lambda x: jnp.asarray(x, dtype=dtype), default=value, **kwargs
-    )
+    return eqx.field(converter=lambda x: jnp.asarray(x, dtype=dtype), default=value, **kwargs)
 
 
 def enforce_dtype(dtype=jnp.float64, **kwargs):
@@ -35,9 +33,7 @@ def partition_by_node_names(model, freeze_names):
         sel = lambda m, name=name: _rgetattr(m, name)
 
         # move out of trainable
-        trainable = eqx.tree_at(
-            sel, trainable, replace=None, is_leaf=lambda x: x is None
-        )
+        trainable = eqx.tree_at(sel, trainable, replace=None, is_leaf=lambda x: x is None)
         # copy original value into static
         static = eqx.tree_at(
             sel, static, replace=_rgetattr(model, name), is_leaf=lambda x: x is None
@@ -75,9 +71,7 @@ def print_eqx_fields(obj, fields=None, indent=0):
             # Extract subfields relevant to this nested module (if any)
             subfields = None
             if fields is not None:
-                subfields = [
-                    f[len(k) + 1 :] for f in fields if f.startswith(f"{k}.")
-                ] or None
+                subfields = [f[len(k) + 1 :] for f in fields if f.startswith(f"{k}.")] or None
 
             if isinstance(v, eqx.Module):
                 print(f"{pad}  {k}:")

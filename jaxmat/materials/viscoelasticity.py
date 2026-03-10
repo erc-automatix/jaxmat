@@ -51,9 +51,7 @@ class StandardLinearSolid(jm.SmallStrainBehavior):
 
         tau = self.maxwell_viscosity / self.maxwell_stiffness.E
         epsv_new = (
-            eps
-            + jnp.exp(-dt / tau) * (epsv_old - eps_old)
-            - jnp.exp(-dt / 2 / tau) * deps
+            eps + jnp.exp(-dt / tau) * (epsv_old - eps_old) - jnp.exp(-dt / 2 / tau) * deps
         ).sym
 
         sig = self.elasticity.C @ eps + self.maxwell_stiffness.C @ (eps - epsv_new)

@@ -48,9 +48,7 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
                 # FIXME: currently we don't account for symmetry of be_bar
                 dp, be_bar = dy.p, dy.be_bar
                 s = self.elasticity.mu * dev(be_bar)
-                yield_criterion = self.plastic_surface(s) - self.yield_stress(
-                    p_old + dp
-                )
+                yield_criterion = self.plastic_surface(s) - self.yield_stress(p_old + dp)
                 n = self.plastic_surface.normal(s)
                 res = (
                     FB(-yield_criterion / self.elasticity.E, dp),
@@ -61,9 +59,7 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
                 return res
 
             dy0 = isv_old.update(p=0, be_bar=be_bar_trial)
-            sol = optx.root_find(
-                residual, self.solver, dy0, adjoint=self.adjoint, throw=False
-            )
+            sol = optx.root_find(residual, self.solver, dy0, adjoint=self.adjoint, throw=False)
             return sol.value, be_bar_trial
 
         dy, _ = solve_state(F)

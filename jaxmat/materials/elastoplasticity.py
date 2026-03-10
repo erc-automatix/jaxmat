@@ -112,9 +112,7 @@ class GeneralIsotropicHardening(SmallStrainBehavior):
             def residual(dy, args):
                 dp, depsp = dy.p, dy.epsp
                 sig = eval_stress(deps, dy)
-                yield_criterion = self.plastic_surface(sig) - self.yield_stress(
-                    p_old + dp
-                )
+                yield_criterion = self.plastic_surface(sig) - self.yield_stress(p_old + dp)
                 n = self.plastic_surface.normal(sig)
                 res = (
                     FB(-yield_criterion / self.elasticity.E, dp),
@@ -124,9 +122,7 @@ class GeneralIsotropicHardening(SmallStrainBehavior):
                 return (res, y)
 
             dy0 = tree_zeros_like(isv_old)
-            sol = optx.root_find(
-                residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint
-            )
+            sol = optx.root_find(residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint)
             dy = sol.value
             y = sol.aux
             sig = eval_stress(deps, dy)
