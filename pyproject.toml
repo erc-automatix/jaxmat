@@ -5,7 +5,7 @@ description = "Automated material constitutive modeling in JAX"
 readme = "README.md"
 authors = [
     { name = "Jeremy Bleyer", email = "jeremy.bleyer@enpc.fr" },
-    {name = "Paul Bouteiller", email = "paul.bouteiller@cea.fr"}
+    { name = "Paul Bouteiller", email = "paul.bouteiller@cea.fr" }
 ]
 license = { text = "GNU GPLv3" }  # Replace or remove if not using MIT
 keywords = ["material science", "machine learning", "material modeling", "solid mechanics", "automatic differentiation"]
@@ -14,12 +14,14 @@ dependencies = [
     "jax>=0.6.1",
     "optax",
     "equinox",
-    "diffrax",
     "optimistix",
     "lineax"
 ]
 
 [project.optional-dependencies]
+optional = [
+  "diffrax",
+]
 gpu = [
     "jax[cuda12]>=0.6.1",
 ]
@@ -33,3 +35,22 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+      "D",      # pydocstyle
+      "E",      # pycodestyle
+      "W",      # pycodestyle
+      "F",      # pyflakes
+      "I",      # isort - use standalone isort
+      "RUF",    # Ruff-specific rules
+      "UP",     # pyupgrade
+      "ICN",    # flake8-import-conventions
+      "NPY",    # numpy-specific rules
+      "FLY",    # use f-string not static joins
+      "NPY201", # numpy 2.x ruleset
+]
