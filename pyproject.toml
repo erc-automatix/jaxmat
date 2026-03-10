@@ -20,10 +20,14 @@ dependencies = [
 
 [project.optional-dependencies]
 optional = [
-  "diffrax",
+    "diffrax",
 ]
 gpu = [
     "jax[cuda12]>=0.6.1",
+]
+tests = [
+    "matplotlib",
+    "pytest",
 ]
 
 [build-system]
