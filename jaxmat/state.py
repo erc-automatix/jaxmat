@@ -1,7 +1,8 @@
-import jax
 import equinox as eqx
+import jax
 import jax.numpy as jnp
-from jaxmat.tensors import Tensor2, SymmetricTensor2
+
+from jaxmat.tensors import SymmetricTensor2, Tensor2
 
 
 class AbstractState(eqx.Module):

@@ -1,7 +1,8 @@
 from collections.abc import Callable
-from jaxtyping import PyTree, Scalar
-import optimistix as optx
+
 import lineax as lx
+import optimistix as optx
+from jaxtyping import PyTree, Scalar
 from optimistix import max_norm
 
 

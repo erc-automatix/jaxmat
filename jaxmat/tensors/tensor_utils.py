@@ -1,8 +1,10 @@
 from functools import partial
+
 import jax
 import jax.numpy as jnp
+
+from . import SymmetricTensor2, SymmetricTensor4, Tensor2
 from .linear_algebra import _sqrtm, eig33
-from . import Tensor2, SymmetricTensor2, SymmetricTensor4
 
 
 # These functions apply to tensors

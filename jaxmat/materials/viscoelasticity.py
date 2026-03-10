@@ -1,10 +1,11 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
+
 import jaxmat.materials as jm
-from jaxmat.utils import enforce_dtype
-from jaxmat.tensors import SymmetricTensor2
 from jaxmat.state import AbstractState, make_batched
+from jaxmat.tensors import SymmetricTensor2
+from jaxmat.utils import enforce_dtype
 
 
 class SLSState(AbstractState):

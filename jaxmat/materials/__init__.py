@@ -1,40 +1,40 @@
-from .behavior import SmallStrainBehavior, FiniteStrainBehavior
+from .behavior import FiniteStrainBehavior, SmallStrainBehavior
 from .elasticity import (
     AbstractLinearElastic,
+    ElasticBehavior,
+    LinearElastic,
     LinearElasticIsotropic,
     LinearElasticOrthotropic,
-    LinearElastic,
-    ElasticBehavior,
 )
+from .elastoplasticity import (
+    GeneralHardening,
+    GeneralIsotropicHardening,
+    vonMisesIsotropicHardening,
+)
+from .fe_fp_elastoplasticity import FeFpJ2Plasticity
+from .generalized_standard import GeneralizedStandardMaterial
 from .hyperelasticity import (
+    CompressibleGhentMooneyRivlin,
+    CompressibleMooneyRivlin,
+    CompressibleNeoHookean,
+    CompressibleOgden,
     Hyperelasticity,
     HyperelasticPotential,
     VolumetricPart,
-    CompressibleNeoHookean,
-    CompressibleMooneyRivlin,
-    CompressibleGhentMooneyRivlin,
-    CompressibleOgden,
 )
-from .elastoplasticity import (
-    vonMisesIsotropicHardening,
-    GeneralIsotropicHardening,
-    GeneralHardening,
-)
-from .fe_fp_elastoplasticity import FeFpJ2Plasticity
-from .viscoplasticity import AmrstrongFrederickViscoplasticity, GenericViscoplasticity
 from .plastic_surfaces import (
-    safe_zero,
     AbstractPlasticSurface,
-    vonMises,
     DruckerPrager,
     Hosford,
     Tresca,
+    safe_zero,
+    vonMises,
 )
+from .viscoelasticity import GeneralizedMaxwell, StandardLinearSolid
 from .viscoplastic_flows import (
-    VoceHardening,
-    NortonFlow,
-    ArmstrongFrederickHardening,
     AbstractKinematicHardening,
+    ArmstrongFrederickHardening,
+    NortonFlow,
+    VoceHardening,
 )
-from .viscoelasticity import StandardLinearSolid, GeneralizedMaxwell
-from .generalized_standard import GeneralizedStandardMaterial
+from .viscoplasticity import AmrstrongFrederickViscoplasticity, GenericViscoplasticity

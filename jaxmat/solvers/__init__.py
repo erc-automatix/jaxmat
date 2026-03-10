@@ -1,8 +1,9 @@
-import optimistix as optx
 import lineax as lx
+import optimistix as optx
+
 from .custom_optimistix_solvers import (
-    GaussNewtonTrustRegion,
     BFGSLinearTrustRegion,
+    GaussNewtonTrustRegion,
     NewtonTrustRegion,
 )
 

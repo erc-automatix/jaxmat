@@ -1,9 +1,12 @@
 from abc import abstractmethod
+
+import equinox as eqx
 import jax.numpy as jnp
 import jax.scipy as jsc
-import equinox as eqx
+
 from jaxmat.tensors import IsotropicTensor4, SymmetricTensor4
 from jaxmat.utils import enforce_dtype
+
 from .behavior import SmallStrainBehavior
 
 

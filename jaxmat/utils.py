@@ -1,4 +1,3 @@
-import jax
 import equinox as eqx
 import jax.numpy as jnp
 

@@ -1,18 +1,20 @@
-import jax.numpy as jnp
 import equinox as eqx
+import jax
+import jax.numpy as jnp
 import optimistix as optx
 from optax.tree_utils import tree_add, tree_zeros_like
-from jaxmat.utils import default_value, enforce_dtype
+
 from jaxmat.state import AbstractState, make_batched
 from jaxmat.tensors import SymmetricTensor2, dev
+from jaxmat.tensors.utils import FischerBurmeister as FB
+from jaxmat.utils import default_value, enforce_dtype
+
 from .behavior import SmallStrainBehavior
-from .elasticity import LinearElasticIsotropic, AbstractLinearElastic
+from .elasticity import AbstractLinearElastic, LinearElasticIsotropic
 from .plastic_surfaces import (
     AbstractPlasticSurface,
     vonMises,
 )
-from jaxmat.tensors.utils import FischerBurmeister as FB
-import jax
 
 
 class InternalState(AbstractState):

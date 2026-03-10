@@ -1,11 +1,12 @@
+from typing import Literal
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
-import optimistix as optx
 import lineax as lx
-from typing import Literal
-from jaxmat.tensors import SymmetricTensor2
+import optimistix as optx
 
+from jaxmat.tensors import SymmetricTensor2
 
 linear_solver = lx.AutoLinearSolver(well_posed=False)
 solver, adjoint = (

@@ -1,7 +1,7 @@
+
 import equinox as eqx
 import jax
 import jax.numpy as jnp
-from typing import List
 
 
 def positive_param(W: jnp.ndarray) -> jnp.ndarray:
@@ -42,14 +42,14 @@ class ICNN(eqx.Module):
         convex output representing the learned function.
     """
 
-    Ws: List[jnp.ndarray]
-    bs: List[jnp.ndarray]
+    Ws: list[jnp.ndarray]
+    bs: list[jnp.ndarray]
     final_W: jnp.ndarray
 
     def __init__(
         self,
         in_dim: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         key: jax.Array,
         scale: float = 1.0,
     ):
@@ -101,16 +101,16 @@ class ICNNSkip(eqx.Module):
     - Skip connections (U_k x) allow full convex function expressiveness.
     """
 
-    Ws: List[jnp.ndarray]  # Nonnegative (hidden-to-hidden)
-    Us: List[jnp.ndarray]  # Unconstrained (input skip)
-    bs: List[jnp.ndarray]  # Biases
+    Ws: list[jnp.ndarray]  # Nonnegative (hidden-to-hidden)
+    Us: list[jnp.ndarray]  # Unconstrained (input skip)
+    bs: list[jnp.ndarray]  # Biases
     final_W: jnp.ndarray  # Output weights
     final_U: jnp.ndarray  # Final input skip connection
 
     def __init__(
         self,
         in_dim: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         key: jax.Array,
         scale: float = 1.0,
     ):
@@ -159,8 +159,8 @@ class ICNNSkip(eqx.Module):
 class HomogeneousICNN(eqx.Module):
     """ICNN constrained to represent a convex, 1-homogeneous gauge function."""
 
-    Ws: List[jnp.ndarray]  # hidden-to-hidden (constrained nonneg)
-    Us: List[jnp.ndarray]  # input-to-hidden skip matrices (can be any real)
+    Ws: list[jnp.ndarray]  # hidden-to-hidden (constrained nonneg)
+    Us: list[jnp.ndarray]  # input-to-hidden skip matrices (can be any real)
     final_W: jnp.ndarray
 
     def __init__(self, in_dim, hidden_dims, key, scale=1.0):

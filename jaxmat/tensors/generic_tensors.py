@@ -1,9 +1,9 @@
-from typing import Optional
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
+
 from . import linear_algebra
-from . import utils
 
 
 class Tensor(eqx.Module):
@@ -11,7 +11,7 @@ class Tensor(eqx.Module):
     rank: int
     _tensor: jax.Array
 
-    def __init__(self, tensor: Optional[jax.Array] = None, array: Optional[jax.Array] = None):
+    def __init__(self, tensor: jax.Array | None = None, array: jax.Array | None = None):
 
         if tensor is not None:
             if tensor.shape[-2:] != self.shape[-2:]:

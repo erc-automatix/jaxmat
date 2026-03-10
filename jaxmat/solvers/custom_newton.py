@@ -1,7 +1,9 @@
-from typing import Callable, Any
-from jax import lax, tree_util
+from collections.abc import Callable
+from typing import Any
+
 import jax.numpy as jnp
 import lineax as lx
+from jax import lax, tree_util
 
 
 def newton_solve_jittable(

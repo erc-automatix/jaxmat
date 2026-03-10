@@ -1,7 +1,9 @@
 from functools import partial
+
 import jax
 import jax.numpy as jnp
 from jax import lax
+
 from .utils import safe_norm, safe_sqrt
 
 
@@ -104,7 +106,7 @@ def pq_invariants(sig):
 
 @partial(jax.jit, static_argnums=1)
 def eig33(A, rtol=1e-16):
-    """
+    r"""
     Computes the eigenvalues and eigenvalue derivatives of a 3 x 3 real symmetric matrix.
 
     This function implements a numerically stable eigendecomposition for 3 x 3 symmetric

@@ -1,9 +1,12 @@
 from abc import abstractmethod
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
+
 from jaxmat.tensors import eigenvalues
-from jaxmat.tensors.linear_algebra import principal_invariants, det33
+from jaxmat.tensors.linear_algebra import det33, principal_invariants
+
 from .behavior import FiniteStrainBehavior
 
 

@@ -1,11 +1,13 @@
 from abc import abstractmethod
-import jax
+
 import equinox as eqx
-import optimistix as optx
-from optax.tree_utils import tree_add, tree_zeros_like, tree_scale
-from jaxmat.solvers import NewtonTrustRegion
-import jaxmat.materials as jm
+import jax
 import lineax as lx
+import optimistix as optx
+from optax.tree_utils import tree_add, tree_scale, tree_zeros_like
+
+import jaxmat.materials as jm
+from jaxmat.solvers import NewtonTrustRegion
 
 
 class GeneralizedStandardMaterial(jm.SmallStrainBehavior):

@@ -1,15 +1,15 @@
 from abc import abstractmethod
-import jax
-import jax.numpy as jnp
+
 import equinox as eqx
 import optimistix as optx
+
+from jaxmat.solvers import DEFAULT_SOLVERS
 from jaxmat.state import (
     AbstractState,
-    SmallStrainState,
     FiniteStrainState,
+    SmallStrainState,
     make_batched,
 )
-from jaxmat.solvers import DEFAULT_SOLVERS
 
 
 class AbstractBehavior(eqx.Module):

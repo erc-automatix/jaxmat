@@ -1,14 +1,16 @@
-import jax.numpy as jnp
 import equinox as eqx
+import jax.numpy as jnp
 import optimistix as optx
-from jaxmat.utils import default_value
+
 from jaxmat.state import AbstractState
 from jaxmat.tensors import SymmetricTensor2, Tensor2, dev, safe_fun
 from jaxmat.tensors.linear_algebra import det33 as det
+from jaxmat.tensors.utils import FischerBurmeister as FB
+from jaxmat.utils import default_value
+
 from .behavior import FiniteStrainBehavior
 from .elasticity import LinearElasticIsotropic
 from .plastic_surfaces import AbstractPlasticSurface, vonMises
-from jaxmat.tensors.utils import FischerBurmeister as FB
 
 
 class InternalState(AbstractState):
