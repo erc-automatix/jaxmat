@@ -50,9 +50,7 @@ import jax.numpy as jnp
 import optimistix as optx
 
 current_path = get_path()
-data = np.loadtxt(
-    current_path / "../demos/_data/Treloar_rubber.csv", skiprows=1, delimiter=","
-)
+data = np.loadtxt(current_path / "../demos/_data/Treloar_rubber.csv", skiprows=1, delimiter=",")
 stress_data = []
 load_data = []
 for i in range(3):
@@ -64,9 +62,7 @@ def resample(x, y, N, downsample_ratio=0.0):
     if N is None:
         return x, y
     else:
-        xr = jnp.linspace(
-            (1 + downsample_ratio) * min(x), (1 - downsample_ratio) * max(x), N
-        )
+        xr = jnp.linspace((1 + downsample_ratio) * min(x), (1 - downsample_ratio) * max(x), N)
         yr = jnp.interp(xr, x, y)
         return xr, yr
 
@@ -83,9 +79,7 @@ for i, label in enumerate(labels):
     match label:
         case "simple_tension":
             stretches = jnp.vstack((lamb, 1 / jnp.sqrt(lamb), 1 / jnp.sqrt(lamb))).T
-            stresses = jnp.vstack(
-                (stress, jnp.zeros_like(stress), jnp.zeros_like(stress))
-            ).T
+            stresses = jnp.vstack((stress, jnp.zeros_like(stress), jnp.zeros_like(stress))).T
         case "biaxial_tension":
             stretches = jnp.vstack((lamb, lamb, 1 / lamb**2)).T
             stresses = jnp.vstack((stress, stress, jnp.zeros_like(stress))).T

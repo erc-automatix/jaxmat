@@ -164,9 +164,7 @@ class MultiSurfacePlasticity(SmallStrainBehavior):
                 res_epsp = depsp
                 res_plast = []
                 for i in range(self.n_surf):
-                    yield_criterion = self.plastic_surfaces[i](
-                        sig
-                    ) - self.yield_stresses[i](p[i])
+                    yield_criterion = self.plastic_surfaces[i](sig) - self.yield_stresses[i](p[i])
                     n = self.plastic_surfaces[i].normal(sig)
                     res_plast.append(FB(-yield_criterion / self.elasticity.E, dp[i]))
                     res_epsp -= n * dp[i]
@@ -283,9 +281,7 @@ material = MultiSurfacePlasticity(
 )
 
 
-batched_constitutive_update = jax.vmap(
-    material.constitutive_update, in_axes=(0, 0, None)
-)
+batched_constitutive_update = jax.vmap(material.constitutive_update, in_axes=(0, 0, None))
 
 # %% [markdown]
 # ## Loading setup
@@ -314,9 +310,7 @@ sig_init = sig_init.at[:, 0, 0].set(-5 * sig0)
 sig_init = sig_init.at[:, 1, 1].set(-5 * sig0)
 sig_init = sig_init.at[:, 2, 2].set(-5 * sig0)
 
-state = eqx.tree_at(
-    lambda s: s.stress, state, replace=SymmetricTensor2(tensor=sig_init)
-)
+state = eqx.tree_at(lambda s: s.stress, state, replace=SymmetricTensor2(tensor=sig_init))
 
 # %% [markdown]
 # We now incrementally apply total strain magnitudes in the defined directions and compute the corresponding stress responses using the batched constitutive update.

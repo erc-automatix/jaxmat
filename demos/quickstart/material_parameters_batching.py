@@ -102,9 +102,7 @@ colors = cmap(jnp.linspace(0, 1, N))
 for i, color in enumerate(colors):
     plt.plot(gamma_list, tau[sorting[i], :].T, linewidth=1.0, alpha=0.25, color=color)
 
-plt.errorbar(
-    gamma_list, jnp.mean(tau, axis=0), jnp.std(tau, axis=0), color="k", alpha=0.5
-)
+plt.errorbar(gamma_list, jnp.mean(tau, axis=0), jnp.std(tau, axis=0), color="k", alpha=0.5)
 plt.xlabel(r"Shear distortion $\gamma$")
 plt.ylabel(r"Shear stress $\tau$ [MPa]")
 plt.title("Batch response under material parameter variability")

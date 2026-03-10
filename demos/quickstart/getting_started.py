@@ -67,7 +67,7 @@ print(material.elasticity.__dict__)
 print(material.yield_stress.__dict__)
 
 mu = elasticity.mu
-print(f"\nShear modulus = {1e-3*mu} GPa")
+print(f"\nShear modulus = {1e-3 * mu} GPa")
 
 # %% [markdown]
 # Since `hardening` is a JAX function, we can also compute its derivative using `jax.grad` to obtain the corresponding hardening modulus. Below, we evaluate this modulus on an array of values of cumulated plastic strain and plot the result.

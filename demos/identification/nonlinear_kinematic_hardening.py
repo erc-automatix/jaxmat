@@ -149,9 +149,7 @@ class CombinedHardening(eqx.Module):
         return self.isotropic(p)
 
 
-hardening = CombinedHardening(
-    isotropic=jm.VoceHardening(sig0=0.0, sigu=200.0, b=50.0), H=1e3
-)
+hardening = CombinedHardening(isotropic=jm.VoceHardening(sig0=0.0, sigu=200.0, b=50.0), H=1e3)
 
 material = jm.GeneralHardening(
     elasticity=elasticity,
@@ -181,17 +179,13 @@ gamma_train = data[:, 0]
 tau_train = data[:, 1]
 
 noise_level = 5e-2
-tau_noise = (
-    tau_train + jax.random.normal(key, tau_train.shape) * max(tau_train) * noise_level
-)
+tau_noise = tau_train + jax.random.normal(key, tau_train.shape) * max(tau_train) * noise_level
 
 cmap = plt.get_cmap("viridis")
 Ndata = len(gamma_train) - 1
 colors = cmap(jnp.linspace(0, 1, Ndata))
 for i in range(Ndata):
-    plt.plot(
-        gamma_train[i : i + 2], tau_train[i : i + 2], "-", color=colors[i], alpha=0.75
-    )
+    plt.plot(gamma_train[i : i + 2], tau_train[i : i + 2], "-", color=colors[i], alpha=0.75)
     plt.plot(
         gamma_train[i : i + 2],
         tau_noise[i : i + 2],
@@ -369,9 +363,7 @@ plt.show()
 # After convergence, we print the calibrated model parameters to verify their physical consistency. First, we can observe that the Young modulus, Poisson ratio and initial Voce yield stress remained the same since they have been considered frozen parameters. Second, we can see that the hardening rate parameter $b$ and kinematic hardening modulus $H$ have been correctly identified. Regarding the yield stress, the final yield stress is here `sig0+sigu` which is approximately $595 \text{ MPa}$, very close to the ground truth value of $600 \text{ MPa}$. There is a small discrepancy for the initial yield stress $\sigma_0$ which has been identified to be $172 \text{ MPa}$ instead of $200 \text{ MPa}$, probably due to the amount of noise and the lack of enough data in the initial yielding regime.
 
 # %%
-print_eqx_fields(
-    trained_material, fields=["elasticity", "yield_stress", "combined_hardening"]
-)
+print_eqx_fields(trained_material, fields=["elasticity", "yield_stress", "combined_hardening"])
 
 # %% [markdown]
 # Overall, this workflow demonstrates how `jaxmat`, in combination with `equinox`, `optax`, and `optimistix`, provides a fully differentiable framework for constitutive parameter identification from cyclic mechanical tests.

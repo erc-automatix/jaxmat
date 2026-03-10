@@ -194,9 +194,7 @@ for hardening in [sumexp_hardening, icnn_hardening]:
 
     epsp_extrap = jnp.linspace(5e-2, 14e-2, 100)
     sig_extrap = jax.vmap(trained_hardening)(epsp_extrap)
-    plt.plot(
-        epsp_extrap, sig_extrap, "-C0", linewidth=4, alpha=0.5, label="Extrapolation"
-    )
+    plt.plot(epsp_extrap, sig_extrap, "-C0", linewidth=4, alpha=0.5, label="Extrapolation")
     plt.xlim(0, 14e-2)
     plt.ylim(400, 1e3)
     plt.xlabel("Equivalent plastic strain $p$")

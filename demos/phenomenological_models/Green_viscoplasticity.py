@@ -239,9 +239,7 @@ def compute_pq(sig):
 
 
 def compute_surface_normals(p, q):
-    sig = SymmetricTensor2(
-        tensor=jnp.diag(jnp.asarray([p + 2 * q / 3, p - q / 3, p - q / 3]))
-    )
+    sig = SymmetricTensor2(tensor=jnp.diag(jnp.asarray([p + 2 * q / 3, p - q / 3, p - q / 3])))
     ys = green_ys(sig)
     n = green_ys.normal(sig)
     x, y = p / ys, q / ys
@@ -324,9 +322,7 @@ for eps_dot in [1e-4, 1e-2, 1e0, 1e2]:
         imposed_eps += eps_dot * dt
         imposed_eps = jnp.minimum(imposed_eps, eps_max)
 
-        loading = ImposedLoading(
-            epsxx=imposed_eps, epsyy=-imposed_eps / 2, epszz=-imposed_eps / 2
-        )
+        loading = ImposedLoading(epsxx=imposed_eps, epsyy=-imposed_eps / 2, epszz=-imposed_eps / 2)
 
         Eps = state.strain
         Eps, state, stats = global_solve(Eps, state, loading, material, dt)
