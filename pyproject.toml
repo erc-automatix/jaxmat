@@ -19,11 +19,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-optional = [
-    "diffrax",
+docs = [
+    "jupytext",
+    "jupyter_book"
 ]
 gpu = [
     "jax[cuda12]>=0.6.1",
+]
+optional = [
+    "diffrax",
 ]
 tests = [
     "matplotlib",
