@@ -54,7 +54,8 @@ class AbstractBehavior(eqx.Module):
         pass
 
     def batched_constitutive_update(self, inputs, state, dt):
-        """Batched and jitted version of constitutive update along first axis of ``inputs`` and ``state``."""
+        """Batched and jitted constitutive update along first axis of
+        ``inputs`` and ``state``."""
         return eqx.filter_jit(eqx.filter_vmap(self.constitutive_update, in_axes=(0, 0, None)))(
             inputs, state, dt
         )
