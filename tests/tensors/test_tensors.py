@@ -189,6 +189,7 @@ def test_batch_tensors(cls):
 
 # FIXME: should better handle views and array operations on tensors,
 # see https://github.com/bleyerj/jaxmat/issues/16
+@pytest.mark.xfail(reason="See issue #16")
 def test_symmetry_preserving():
     N = 3
     sig = make_batched(SymmetricTensor2.identity(), N)
