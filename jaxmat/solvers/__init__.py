@@ -18,8 +18,8 @@ DEFAULT_SOLVERS = (
 )
 
 __all__ = [
-    "DEFAULT_SOLVERS",
     "DEFAULT_LINEAR_SOLVER",
+    "DEFAULT_SOLVERS",
     "BFGSLinearTrustRegion",
     "GaussNewtonTrustRegion",
     "NewtonTrustRegion",
