@@ -5,7 +5,8 @@ description = "Automated material constitutive modeling in JAX"
 readme = "README.md"
 authors = [
     { name = "Jeremy Bleyer", email = "jeremy.bleyer@enpc.fr" },
-    { name = "Paul Bouteiller", email = "paul.bouteiller@cea.fr" }
+    { name = "Paul Bouteiller", email = "paul.bouteiller@cea.fr" },
+    { name = "Jack S. Hale", email = "jack.hale@uni.lu" }
 ]
 license = { text = "GNU GPLv3" }  # Replace or remove if not using MIT
 keywords = ["material science", "machine learning", "material modeling", "solid mechanics", "automatic differentiation"]
@@ -21,7 +22,9 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "jupytext",
-    "jupyter_book<2"
+    "jupyter_book<2",
+    "sphinx_autodoc_typehints",
+    "sphinx_math_dollar"
 ]
 gpu = [
     "jax[cuda12]>=0.6.1",
