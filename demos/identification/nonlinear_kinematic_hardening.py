@@ -17,7 +17,7 @@
 # %% [markdown]
 # # Identification of a nonlinear hardening model from cyclic data
 #
-# In this demo, we use shear stress–strain data to identify a mixed nonlinear isotropic and
+# In this demo, we use shear stress-strain data to identify a mixed nonlinear isotropic and
 # kinematic hardening model with `jaxmat`.
 #
 # ```{admonition} Objectives
@@ -32,19 +32,19 @@
 # ```
 #
 # %%
+import equinox as eqx
 import jax
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
-
-jax.config.update("jax_platform_name", "cpu")
-import equinox as eqx
-import jax.numpy as jnp
 import optax
 import optimistix as optx
 
 import jaxmat.materials as jm
 from jaxmat.tensors import SymmetricTensor2
 from jaxmat.utils import default_value, partition_by_node_names, print_eqx_fields
+
+jax.config.update("jax_platform_name", "cpu")
 
 key = jax.random.PRNGKey(15071988)
 
@@ -182,7 +182,7 @@ material = jm.GeneralHardening(
 # %% [markdown]
 # ## Reference cyclic shear strain data
 #
-# We begin by loading the reference cyclic shear strain data representing repeated loading–unloading
+# We begin by loading the reference cyclic shear strain data representing repeated loading-unloading
 # cycles of increasing strain amplitude.
 #
 # The reference data has been generated with the previous behavior using the following values:
@@ -367,7 +367,7 @@ solver = optx.OptaxMinimiser(
 # During the minimization, the constitutive model is evaluated sequentially at each loading
 # increment to compute the predicted stresses, and the loss is differentiated with respect to the
 # trainable parameters. The keyword argument `options={"jac": "bwd"}` specifies that backward-mode
-# automatic differentiation (reverse-mode AD) is used to compute the Jacobian–vector products
+# automatic differentiation (reverse-mode AD) is used to compute the Jacobian-vector products
 # required by the optimizer. This choice is well suited here because we optimize a scalar-valued
 # loss function.
 #
@@ -401,7 +401,7 @@ else:
 # %% [markdown]
 # ## Results
 #
-# The next figure compares the predicted and experimental stress–strain curves. The trained model
+# The next figure compares the predicted and experimental stress-strain curves. The trained model
 # captures both the isotropic hardening (loop expansion) and the kinematic hardening (loop
 # translation) effects.
 #
