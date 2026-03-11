@@ -29,7 +29,9 @@ def partition_by_node_names(model, freeze_names):
     trainable, static = eqx.partition(model, eqx.is_array)
 
     for name in freeze_names:
-        sel = lambda m, name=name: _rgetattr(m, name)
+
+        def sel(m):
+            return _rgetattr(m, name)
 
         # move out of trainable
         trainable = eqx.tree_at(sel, trainable, replace=None, is_leaf=lambda x: x is None)
