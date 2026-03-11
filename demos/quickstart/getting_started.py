@@ -25,13 +25,16 @@
 # see [more details on the use of `equinox.Module`.](./../../docs/pytrees.md).
 #
 # %%
-import jax
-
-jax.config.update("jax_platform_name", "cpu")
 import equinox as eqx
+import jax
 import jax.numpy as jnp
+import matplotlib.pyplot as plt
 
 import jaxmat.materials as jm
+from jaxmat.tensors import SymmetricTensor2
+
+jax.config.update("jax_platform_name", "cpu")
+
 
 # %% [markdown]
 # ## Defining a behavior
@@ -95,8 +98,6 @@ p = jnp.linspace(0, 5e-3, 100)
 H = jax.vmap(hardening_modulus)
 
 
-import matplotlib.pyplot as plt
-
 plt.figure(figsize=(12, 5))
 plt.subplot(1, 2, 1)
 plt.plot(p, hardening(p), "-C0")
@@ -128,7 +129,6 @@ internal_state_variables = state.internal
 print(internal_state_variables.__dict__)
 
 # %%
-from jaxmat.tensors import SymmetricTensor2
 
 gamma = 1e-3
 new_eps = jnp.array([[0, gamma / 2, 0], [gamma / 2, 0, 0], [0, 0, 0]])

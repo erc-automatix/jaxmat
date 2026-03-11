@@ -29,16 +29,16 @@
 # batch of $N$ stochastic material points.
 #
 # %%
-import jax
-
-jax.config.update("jax_platform_name", "cpu")
 import equinox as eqx
+import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 
 import jaxmat.materials as jm
 from jaxmat.state import make_batched
 from jaxmat.tensors import SymmetricTensor2
+
+jax.config.update("jax_platform_name", "cpu")
 
 
 class VoceHardening(eqx.Module):
