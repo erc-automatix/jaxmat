@@ -22,7 +22,8 @@ class HyperelasticPotential(eqx.Module):
         return (F.inv @ self.PK1(F)).sym
 
     def Cauchy(self, F):
-        # Divide on the right rather than on the left to preserve Tensor object due to operator dispatch priority.
+        # Divide on the right rather than on the left to preserve Tensor object
+        # due to operator dispatch priority.
         return (self.PK1(F) @ F.T).sym / det33(F)
 
 
