@@ -7,7 +7,10 @@ from optimistix import max_norm
 
 
 class GaussNewtonTrustRegion(optx.GaussNewton):
-    """Gauss-Newton algorithm, for solving nonlinear least-squares problems with a trust region search."""
+    """Gauss-Newton Trust Region method.
+
+    For solving nonlinear least-squares problems with a trust region search.
+    """
 
     def __init__(
         self,
@@ -26,12 +29,14 @@ class GaussNewtonTrustRegion(optx.GaussNewton):
 
 
 class NewtonTrustRegion(optx.LevenbergMarquardt):
-    """Newton method for solving nonlinear problems with a trust region search.
+    """Newton Trust Region method.
+
+    For solving nonlinear least-squares problems with a trust region search.
 
     Notes
     -----
-    This algorithm is derived from LevenbergMarquardt using a full Newton descent
-    instead of a damped one.
+    This algorithm is derived from `optx.LevenbergMarquardt` using a full
+    Newton descent instead of a damped one.
     """
 
     def __init__(
@@ -51,7 +56,10 @@ class NewtonTrustRegion(optx.LevenbergMarquardt):
 
 
 class BFGSLinearTrustRegion(optx.AbstractBFGS):
-    """Standard BFGS algorithm, for solving minimisation problems with a linear trust region search."""
+    """BFGS algorithm with trust region.
+
+    For solving minimisation problems with a linear trust region search.
+    """
 
     rtol: float
     atol: float
