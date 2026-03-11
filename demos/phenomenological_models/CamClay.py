@@ -17,7 +17,8 @@
 # %% [markdown]
 # # Modified Cam-Clay
 #
-# In this example, we implement and solve a **Modified Cam-Clay (MCC)** model using the `jaxmat` library.
+# In this example, we implement and solve a **Modified Cam-Clay (MCC)** model using the `jaxmat`
+# library.
 #
 # ```{admonition} Objectives
 # :class: important
@@ -26,13 +27,17 @@
 #
 # - Define an elasto-plastic constitutive model with mixed isotropic–kinematic hardening.
 #
-# - Integrate the constitutive equations by solving an implicit system with plastic consistency conditions.
+# - Integrate the constitutive equations by solving an implicit system with plastic consistency
+#   conditions.
 #
 # - Evaluate the model response for non-proportional load paths.
 # ```
 #
-# The workflow follows the same structure as in the [Green viscoplastic model demo](./Green_viscoplasticity.ipynb): we successively define the internal variables, the yield surface, the hardening law, and the constitutive update.
-# We then simulate several over-consolidation ratios (OCRs) to study the material’s transition from contractant to dilatant behavior.
+# The workflow follows the same structure as in the [Green viscoplastic model
+# demo](./Green_viscoplasticity.ipynb): we successively define the internal variables, the yield
+# surface, the hardening law, and the constitutive update. We then simulate several
+# over-consolidation ratios (OCRs) to study the material’s transition from contractant to dilatant
+# behavior.
 #
 #
 # ## Model overview
@@ -48,15 +53,18 @@
 # - $p = -\frac{1}{3}\,\tr(\bsig)$ is the mean pressure,
 # - $q = \sqrt{\frac{3}{2}\bs:\bs}$ is the von Mises equivalent stress,
 # - $M$ is a material parameter describing the *critical state line* slope in the $(p,q)$ plane
-# - $p_c$ is a hardening variable called *critical pressure* ($2pc$ is the *preconsolidation pressure*).
+# - $p_c$ is a hardening variable called *critical pressure* ($2pc$ is the *preconsolidation
+# pressure*).
 #
-# Usually, we assume that the material possesses no tensile strength so that the yield surface lies only within the compressive stress region. This implies that the yield criterion is expressed as:
+# Usually, we assume that the material possesses no tensile strength so that the yield surface lies
+# only within the compressive stress region. This implies that the yield criterion is expressed as:
 #
 # ```{math}
 # \sqrt{(p-p_c)^2 + \left(\dfrac{q}{M}\right)^2} - p_c \leq 0
 # ```
 #
-# The preconsolidation pressure evolves with volumetric plastic strain $\varepsilon_v = \mathrm{tr}(\bepsp)$ according to the exponential hardening law:
+# The preconsolidation pressure evolves with volumetric plastic strain $\varepsilon_v =
+# \mathrm{tr}(\bepsp)$ according to the exponential hardening law:
 #
 # ```{math}
 # p_c(\varepsilon_v) = p_{c0}\exp(-\beta \varepsilon_v)
@@ -65,13 +73,17 @@
 # where $p_{c0}$ is the initial critical pressure and $\beta$ is a hardening rate coefficient.
 #
 # ```{attention}
-# The Modified Cam-Clay model exhibits *mixed hardening*:  the yield ellipse translates along the hydrostatic axis (kinematic part) and expands or contracts (isotropic part).  During compression ($\varepsilon_v < 0$), the material hardens as $p_c$ increases; during dilation ($\varepsilon_v > 0$), it softens.  This coupling naturally captures the contractant–dilatant transition observed in soils near the critical state.
+# The Modified Cam-Clay model exhibits *mixed hardening*:  the yield ellipse translates along the
+# hydrostatic axis (kinematic part) and expands or contracts (isotropic part).  During compression
+# ($\varepsilon_v < 0$), the material hardens as $p_c$ increases; during dilation ($\varepsilon_v >
+# 0$), it softens.  This coupling naturally captures the contractant–dilatant transition observed in
+# soils near the critical state.
 # ```
 #
 # ## Model implementation
 #
 # We now proceed to implement the model step by step with `jaxmat`.
-
+#
 # %%
 import jax
 import jax.numpy as jnp
@@ -90,14 +102,17 @@ import matplotlib.pyplot as plt
 
 
 # %% [markdown]
-# We import the relevant `jax` and `jaxmat` modules, enabling automatic differentiation, batched tensor operations, and root-finding through `optimistix`. The Fischer–Burmeister (FB) function will be used to impose the Kuhn–Tucker complementarity conditions of plasticity in a (semi-)smooth way.
+# We import the relevant `jax` and `jaxmat` modules, enabling automatic differentiation, batched
+# tensor operations, and root-finding through `optimistix`. The Fischer–Burmeister (FB) function
+# will be used to impose the Kuhn–Tucker complementarity conditions of plasticity in a (semi-)smooth
+# way.
 #
 # ### Internal state definition
 #
-# The internal variable for the Modified Cam-Clay model is the plastic strain tensor $\bepsp$.
-# We define a small subclass of `AbstractState` to store and update this tensor between time steps.
-
-
+# The internal variable for the Modified Cam-Clay model is the plastic strain tensor $\bepsp$. We
+# define a small subclass of `AbstractState` to store and update this tensor between time steps.
+#
+#
 # %%
 # Define internal state to store plastic strain
 class InternalState(jaxmat.state.AbstractState):
@@ -107,9 +122,13 @@ class InternalState(jaxmat.state.AbstractState):
 # %% [markdown]
 # ### Yield surface
 #
-# We now define the Cam-Clay yield surface. The class inherits from `AbstractPlasticSurface` and thus automatically computes the normal vector to the yield surface via its `normal` method. We simply need to implement the expression of the yield surface in the `__call__` dunder method. We decorate the latter with  the `safe_zero` decorator as described in the [](./Green_viscoplasticity.ipynb) demo.
-
-
+# We now define the Cam-Clay yield surface. The class inherits from `AbstractPlasticSurface` and
+# thus automatically computes the normal vector to the yield surface via its `normal` method. We
+# simply need to implement the expression of the yield surface in the `__call__` dunder method. We
+# decorate the latter with  the `safe_zero` decorator as described in the
+# [](./Green_viscoplasticity.ipynb) demo.
+#
+#
 # %%
 class CamClaySurface(jm.AbstractPlasticSurface):
     M: float = eqx.field(converter=jnp.asarray)  # critical state line parameter
@@ -126,8 +145,8 @@ class CamClaySurface(jm.AbstractPlasticSurface):
 # ### Hardening law
 #
 # We next define the exponential hardening rule for the preconsolidation pressure:
-
-
+#
+#
 # %%
 class Hardening(eqx.Module):
     beta: float = eqx.field(converter=jnp.asarray)
@@ -138,14 +157,24 @@ class Hardening(eqx.Module):
 
 
 # %% [markdown]
-# The function takes the volumetric plastic strain $\varepsilon_v$ as input and returns the corresponding $p_c$.
+# The function takes the volumetric plastic strain $\varepsilon_v$ as input and returns the
+# corresponding $p_c$.
 #
 # ### Constitutive update
 #
-# We now assemble all components into the main Modified Cam-Clay class. This class inherits from `SmallStrainBehavior` and defines the local integration algorithm to update the stress and state variables implicitly as follows:
-# The constitutive update proceeds first by defining the final stress expression from the known strain increment $\Delta\beps$ and the unknown plastic strain increment $\Delta\bepsp$.
+# We now assemble all components into the main Modified Cam-Clay class. This class inherits from
+# `SmallStrainBehavior` and defines the local integration algorithm to update the stress and state
+# variables implicitly as follows: The constitutive update proceeds first by defining the final
+# stress expression from the known strain increment $\Delta\beps$ and the unknown plastic strain
+# increment $\Delta\bepsp$.
 #
-# The residual system enforcing the plastic flow rule and yield condition is then defined. Note that although the plastic multiplier increment $\Delta\lambda$ has not been defined as a state variable, it is an auxiliary unknown that we need to solve for. Moreover, we use the Fischer–Burmeister function `FB(x,y)` (see [Fischer-Burmeister functions](./../../sharp_bits.md)) to smoothly impose the complementarity condition between plastic consistency and plastic multiplier. The discretized system using an implicit Euler scheme is here to find $(\Delta\lambda,\Delta\bepsp)$ such that:
+# The residual system enforcing the plastic flow rule and yield condition is then defined. Note that
+# although the plastic multiplier increment $\Delta\lambda$ has not been defined as a state
+# variable, it is an auxiliary unknown that we need to solve for. Moreover, we use the
+# Fischer–Burmeister function `FB(x,y)` (see [Fischer-Burmeister functions](./../../sharp_bits.md))
+# to smoothly impose the complementarity condition between plastic consistency and plastic
+# multiplier. The discretized system using an implicit Euler scheme is here to find
+# $(\Delta\lambda,\Delta\bepsp)$ such that:
 #
 # ```{math}
 # \begin{align*}
@@ -154,15 +183,18 @@ class Hardening(eqx.Module):
 # \end{align*}
 # ```
 #
-# where $\varepsilon^\text{p}_v = \varepsilon^\text{p}_{v,n} + \Delta \varepsilon^\text{p}_v$ and where the last line is equivalent to:
+# where $\varepsilon^\text{p}_v = \varepsilon^\text{p}_{v,n} + \Delta \varepsilon^\text{p}_v$ and
+# where the last line is equivalent to:
 #
 # ```{math}
-# f(\bsig, p_c)-p_c \leq 0, \: \Delta\lambda\geq 0, \text{ and } \Delta\lambda(f(\bsig, p_c)-p_c) = 0
+# f(\bsig, p_c)-p_c \leq 0, \: \Delta\lambda\geq 0, \text{ and } \Delta\lambda(f(\bsig, p_c)-p_c) =
+# 0
 # ```
 #
-# We solve the nonlinear system with `optimistix.root_find`, using automatic differentiation for the Jacobian and finally return the updated stress $\bsig$ and internal variable $\bepsp$.
-
-
+# We solve the nonlinear system with `optimistix.root_find`, using automatic differentiation for the
+# Jacobian and finally return the updated stress $\bsig$ and internal variable $\bepsp$.
+#
+#
 # %%
 class ModifiedCamClay(jm.SmallStrainBehavior):
     elasticity: jm.LinearElasticIsotropic
@@ -216,8 +248,9 @@ class ModifiedCamClay(jm.SmallStrainBehavior):
 # %% [markdown]
 # ## Evaluating the model
 #
-# We instantiate below the MCC material by choosing $M=0.9$ and $\beta=30$, corresponding to typical clay parameters. The initial critical pressure is chosen here to be $p_{c0}=1\text{ MPa}$.
-
+# We instantiate below the MCC material by choosing $M=0.9$ and $\beta=30$, corresponding to typical
+# clay parameters. The initial critical pressure is chosen here to be $p_{c0}=1\text{ MPa}$.
+#
 # %%
 elasticity = jm.LinearElasticIsotropic(E=248.28, nu=0.241)
 cc_surface = CamClaySurface(M=0.9)
@@ -229,13 +262,22 @@ material = ModifiedCamClay(elasticity=elasticity, hardening=hardening, plastic_s
 # %% [markdown]
 # ## Load cases and initialization
 #
-# We prepare a set of load cases corresponding to a triaxial compression test. In a first phase, for $0 \leq t\leq t_\text{cons}$, we define an isotropic consolidation load case, until reaching linearly with time a consolidation pressure $p_0$. The ratio $\text{OCR}=2p_{c0}/p_0$ defines the so-called Over-Consolidation Ratio (OCR). For each OCR, the end of the consolidation phase results in a hydrostatic strain state $\beps = -p_0/(3\kappa) \bI$ where $\kappa$ is the material bulk modulus. In total, we define six different OCRs from 2 to 16. Each case represents a different initial consolidation level: over-consolidated clays (large OCR) are stiffer and tend to dilate under shear, while normally consolidated clays (low OCR) tend to contract.
+# We prepare a set of load cases corresponding to a triaxial compression test. In a first phase, for
+# $0 \leq t\leq t_\text{cons}$, we define an isotropic consolidation load case, until reaching
+# linearly with time a consolidation pressure $p_0$. The ratio $\text{OCR}=2p_{c0}/p_0$ defines the
+# so-called Over-Consolidation Ratio (OCR). For each OCR, the end of the consolidation phase results
+# in a hydrostatic strain state $\beps = -p_0/(3\kappa) \bI$ where $\kappa$ is the material bulk
+# modulus. In total, we define six different OCRs from 2 to 16. Each case represents a different
+# initial consolidation level: over-consolidated clays (large OCR) are stiffer and tend to dilate
+# under shear, while normally consolidated clays (low OCR) tend to contract.
 #
-# After this consolidation phase, we further increase the vertical compressive strain $-\varepsilon_{zz}$ while maintaining the lateral confining pressure, i.e. $\sigma_{xx}=\sigma_{yy}=-p_0$.
+# After this consolidation phase, we further increase the vertical compressive strain
+# $-\varepsilon_{zz}$ while maintaining the lateral confining pressure, i.e.
+# $\sigma_{xx}=\sigma_{yy}=-p_0$.
 #
 # All 6 OCR load cases are integrated simultaneously as a batched simulation.
-
-
+#
+#
 # %%
 def compute_pq(sig):
     p = -jnp.trace(sig) / 3
@@ -283,8 +325,13 @@ for i, dt in enumerate(jnp.diff(times)):
     results = results.at[i + 1, :, 4].set(q)
 
 # %% [markdown]
-# Finally, we plot the corresponding stress and strain evolutions for the different OCR. The first plot shows the vertical stress/strain curve where we can clearly observe softening for the over-consolidated cases and hardening otherwise. The second plot shows the typical transition between contractance and dilatance during the softening evolutions. Finally, the last plot represents the stress paths in the $(p,q)$ space. The star symbols denote the final stress state for each cases which all fall on the critical state line of equation $q=Mp$.
-
+# Finally, we plot the corresponding stress and strain evolutions for the different OCR. The first
+# plot shows the vertical stress/strain curve where we can clearly observe softening for the
+# over-consolidated cases and hardening otherwise. The second plot shows the typical transition
+# between contractance and dilatance during the softening evolutions. Finally, the last plot
+# represents the stress paths in the $(p,q)$ space. The star symbols denote the final stress state
+# for each cases which all fall on the critical state line of equation $q=Mp$.
+#
 # %% tags=["hide-input"]
 cmap = plt.get_cmap("coolwarm")
 colors = cmap(jnp.linspace(0, 1, Nbatch))

@@ -21,7 +21,7 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "jupytext",
-    "jupyter_book"
+    "jupyter_book<2"
 ]
 gpu = [
     "jax[cuda12]>=0.6.1",
