@@ -60,7 +60,7 @@ def stretch_tensor(F):
 
 @jax.custom_jvp
 def eigenvalues(sig):
-    eigvals, eigendyads = eig33(sig)
+    eigvals, _eigendyads = eig33(sig)
     return eigvals
 
 
