@@ -33,7 +33,7 @@
 #
 # ## Loading and preprocessing experimental data
 #
-# We start by importing the necessary packages and loading experimental uniaxial stress–strain data
+# We start by importing the necessary packages and loading experimental uniaxial stress-strain data
 # from a steel sample. Data has been obtained from the X100 dataset used in the MEALOR lab session
 # on ductile fracture models, see also {cite:p}`besson2023mealor`. The data represent the
 # evolution of the yield stress as a function of equivalent plastic strain $p$.
@@ -43,21 +43,22 @@
 # truncated to define a training subset limited to $p<5.10^{-2}$, leaving the rest for
 # extrapolation.
 #
-# The plot below shows the ground-truth stress–strain curve and the noisy data used for training.
+# The plot below shows the ground-truth stress-strain curve and the noisy data used for training.
 #
 # %%
-import jax
-
-jax.config.update("jax_platform_name", "cpu")
 from pathlib import Path
 
 import equinox as eqx
+import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 import optimistix as optx
 
 from jaxmat.nn.icnn import ICNN
+
+jax.config.update("jax_platform_name", "cpu")
+
 
 current_path = Path().resolve()
 
@@ -186,7 +187,7 @@ def total_loss(hardening, args):
 # dataset.
 #
 # During optimization, the solver adjusts the parameters to best reproduce the measured yield stress
-# values. Thanks to JAX’s automatic differentiation, all gradients are computed exactly and
+# values. Thanks to JAX's automatic differentiation, all gradients are computed exactly and
 # efficiently.
 #
 # Note that $\gamma$ is a hyperparameter which must be tuned by chosen before hand by the user.
