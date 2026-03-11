@@ -24,8 +24,10 @@ class GeneralizedStandardMaterial(jm.SmallStrainBehavior):
 
     The state variable evolution is obtained by minimizing the **incremental potential**:
 
-    $$\min_{\Delta \balpha} J(\Delta\balpha ;\beps_{n+1},\balpha_n) = \min_{\Delta \balpha} \Psi(\beps_{n+1}, \balpha_n + \Delta \balpha)
-    + \Delta t \Phi\left(\dfrac{\Delta \balpha}{\Delta t}\right)$$
+    $$\min_{\Delta \balpha} J(\Delta\balpha ;\beps_{n+1},\balpha_n)
+       = \min_{\Delta \balpha} \Psi(\beps_{n+1}, \balpha_n + \Delta \balpha)
+       + \Delta t \Phi\left(\dfrac{\Delta \balpha}{\Delta t}\right)
+    $$
 
     subject to the current strain $\beps_{n+1} = \beps_n+\Delta\beps$ and time increment $\Delta t$.
 
@@ -33,13 +35,16 @@ class GeneralizedStandardMaterial(jm.SmallStrainBehavior):
 
     Important
     ---------
-    This is an abstract behavior which must concretely implement ``make_internal_state`` as the structure of internal state variables is not
+
+    This is an abstract behavior which must concretely implement
+    ``make_internal_state`` as the structure of internal state variables is not
     known before hand.
 
     Notes
     -----
-    The stress is automatically computed via
-        $$\bsig = \dfrac{\partial \Psi}{\partial \beps}$$
+
+    The stress is automatically computed via $$\bsig = \dfrac{\partial
+    \Psi}{\partial \beps}$$.
 
 
     .. admonition:: References
