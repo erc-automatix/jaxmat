@@ -31,7 +31,7 @@ class AFInternalState(SmallStrainState):
     """Backstress tensors"""
 
 
-class AmrstrongFrederickViscoplasticity(SmallStrainBehavior):
+class ArmstrongFrederickViscoplasticity(SmallStrainBehavior):
     """
     Small-strain viscoplastic constitutive model with Armstrong-Frederick
     kinematic hardening, Voce isotropic hardening, and Norton-type viscous flow.
