@@ -9,7 +9,7 @@ authors = [
 ]
 license = { text = "GNU GPLv3" }  # Replace or remove if not using MIT
 keywords = ["material science", "machine learning", "material modeling", "solid mechanics", "automatic differentiation"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "jax>=0.6.1",
     "optax",
