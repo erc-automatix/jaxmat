@@ -61,9 +61,7 @@ class ImposedLoading(eqx.Module):
         lens = {arr.shape[0] for arr in (self.eps_vals, self.sig_vals, self.strain_mask)}
         if len(lens) != 1:
             info = f"{[arr.shape for arr in (self.eps_vals, self.sig_vals, self.strain_mask)]}"
-            raise ValueError(
-                f"Inconsistent batch sizes: {info}"
-            )
+            raise ValueError(f"Inconsistent batch sizes: {info}")
         return lens.pop()
 
 
@@ -128,11 +126,14 @@ def residual(material, loader: ImposedLoading, eps: jnp.ndarray, state: dict, dt
 
     # Flatten mask to array accounting for symmetry class of strain
     if isinstance(eps, SymmetricTensor2):
+
         def to_array(x):
             return SymmetricTensor2(tensor=x).array
     else:
+
         def to_array(x):
             return x
+
     strain_mask = to_array(strain_mask)
 
     sig, state = material.constitutive_update(eps, state, dt)
