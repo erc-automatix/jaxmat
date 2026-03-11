@@ -62,9 +62,9 @@
 # viscosity and $m$ is the Norton exponent.
 #
 # %%
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
 import matplotlib.pyplot as plt
 import optimistix as optx
 
