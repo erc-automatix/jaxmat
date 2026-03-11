@@ -86,12 +86,13 @@ class GeneralizedMaxwell(jm.SmallStrainBehavior):
     using a series of Maxwell elements (spring + dashpot), each with its own
     relaxation time $\tau_i$.
 
-    The model can be seen as a Prony series representation of stress relaxation.
+    The model can be seen as a Prony series representation of stress relaxation
+    function.
 
     Notes
     -----
     The total stress is computed as:
-    
+
     $$\bsig = \bsig_\infty + \sum_{i=1}^N \bsig^\text{v}_i$$
 
     where in each viscous branch evolves as:
