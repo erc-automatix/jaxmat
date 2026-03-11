@@ -43,15 +43,15 @@
 # 3)`. By convention, the batch dimension is always the first axis.
 #
 # %%
-import jax
-import matplotlib.pyplot as plt
-
-jax.config.update("jax_platform_name", "cpu")
 import equinox as eqx
+import jax
 import jax.numpy as jnp
+import matplotlib.pyplot as plt
 
 import jaxmat.materials as jm
 from jaxmat.tensors import SymmetricTensor2
+
+jax.config.update("jax_platform_name", "cpu")
 
 N = 40
 theta = jnp.linspace(0, jnp.pi, N)

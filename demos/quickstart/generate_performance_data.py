@@ -1,19 +1,19 @@
 # %%
 from time import time
 
+import equinox as eqx
 import jax
+import jax.numpy as jnp
 import numpy as np
+
+import jaxmat.materials as jm
+from jaxmat.state import make_batched
+from jaxmat.tensors import Tensor2
 
 platform = "gpu"
 with_jac = True
 
 jax.config.update("jax_platform_name", platform)
-import equinox as eqx
-import jax.numpy as jnp
-
-import jaxmat.materials as jm
-from jaxmat.state import make_batched
-from jaxmat.tensors import Tensor2
 
 
 def test_FeFp_elastoplasticity(material, with_jac=False, Nbatch=1, Nsteps=20):
@@ -47,7 +47,7 @@ def test_FeFp_elastoplasticity(material, with_jac=False, Nbatch=1, Nsteps=20):
         F = make_batched(F_, Nbatch)
 
         tic = time()
-        Sig, state = integrator(F, state, dt)
+        _, state = integrator(F, state, dt)
         times[i] = time() - tic
     return times
 
