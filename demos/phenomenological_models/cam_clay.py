@@ -100,6 +100,7 @@ from jaxmat.tensors.utils import FischerBurmeister as FB
 
 jax.config.update("jax_platform_name", "cpu")
 
+
 # %% [markdown]
 # We import the relevant `jax` and `jaxmat` modules, enabling automatic differentiation, batched
 # tensor operations, and root-finding through `optimistix`. The Fischer-Burmeister (FB) function

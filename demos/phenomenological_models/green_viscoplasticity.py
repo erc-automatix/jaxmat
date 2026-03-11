@@ -76,7 +76,6 @@ from jaxmat.tensors import SymmetricTensor2, dev
 jax.config.update("jax_platform_name", "cpu")
 
 
-
 # %% [markdown]
 # ## Model implementation
 #

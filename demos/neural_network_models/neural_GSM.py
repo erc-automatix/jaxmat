@@ -134,7 +134,6 @@ from jaxmat.utils import partition_by_node_names
 jax.config.update("jax_platform_name", "cpu")
 
 
-
 E0, nu = 70e3, 0.3
 elasticity = jm.LinearElasticIsotropic(E0, nu)
 
