@@ -16,3 +16,11 @@ DEFAULT_SOLVERS = (
     ),
     optx.ImplicitAdjoint(linear_solver=DEFAULT_LINEAR_SOLVER),
 )
+
+__all__ = [
+    "DEFAULT_SOLVERS",
+    "DEFAULT_LINEAR_SOLVER",
+    "BFGSLinearTrustRegion",
+    "GaussNewtonTrustRegion",
+    "NewtonTrustRegion",
+]
