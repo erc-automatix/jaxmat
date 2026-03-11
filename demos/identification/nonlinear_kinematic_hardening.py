@@ -32,15 +32,16 @@
 # ```
 #
 # %%
+import jax
 import matplotlib.pyplot as plt
 import numpy as np
-import jax
 
 jax.config.update("jax_platform_name", "cpu")
-import jax.numpy as jnp
 import equinox as eqx
-import optimistix as optx
+import jax.numpy as jnp
 import optax
+import optimistix as optx
+
 import jaxmat.materials as jm
 from jaxmat.tensors import SymmetricTensor2
 from jaxmat.utils import default_value, partition_by_node_names, print_eqx_fields

@@ -43,12 +43,13 @@
 # 3)`. By convention, the batch dimension is always the first axis.
 #
 # %%
-import matplotlib.pyplot as plt
 import jax
+import matplotlib.pyplot as plt
 
 jax.config.update("jax_platform_name", "cpu")
-import jax.numpy as jnp
 import equinox as eqx
+import jax.numpy as jnp
+
 import jaxmat.materials as jm
 from jaxmat.tensors import SymmetricTensor2
 

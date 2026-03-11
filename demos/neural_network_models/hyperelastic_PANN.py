@@ -59,16 +59,14 @@
 # as the PT test dataset.
 #
 # %%
+import jax
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
+import optimistix as optx
 
 from jaxmat import get_path
 from jaxmat.nn.icnn import ICNN
-import jax
-import jax.numpy as jnp
-
-
-import optimistix as optx
 
 current_path = get_path()
 data = np.loadtxt(current_path / "../demos/_data/Treloar_rubber.csv", skiprows=1, delimiter=",")

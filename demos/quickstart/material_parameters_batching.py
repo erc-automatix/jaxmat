@@ -32,12 +32,13 @@
 import jax
 
 jax.config.update("jax_platform_name", "cpu")
-import jax.numpy as jnp
 import equinox as eqx
-import jaxmat.materials as jm
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from jaxmat.tensors import SymmetricTensor2
+
+import jaxmat.materials as jm
 from jaxmat.state import make_batched
+from jaxmat.tensors import SymmetricTensor2
 
 
 class VoceHardening(eqx.Module):

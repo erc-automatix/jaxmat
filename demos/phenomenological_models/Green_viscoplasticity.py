@@ -67,13 +67,14 @@ import jax.numpy as jnp
 
 jax.config.update("jax_platform_name", "cpu")
 
+import equinox as eqx
+import matplotlib.pyplot as plt
+import optimistix as optx
+
 import jaxmat
 import jaxmat.materials as jm
-from jaxmat.tensors import SymmetricTensor2, dev
 from jaxmat.loader import ImposedLoading, global_solve
-import equinox as eqx
-import optimistix as optx
-import matplotlib.pyplot as plt
+from jaxmat.tensors import SymmetricTensor2, dev
 
 
 # %% [markdown]

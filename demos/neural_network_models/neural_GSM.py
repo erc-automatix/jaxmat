@@ -123,15 +123,16 @@ import jax
 jax.config.update("jax_platform_name", "cpu")
 
 import equinox as eqx
-import matplotlib.pyplot as plt
 import jax.numpy as jnp
-from jaxmat.state import make_batched, AbstractState
-from jaxmat.utils import partition_by_node_names
-from jaxmat.tensors import SymmetricTensor2, main_invariants, eigenvalues
-from jaxmat.nn.icnn import ICNN, ICNNSkip
-import jaxmat.materials as jm
-import optimistix as optx
+import matplotlib.pyplot as plt
 import optax
+import optimistix as optx
+
+import jaxmat.materials as jm
+from jaxmat.nn.icnn import ICNN
+from jaxmat.state import AbstractState, make_batched
+from jaxmat.tensors import SymmetricTensor2, main_invariants
+from jaxmat.utils import partition_by_node_names
 
 E0, nu = 70e3, 0.3
 elasticity = jm.LinearElasticIsotropic(E0, nu)

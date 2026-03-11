@@ -123,24 +123,22 @@
 # ```
 #
 # %%
-import jaxmat
-import jax.numpy as jnp
 import equinox as eqx
+import jax
+import jax.numpy as jnp
+import matplotlib.pyplot as plt
 import optimistix as optx
 from optax.tree_utils import tree_add, tree_zeros_like
-from jaxmat.state import AbstractState
-from jaxmat.tensors import SymmetricTensor2, dev, pq_invariants
+
+import jaxmat.materials as jm
 from jaxmat.materials.behavior import SmallStrainBehavior
 from jaxmat.materials.elasticity import LinearElasticIsotropic
 from jaxmat.materials.plastic_surfaces import (
     AbstractPlasticSurface,
 )
+from jaxmat.state import AbstractState
+from jaxmat.tensors import SymmetricTensor2, pq_invariants
 from jaxmat.tensors.utils import FischerBurmeister as FB
-import jaxmat.materials as jm
-import jax
-
-
-import matplotlib.pyplot as plt
 
 
 class InternalState(AbstractState):

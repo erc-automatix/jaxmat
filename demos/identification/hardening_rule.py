@@ -49,14 +49,15 @@
 import jax
 
 jax.config.update("jax_platform_name", "cpu")
-import jax.numpy as jnp
-
 from pathlib import Path
+
+import equinox as eqx
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
-import equinox as eqx
 import optimistix as optx
-from jaxmat.nn.icnn import ICNN, ICNNSkip
+
+from jaxmat.nn.icnn import ICNN
 
 current_path = Path().resolve()
 

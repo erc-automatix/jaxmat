@@ -28,8 +28,9 @@
 import jax
 
 jax.config.update("jax_platform_name", "cpu")
-import jax.numpy as jnp
 import equinox as eqx
+import jax.numpy as jnp
+
 import jaxmat.materials as jm
 
 # %% [markdown]
@@ -101,12 +102,12 @@ plt.subplot(1, 2, 1)
 plt.plot(p, hardening(p), "-C0")
 plt.gca().set_ylim(bottom=0)
 plt.xlabel("Equivalent plastic strain $p$")
-plt.ylabel("Yield stress $\sigma_Y(p)$ [MPa]")
+plt.ylabel(r"Yield stress $\sigma_Y(p)$ [MPa]")
 plt.subplot(1, 2, 2)
 plt.plot(p, 1e-3 * H(p), "-C3")
 plt.gca().set_ylim(bottom=0)
 plt.xlabel("Equivalent plastic strain $p$")
-plt.ylabel("Hardening modulus $H(p)=\sigma_Y'(p)$ [GPa]")
+plt.ylabel(r"Hardening modulus $H(p)=\sigma_Y'(p)$ [GPa]")
 plt.show()
 
 # %% [markdown]

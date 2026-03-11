@@ -1,9 +1,8 @@
 # %%
-import numpy as np
 from time import time
 
-import matplotlib.pyplot as plt
 import jax
+import numpy as np
 
 platform = "gpu"
 with_jac = True
@@ -11,9 +10,10 @@ with_jac = True
 jax.config.update("jax_platform_name", platform)
 import equinox as eqx
 import jax.numpy as jnp
-from jaxmat.tensors import Tensor2
-from jaxmat.state import make_batched
+
 import jaxmat.materials as jm
+from jaxmat.state import make_batched
+from jaxmat.tensors import Tensor2
 
 
 def test_FeFp_elastoplasticity(material, with_jac=False, Nbatch=1, Nsteps=20):
