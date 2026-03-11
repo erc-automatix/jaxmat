@@ -30,7 +30,8 @@ def safe_fun(fun, x, norm=None, eps=1e-16):
         ``fun(x)`` if ``norm(x) > eps``, otherwise ``0`` (of the same shape as ``x``).
     """
     if norm is None:
-        norm = lambda x: x
+        def norm(x):
+            return x
     nonzero_x = jnp.where(norm(x) > eps, x, 0 * x)
     return jnp.where(norm(x) > eps, fun(nonzero_x), 0)
 

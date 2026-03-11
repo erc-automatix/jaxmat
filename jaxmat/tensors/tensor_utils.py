@@ -7,7 +7,6 @@ from . import SymmetricTensor2, SymmetricTensor4, Tensor2
 from .linear_algebra import _sqrtm, eig33
 
 
-# These functions apply to tensors
 @partial(jax.jit, static_argnums=1)
 def polar(F, mode="RU"):
     """Computes the 'RU' or 'VR' polar decomposition of F."""
