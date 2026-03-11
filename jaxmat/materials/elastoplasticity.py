@@ -154,10 +154,12 @@ class GeneralHardeningInternalState(AbstractState):
 class GeneralHardening(SmallStrainBehavior):
     r"""
     Small-strain rate-independent elastoplastic constitutive model with general
-    combined isotropic and kinematic hardening and generic plastic surface.
-    The model accounts for a single plastic surface but several kinematic hardening variables.
+    combined isotropic and kinematic hardening and generic plastic surface. The
+    model accounts for a single plastic surface but several kinematic hardening
+    variables.
 
-    Return-mapping requires solving a non-linear system in terms of $p$, $\bepsp$ and the $\balpha_i$.
+    Return-mapping requires solving a non-linear system in terms of $p$,
+    $\bepsp$ and the $\balpha_i$.
     """
 
     elasticity: AbstractLinearElastic
@@ -168,11 +170,13 @@ class GeneralHardening(SmallStrainBehavior):
     """Generic plastic surface."""
     combined_hardening: eqx.Module
     r"""
-    Combined hardening module representing a hardening potential $\psi_\textrm{h}(\balpha,p)$. 
-    Should provide two methods:
+    Combined hardening module representing a hardening potential
+    $\psi_\textrm{h}(\balpha,p)$. Should provide two methods:
 
-    - ``combined_hardening.dalpha(alpha, p)`` returning $\dfrac{\partial \psi_\textrm{h}}{\partial \balpha}(\balpha,p)$
-    - ``combined_hardening.dp(alpha, p)`` returning $\dfrac{\partial \psi_\textrm{h}}{\partial p}(\balpha,p)$
+    - ``combined_hardening.dalpha(alpha, p)`` returning $\dfrac{\partial
+      \psi_\textrm{h}}{\partial \balpha}(\balpha,p)$
+    - ``combined_hardening.dp(alpha, p)`` returning $\dfrac{\partial
+      \psi_\textrm{h}}{\partial p}(\balpha,p)$
     """
     nvar: int = eqx.field(static=True, default=1)
 
