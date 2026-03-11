@@ -35,7 +35,7 @@
 # * How to define a hybrid neural constitutive model following the GSM structure
 # * How to generate synthetic viscoelastic data using a Generalized Maxwell model
 # * How to train a neural dissipation potential while keeping a known free energy
-# * How the number of internal variables affects the model’s ability to reproduce the true
+# * How the number of internal variables affects the model's ability to reproduce the true
 #   relaxation behavior
 # ```
 #
@@ -114,15 +114,12 @@
 #
 # We first define the ground truth data from a generalized Maxwell model with `Nmax=6` branches. The
 # viscous elements are generated so that their relaxation times are spaced within the interval
-# $0.005\text{ s}$--$10\text{ s}$ with random stiffness values. The synthetic stress–strain data
+# $0.005\text{ s}$--$10\text{ s}$ with random stiffness values. The synthetic stress-strain data
 # obtained from this model will serve as our training target.
 #
 # %%
-import jax
-
-jax.config.update("jax_platform_name", "cpu")
-
 import equinox as eqx
+import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import optax
@@ -133,6 +130,10 @@ from jaxmat.nn.icnn import ICNN
 from jaxmat.state import AbstractState, make_batched
 from jaxmat.tensors import SymmetricTensor2, main_invariants
 from jaxmat.utils import partition_by_node_names
+
+jax.config.update("jax_platform_name", "cpu")
+
+
 
 E0, nu = 70e3, 0.3
 elasticity = jm.LinearElasticIsotropic(E0, nu)
@@ -264,7 +265,7 @@ class FreeEnergy(eqx.Module):
 # %%
 class ICNNDissipationPotential(ICNN):
     def icnn_potential(self, alpha_dot):
-        I1, I2, I3 = jax.vmap(main_invariants)(alpha_dot)
+        _I1, I2, _I3 = jax.vmap(main_invariants)(alpha_dot)
         return super().__call__(1e3 * I2)
 
     def __call__(self, isv_dot):
@@ -321,7 +322,7 @@ for Nvar in Nvar_list:
 # $N_\text{var}=3$) and compare it with the ground truth and noisy data.
 #
 # At this stage, the predicted stress does not match the target relaxation curve — the neural
-# model’s dissipation potential is untrained and cannot yet capture the correct time-dependent
+# model's dissipation potential is untrained and cannot yet capture the correct time-dependent
 # decay.
 #
 # %%

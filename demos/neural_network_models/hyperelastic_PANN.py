@@ -37,7 +37,7 @@
 #
 # We first load the dataset [obtained from
 # here](https://www.kaggle.com/datasets/swordfisho/treolar-dataset). To prepare it for training, we
-# filter invalid entries and resample the stress–stretch curves by linear interpolation, obtaining
+# filter invalid entries and resample the stress-stretch curves by linear interpolation, obtaining
 # $N_\text{sample}$ data points per loading case.
 #
 # In the following, we work with vectors of principal stretches
