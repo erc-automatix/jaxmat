@@ -66,8 +66,8 @@ class AmrstrongFrederickViscoplasticity(SmallStrainBehavior):
     """Viscoplastic flow rule following Norton (power-law) viscosity formulation."""
     kinematic_hardening: ArmstrongFrederickHardening
     """
-    Kinematic hardening model defining the backstress evolution rate with dynamic 
-    recovery (Armstrong-Frederick formulation).
+    Kinematic hardening model defining the backstress evolution rate with
+    dynamic recovery (Armstrong-Frederick formulation).
     """
     plastic_surface = vonMises()
     """J2-type yield (or loading) surface based on the deviatoric stress invariant."""
@@ -81,7 +81,9 @@ class AmrstrongFrederickViscoplasticity(SmallStrainBehavior):
         deps = eps - eps_old
         isv_old = state.internal
         sig_old = state.stress
-        sig_eq = lambda sig: self.plastic_surface(sig)
+
+        def sig_eq(sig):
+            return self.plastic_surface(sig)
 
         def eval_stress(deps, dy):
             return sig_old + self.elasticity.C @ (deps - dev(dy.epsp))
@@ -157,7 +159,9 @@ class GenericViscoplasticity(SmallStrainBehavior):
         deps = eps - eps_old
         isv_old = state.internal
         sig_old = state.stress
-        sig_eq = lambda sig: self.plastic_surface(sig)
+
+        def sig_eq(sig):
+            return self.plastic_surface(sig)
 
         def eval_stress(deps, dy):
             return sig_old + self.elasticity.C @ (deps - dev(dy.epsp))
