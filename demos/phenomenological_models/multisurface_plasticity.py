@@ -34,10 +34,10 @@
 #   thereby avoiding an explicit tracking of active/inactive yield surfaces.
 #
 # - Validate the implementation by visualizing the resulting stress paths in the $(p, q)$
-#   (mean–deviatoric) stress space.
+#   (mean-deviatoric) stress space.
 # ```
 #
-# For the sake of illustration, we consider a Drucker–Prager yield surface describing the main
+# For the sake of illustration, we consider a Drucker-Prager yield surface describing the main
 # frictional effect in the plasticity of several geomaterials. We also add an elliptic cap in
 # compression and a hydrostatic tension cutoff. Assuming no hardening, we plot the final yield
 # surface obtained from various strain-driven load paths in the hydrostatic/deviatoric
@@ -76,7 +76,7 @@
 #
 # ### Plastic complementarity conditions
 #
-# The evolution of these quantities is determined implicitly by a return-mapping–like algorithm
+# The evolution of these quantities is determined implicitly by a return-mapping-like algorithm
 # formulated as a root-finding problem. Classically, we should choose which surface is active,
 # compute a projected stress and then check if the surface remains active. This active-set strategy
 # is relatively cumbersome to implement. Instead, the use of complementarity functions such as
@@ -116,7 +116,7 @@
 #
 # Here, it allocates the array `p` with zeros of size `(n_surf,)`, ensuring that the internal
 # variable dimensions automatically match the number of yield surfaces, the structure remains static
-# and JAX-traceable, and the module follows Equinox’s immutable data model.
+# and JAX-traceable, and the module follows Equinox's immutable data model.
 #
 # In short, __post_init__ lets us safely set up shape-dependent fields while keeping the model
 # compatible with JAX transformations like `jit` and `vmap`.
@@ -393,7 +393,7 @@ plt.ioff()  # prevents Jupyter from displaying it automatically
 
 # %% [markdown]
 # Finally, we plot the resulting family of trajectories illustrating how the stress state evolves
-# under different loading directions. We also the reference yield surfaces (Drucker–Prager, elliptic
+# under different loading directions. We also the reference yield surfaces (Drucker-Prager, elliptic
 # cap, and tension cutoff) as dashed lines for reference.
 #
 # This visualization allows verifying that the stress paths remain within or tangent to the yield

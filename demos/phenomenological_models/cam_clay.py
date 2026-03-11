@@ -25,7 +25,7 @@
 #
 # The goal of this demo is to illustrate how to:
 #
-# - Define an elasto-plastic constitutive model with mixed isotropic–kinematic hardening.
+# - Define an elasto-plastic constitutive model with mixed isotropic-kinematic hardening.
 #
 # - Integrate the constitutive equations by solving an implicit system with plastic consistency
 #   conditions.
@@ -36,7 +36,7 @@
 # The workflow follows the same structure as in the [Green viscoplastic model
 # demo](./Green_viscoplasticity.ipynb): we successively define the internal variables, the yield
 # surface, the hardening law, and the constitutive update. We then simulate several
-# over-consolidation ratios (OCRs) to study the material’s transition from contractant to dilatant
+# over-consolidation ratios (OCRs) to study the material's transition from contractant to dilatant
 # behavior.
 #
 #
@@ -76,7 +76,7 @@
 # The Modified Cam-Clay model exhibits *mixed hardening*:  the yield ellipse translates along the
 # hydrostatic axis (kinematic part) and expands or contracts (isotropic part).  During compression
 # ($\varepsilon_v < 0$), the material hardens as $p_c$ increases; during dilation ($\varepsilon_v >
-# 0$), it softens.  This coupling naturally captures the contractant–dilatant transition observed in
+# 0$), it softens.  This coupling naturally captures the contractant-dilatant transition observed in
 # soils near the critical state.
 # ```
 #
@@ -85,12 +85,9 @@
 # We now proceed to implement the model step by step with `jaxmat`.
 #
 # %%
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-
-jax.config.update("jax_platform_name", "cpu")
-
-import equinox as eqx
 import matplotlib.pyplot as plt
 import optimistix as optx
 from optax.tree_utils import tree_zeros_like
@@ -101,11 +98,12 @@ from jaxmat.loader import ImposedLoading, global_solve
 from jaxmat.tensors import SymmetricTensor2, dev, safe_sqrt
 from jaxmat.tensors.utils import FischerBurmeister as FB
 
+jax.config.update("jax_platform_name", "cpu")
 
 # %% [markdown]
 # We import the relevant `jax` and `jaxmat` modules, enabling automatic differentiation, batched
-# tensor operations, and root-finding through `optimistix`. The Fischer–Burmeister (FB) function
-# will be used to impose the Kuhn–Tucker complementarity conditions of plasticity in a (semi-)smooth
+# tensor operations, and root-finding through `optimistix`. The Fischer-Burmeister (FB) function
+# will be used to impose the Kuhn-Tucker complementarity conditions of plasticity in a (semi-)smooth
 # way.
 #
 # ### Internal state definition
@@ -172,7 +170,7 @@ class Hardening(eqx.Module):
 # The residual system enforcing the plastic flow rule and yield condition is then defined. Note that
 # although the plastic multiplier increment $\Delta\lambda$ has not been defined as a state
 # variable, it is an auxiliary unknown that we need to solve for. Moreover, we use the
-# Fischer–Burmeister function `FB(x,y)` (see [Fischer-Burmeister functions](./../../sharp_bits.md))
+# Fischer-Burmeister function `FB(x,y)` (see [Fischer-Burmeister functions](./../../sharp_bits.md))
 # to smoothly impose the complementarity condition between plastic consistency and plastic
 # multiplier. The discretized system using an implicit Euler scheme is here to find
 # $(\Delta\lambda,\Delta\bepsp)$ such that:
@@ -218,7 +216,7 @@ class ModifiedCamClay(jm.SmallStrainBehavior):
         def solve_state(deps, epsp_old):
 
             def residual(dy, args):
-                dlamb, depsp = dy
+                _dlamb, depsp = dy
                 sig = eval_stress(deps, depsp)
                 epsp = epsp_old + depsp
                 epspv = jnp.trace(epsp)
