@@ -1,3 +1,5 @@
+import typing
+
 import equinox as eqx
 import jax
 import jax.numpy as jnp
@@ -69,7 +71,7 @@ class SmallStrainState(AbstractState):
     stress: SymmetricTensor2 = eqx.field(default_factory=SymmetricTensor2)
 
     # define alias targets to authorize state updates with alias names
-    __alias_targets__ = {"eps": "strain", "sig": "stress"}
+    __alias_targets__: typing.ClassVar[dict] = {"eps": "strain", "sig": "stress"}
 
     @property
     def eps(self):
@@ -162,7 +164,7 @@ def make_batched(module: eqx.Module, Nbatch: int) -> eqx.Module:
 
     def _broadcast(x):
         x_ = jnp.asarray(x)
-        return jnp.broadcast_to(x_, (Nbatch,) + x_.shape)
+        return jnp.broadcast_to(x_, (Nbatch, *x_.shape))
 
     batched_module = jax.tree.map(_broadcast, module)
 
@@ -171,7 +173,7 @@ def make_batched(module: eqx.Module, Nbatch: int) -> eqx.Module:
         if module._batch_size is None:
             batch_size = (Nbatch,)
         else:
-            batch_size = (Nbatch,) + module._batch_size
+            batch_size = (Nbatch, *module._batch_size)
         object.__setattr__(batched_module, "_batch_size", batch_size)
 
     return batched_module
