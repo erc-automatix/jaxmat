@@ -8,7 +8,7 @@ authors = [
     { name = "Paul Bouteiller", email = "paul.bouteiller@cea.fr" },
     { name = "Jack S. Hale", email = "jack.hale@uni.lu" }
 ]
-license = { text = "GNU GPLv3" }  # Replace or remove if not using MIT
+license = { text = "LGPL-3.0" }
 keywords = ["material science", "machine learning", "material modeling", "solid mechanics", "automatic differentiation"]
 requires-python = ">=3.11"
 dependencies = [
