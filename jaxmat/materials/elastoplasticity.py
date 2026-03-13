@@ -1,18 +1,20 @@
-import jax.numpy as jnp
 import equinox as eqx
+import jax
+import jax.numpy as jnp
 import optimistix as optx
 from optax.tree_utils import tree_add, tree_zeros_like
-from jaxmat.utils import default_value, enforce_dtype
+
 from jaxmat.state import AbstractState, make_batched
 from jaxmat.tensors import SymmetricTensor2, dev
+from jaxmat.tensors.utils import FischerBurmeister as FB
+from jaxmat.utils import default_value, enforce_dtype
+
 from .behavior import SmallStrainBehavior
-from .elasticity import LinearElasticIsotropic, AbstractLinearElastic
+from .elasticity import AbstractLinearElastic, LinearElasticIsotropic
 from .plastic_surfaces import (
     AbstractPlasticSurface,
     vonMises,
 )
-from jaxmat.tensors.utils import FischerBurmeister as FB
-import jax
 
 
 class InternalState(AbstractState):
@@ -112,9 +114,7 @@ class GeneralIsotropicHardening(SmallStrainBehavior):
             def residual(dy, args):
                 dp, depsp = dy.p, dy.epsp
                 sig = eval_stress(deps, dy)
-                yield_criterion = self.plastic_surface(sig) - self.yield_stress(
-                    p_old + dp
-                )
+                yield_criterion = self.plastic_surface(sig) - self.yield_stress(p_old + dp)
                 n = self.plastic_surface.normal(sig)
                 res = (
                     FB(-yield_criterion / self.elasticity.E, dp),
@@ -124,9 +124,7 @@ class GeneralIsotropicHardening(SmallStrainBehavior):
                 return (res, y)
 
             dy0 = tree_zeros_like(isv_old)
-            sol = optx.root_find(
-                residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint
-            )
+            sol = optx.root_find(residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint)
             dy = sol.value
             y = sol.aux
             sig = eval_stress(deps, dy)
@@ -156,10 +154,12 @@ class GeneralHardeningInternalState(AbstractState):
 class GeneralHardening(SmallStrainBehavior):
     r"""
     Small-strain rate-independent elastoplastic constitutive model with general
-    combined isotropic and kinematic hardening and generic plastic surface.
-    The model accounts for a single plastic surface but several kinematic hardening variables.
+    combined isotropic and kinematic hardening and generic plastic surface. The
+    model accounts for a single plastic surface but several kinematic hardening
+    variables.
 
-    Return-mapping requires solving a non-linear system in terms of $p$, $\bepsp$ and the $\balpha_i$.
+    Return-mapping requires solving a non-linear system in terms of $p$,
+    $\bepsp$ and the $\balpha_i$.
     """
 
     elasticity: AbstractLinearElastic
@@ -170,11 +170,13 @@ class GeneralHardening(SmallStrainBehavior):
     """Generic plastic surface."""
     combined_hardening: eqx.Module
     r"""
-    Combined hardening module representing a hardening potential $\psi_\textrm{h}(\balpha,p)$. 
-    Should provide two methods:
+    Combined hardening module representing a hardening potential
+    $\psi_\textrm{h}(\balpha,p)$. Should provide two methods:
 
-    - ``combined_hardening.dalpha(alpha, p)`` returning $\dfrac{\partial \psi_\textrm{h}}{\partial \balpha}(\balpha,p)$
-    - ``combined_hardening.dp(alpha, p)`` returning $\dfrac{\partial \psi_\textrm{h}}{\partial p}(\balpha,p)$
+    - ``combined_hardening.dalpha(alpha, p)`` returning $\dfrac{\partial
+      \psi_\textrm{h}}{\partial \balpha}(\balpha,p)$
+    - ``combined_hardening.dp(alpha, p)`` returning $\dfrac{\partial
+      \psi_\textrm{h}}{\partial p}(\balpha,p)$
     """
     nvar: int = eqx.field(static=True, default=1)
 

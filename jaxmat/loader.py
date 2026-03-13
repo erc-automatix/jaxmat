@@ -1,11 +1,12 @@
+from typing import Literal
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
-import optimistix as optx
 import lineax as lx
-from typing import Literal
-from jaxmat.tensors import SymmetricTensor2
+import optimistix as optx
 
+from jaxmat.tensors import SymmetricTensor2
 
 linear_solver = lx.AutoLinearSolver(well_posed=False)
 solver, adjoint = (
@@ -57,13 +58,10 @@ class ImposedLoading(eqx.Module):
         return self.eps_vals, self.sig_vals, self.strain_mask
 
     def __len__(self):
-        lens = {
-            arr.shape[0] for arr in (self.eps_vals, self.sig_vals, self.strain_mask)
-        }
+        lens = {arr.shape[0] for arr in (self.eps_vals, self.sig_vals, self.strain_mask)}
         if len(lens) != 1:
-            raise ValueError(
-                f"Inconsistent batch sizes: {[arr.shape for arr in (self.eps_vals, self.sig_vals, self.strain_mask)]}"
-            )
+            info = f"{[arr.shape for arr in (self.eps_vals, self.sig_vals, self.strain_mask)]}"
+            raise ValueError(f"Inconsistent batch sizes: {info}")
         return lens.pop()
 
 
@@ -79,11 +77,7 @@ def _make_imposed_loading(
             # if j >= i
         }
         if hypothesis == "small_strain"
-        else {
-            f"{xi}{xj}": (i, j)
-            for i, xi in enumerate("XYZ")
-            for j, xj in enumerate("XYZ")
-        }
+        else {f"{xi}{xj}": (i, j) for i, xi in enumerate("XYZ") for j, xj in enumerate("XYZ")}
     )
     labels = ("eps", "sig") if hypothesis == "small_strain" else ("F", "P")
 
@@ -127,16 +121,19 @@ def _make_imposed_loading(
     return eps_vals, sig_vals, strain_mask
 
 
-def residual(
-    material, loader: ImposedLoading, eps: jnp.ndarray, state: dict, dt: float
-):
+def residual(material, loader: ImposedLoading, eps: jnp.ndarray, state: dict, dt: float):
     eps_vals, sig_vals, strain_mask = loader()
 
     # Flatten mask to array accounting for symmetry class of strain
     if isinstance(eps, SymmetricTensor2):
-        to_array = lambda x: SymmetricTensor2(tensor=x).array
+
+        def to_array(x):
+            return SymmetricTensor2(tensor=x).array
     else:
-        to_array = lambda x: x
+
+        def to_array(x):
+            return x
+
     strain_mask = to_array(strain_mask)
 
     sig, state = material.constitutive_update(eps, state, dt)
@@ -169,13 +166,9 @@ def solve_mechanical_state(eps0, state, loading_data: ImposedLoading, material, 
     return eps, new_state, sol.stats
 
 
-def global_solve(
-    Eps0, state, loading_data, material, dt, in_axes=(0, 0, 0, None, None)
-):
+def global_solve(Eps0, state, loading_data, material, dt, in_axes=(0, 0, 0, None, None)):
     if in_axes is None:  # we don't vmap
-        return eqx.filter_jit(solve_mechanical_state)(
-            Eps0, state, loading_data, material, dt
-        )
+        return eqx.filter_jit(solve_mechanical_state)(Eps0, state, loading_data, material, dt)
     else:
         return eqx.filter_jit(eqx.filter_vmap(solve_mechanical_state, in_axes=in_axes))(
             Eps0, state, loading_data, material, dt

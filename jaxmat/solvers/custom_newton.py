@@ -1,7 +1,9 @@
-from typing import Callable, Any
-from jax import lax, tree_util
+from collections.abc import Callable
+from typing import Any
+
 import jax.numpy as jnp
 import lineax as lx
+from jax import lax, tree_util
 
 
 def newton_solve_jittable(
@@ -42,7 +44,7 @@ def newton_solve_jittable(
     fx0, aux0 = flat_f(jnp.concatenate([jnp.ravel(leaf) for leaf in flat_leaves]))
 
     def cond_fun(state):
-        i, x, fx, _, _ = state
+        i, _, fx, _, _ = state
         return jnp.logical_and(i < maxiter, jnp.linalg.norm(fx) > tol)
 
     def body_fun(state):
@@ -60,7 +62,7 @@ def newton_solve_jittable(
 
     x0_vec = jnp.concatenate([jnp.ravel(leaf) for leaf in flat_leaves])
     init_state = (0, x0_vec, fx0, jnp.zeros_like(x0_vec), aux0)
-    iters, x_final, _, _, aux_final = lax.while_loop(cond_fun, body_fun, init_state)
+    _, x_final, _, _, aux_final = lax.while_loop(cond_fun, body_fun, init_state)
     # jax.debug.print("Converged in {} iterations", iters)
     result = vec_to_pytree(x_final)
     return (result, aux_final) if has_aux else result

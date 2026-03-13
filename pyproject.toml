@@ -5,23 +5,36 @@ description = "Automated material constitutive modeling in JAX"
 readme = "README.md"
 authors = [
     { name = "Jeremy Bleyer", email = "jeremy.bleyer@enpc.fr" },
-    {name = "Paul Bouteiller", email = "paul.bouteiller@cea.fr"}
+    { name = "Paul Bouteiller", email = "paul.bouteiller@cea.fr" },
+    { name = "Jack S. Hale", email = "jack.hale@uni.lu" }
 ]
 license = { text = "GNU GPLv3" }  # Replace or remove if not using MIT
 keywords = ["material science", "machine learning", "material modeling", "solid mechanics", "automatic differentiation"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "jax>=0.6.1",
     "optax",
     "equinox",
-    "diffrax",
     "optimistix",
     "lineax"
 ]
 
 [project.optional-dependencies]
+docs = [
+    "jupytext",
+    "jupyter_book<2",
+    "sphinx_autodoc_typehints",
+    "sphinx_math_dollar"
+]
 gpu = [
     "jax[cuda12]>=0.6.1",
+]
+optional = [
+    "diffrax",
+]
+tests = [
+    "matplotlib",
+    "pytest",
 ]
 
 [build-system]
@@ -33,3 +46,22 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+#      "D",      # pydocstyle
+      "E",      # pycodestyle
+      "W",      # pycodestyle
+      "F",      # pyflakes
+      "I",      # isort - use standalone isort
+      "RUF",    # Ruff-specific rules
+      "UP",     # pyupgrade
+      "ICN",    # flake8-import-conventions
+      "NPY",    # numpy-specific rules
+      "FLY",    # use f-string not static joins
+      "NPY201", # numpy 2.x ruleset
+]

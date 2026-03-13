@@ -20,6 +20,12 @@ authors:
       Université Paris-Saclay, CEA, Laboratoire Matière en
       Conditions Extrêmes
     orcid: 'https://orcid.org/0000-0001-6422-5805'
+  - given-names: Jack S.
+    family-names: Hale 
+    email: jack.hale@uni.lu
+    affiliation: >-
+      "Department of Engineering, University of Luxembourg"
+    orcid: 'https://orcid.org/0000-0001-7216-861X'
 repository-code: 'https://github.com/erc-automatix/jaxmat'
 url: 'https://erc-automatix.github.io/jaxmat/'
 abstract: >-

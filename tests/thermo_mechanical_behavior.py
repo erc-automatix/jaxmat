@@ -1,18 +1,16 @@
 from abc import abstractmethod
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
-import optimistix as optx
-from jaxmat.state import (
-    AbstractState,
-    SmallStrainState,
-    FiniteStrainState,
-    make_batched,
-)
-from jaxmat.utils import default_value, enforce_dtype
-from jaxmat.tensors import SymmetricTensor2, IsotropicTensor4
+
 import jaxmat.materials as jm
 from jaxmat.materials.behavior import AbstractBehavior
+from jaxmat.state import (
+    SmallStrainState,
+)
+from jaxmat.tensors import IsotropicTensor4, SymmetricTensor2
+from jaxmat.utils import default_value, enforce_dtype
 
 
 class Constant(eqx.Module):
@@ -68,7 +66,7 @@ class SmallStrainThermoMechanicalBehavior(AbstractBehavior):
 
     @abstractmethod
     def constitutive_update(self, inputs, state, dt):
-        eps, T = inputs
+        _eps, _T = inputs
         pass
 
 
@@ -95,9 +93,7 @@ class YoungModulus(eqx.Module):
 
 
 elasticity1 = LinearElasticIsotropic(E=200e3, nu=0.3)
-elasticity2 = LinearElasticIsotropic(
-    E=lambda T: 200e3 * (1 + 0.1 * T), nu=lambda T: 0.3
-)
+elasticity2 = LinearElasticIsotropic(E=lambda T: 200e3 * (1 + 0.1 * T), nu=lambda T: 0.3)
 elasticity3 = LinearElasticIsotropic(E=YoungModulus(), nu=jnp.asarray(0.3))
 
 for elasticity in [elasticity1, elasticity2, elasticity3]:

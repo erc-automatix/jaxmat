@@ -1,22 +1,22 @@
-import jax
-import jax.numpy as jnp
 import equinox as eqx
+import jax.numpy as jnp
 import optimistix as optx
 from optax.tree_utils import tree_add, tree_zeros_like
-from jaxmat.utils import default_value
+
 from jaxmat.state import (
-    AbstractState,
     SmallStrainState,
     make_batched,
 )
 from jaxmat.tensors import SymmetricTensor2, dev
+from jaxmat.utils import default_value
+
 from .behavior import SmallStrainBehavior
 from .elasticity import LinearElasticIsotropic
-from .plastic_surfaces import vonMises, AbstractPlasticSurface
+from .plastic_surfaces import AbstractPlasticSurface, vonMises
 from .viscoplastic_flows import (
-    NortonFlow,
     AbstractKinematicHardening,
     ArmstrongFrederickHardening,
+    NortonFlow,
 )
 
 
@@ -27,13 +27,11 @@ class AFInternalState(SmallStrainState):
     """Cumulated plastic strain"""
     epsp: SymmetricTensor2 = eqx.field(default_factory=lambda: SymmetricTensor2())
     """Plastic strain tensor"""
-    X: SymmetricTensor2 = eqx.field(
-        default_factory=lambda: make_batched(SymmetricTensor2(), 2)
-    )
+    X: SymmetricTensor2 = eqx.field(default_factory=lambda: make_batched(SymmetricTensor2(), 2))
     """Backstress tensors"""
 
 
-class AmrstrongFrederickViscoplasticity(SmallStrainBehavior):
+class ArmstrongFrederickViscoplasticity(SmallStrainBehavior):
     """
     Small-strain viscoplastic constitutive model with Armstrong-Frederick
     kinematic hardening, Voce isotropic hardening, and Norton-type viscous flow.
@@ -68,8 +66,8 @@ class AmrstrongFrederickViscoplasticity(SmallStrainBehavior):
     """Viscoplastic flow rule following Norton (power-law) viscosity formulation."""
     kinematic_hardening: ArmstrongFrederickHardening
     """
-    Kinematic hardening model defining the backstress evolution rate with dynamic 
-    recovery (Armstrong-Frederick formulation).
+    Kinematic hardening model defining the backstress evolution rate with
+    dynamic recovery (Armstrong-Frederick formulation).
     """
     plastic_surface = vonMises()
     """J2-type yield (or loading) surface based on the deviatoric stress invariant."""
@@ -83,7 +81,9 @@ class AmrstrongFrederickViscoplasticity(SmallStrainBehavior):
         deps = eps - eps_old
         isv_old = state.internal
         sig_old = state.stress
-        sig_eq = lambda sig: self.plastic_surface(sig)
+
+        def sig_eq(sig):
+            return self.plastic_surface(sig)
 
         def eval_stress(deps, dy):
             return sig_old + self.elasticity.C @ (deps - dev(dy.epsp))
@@ -104,9 +104,7 @@ class AmrstrongFrederickViscoplasticity(SmallStrainBehavior):
                 return res, y
 
             dy0 = tree_zeros_like(isv_old)
-            sol = optx.root_find(
-                residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint
-            )
+            sol = optx.root_find(residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint)
             dy = sol.value
             y = sol.aux
             sig = eval_stress(deps, dy)
@@ -161,7 +159,9 @@ class GenericViscoplasticity(SmallStrainBehavior):
         deps = eps - eps_old
         isv_old = state.internal
         sig_old = state.stress
-        sig_eq = lambda sig: self.plastic_surface(sig)
+
+        def sig_eq(sig):
+            return self.plastic_surface(sig)
 
         def eval_stress(deps, dy):
             return sig_old + self.elasticity.C @ (deps - dev(dy.epsp))
@@ -181,9 +181,7 @@ class GenericViscoplasticity(SmallStrainBehavior):
                 return res, y
 
             dy0 = tree_zeros_like(isv_old)
-            sol = optx.root_find(
-                residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint
-            )
+            sol = optx.root_find(residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint)
             dy = sol.value
             y = sol.aux
             sig = eval_stress(deps, dy)

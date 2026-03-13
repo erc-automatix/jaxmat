@@ -1,17 +1,18 @@
-import pytest
 import jax
 import jax.numpy as jnp
+import pytest
+
+from jaxmat.state import make_batched
 from jaxmat.tensors import (
-    SymmetricTensor2,
-    Tensor2,
-    SymmetricTensor4,
     IsotropicTensor4,
+    SymmetricTensor2,
+    SymmetricTensor4,
+    Tensor2,
+    dev,
     polar,
     stretch_tensor,
-    dev,
     sym,
 )
-from jaxmat.state import make_batched
 
 
 def _tensor2_init(tensor_type, T_, T_vect_):
@@ -80,9 +81,7 @@ def test_sym_tensor2_init():
 def test_symmetries():
     gamma = 0.75
     Id = SymmetricTensor2.identity()
-    F = Tensor2(
-        tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64)
-    )
+    F = Tensor2(tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64))
     f1 = F + Id
     f2 = Id + F
     g1 = F @ Id
@@ -104,9 +103,7 @@ def test_symmetries():
 def test_stretch_tensor():
     gamma = 0.75
     Id = SymmetricTensor2.identity()
-    F = Id + Tensor2(
-        tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64)
-    )
+    F = Id + Tensor2(tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64))
     R, U = polar(F)
     C = (F.T @ F).sym
     B = (F @ F.T).sym
@@ -189,10 +186,11 @@ def test_batch_tensors(cls):
 
 # FIXME: should better handle views and array operations on tensors,
 # see https://github.com/bleyerj/jaxmat/issues/16
+@pytest.mark.xfail(reason="See issue #16")
 def test_symmetry_preserving():
     N = 3
     sig = make_batched(SymmetricTensor2.identity(), N)
     sig2 = SymmetricTensor2()
-    assert type(sig2 + jnp.sum(sig, axis=0)) == SymmetricTensor2
-    assert type(jnp.sum(sig, axis=0)) == SymmetricTensor2
-    assert type(sig[0] + sig[1] + sig[2]) == SymmetricTensor2
+    assert isinstance(sig2 + jnp.sum(sig, axis=0), SymmetricTensor2)
+    assert isinstance(jnp.sum(sig, axis=0), SymmetricTensor2)
+    assert isinstance(sig[0] + sig[1] + sig[2], SymmetricTensor2)

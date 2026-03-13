@@ -1,7 +1,9 @@
 from abc import abstractmethod
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
+
 from jaxmat.utils import enforce_dtype
 
 
@@ -56,7 +58,8 @@ class AbstractKinematicHardening(eqx.Module):
 
     @abstractmethod
     def __call__(self, X, *args):
-        r"""Returns the expression for $\dot{\bX}$ as a function of the backstress $\bX$ and, possibly, other variables."""
+        r"""Returns the expression for $\dot{\bX}$ as a function of the
+        backstress $\bX$ and any other variables."""
         pass
 
     def sig_eff(self, sig, X):
@@ -73,7 +76,8 @@ class LinearKinematicHardening(eqx.Module):
     .. admonition:: References
         :class: seealso
 
-        Prager, W. (1956). A new method of analyzing stresses and strains in work-hardening plastic solids.
+        Prager, W. (1956). A new method of analyzing stresses and strains in work-hardening
+        plastic solids.
     """
 
     H: float = enforce_dtype()
@@ -82,7 +86,8 @@ class LinearKinematicHardening(eqx.Module):
 
     @abstractmethod
     def __call__(self, eps_dot):
-        r"""Returns the expression for $\dot{\bX}$ as a function of the backstress $\bX$ and, possibly, other variables."""
+        r"""Returns the expression for $\dot{\bX}$ as a function of the
+        backstress $\bX$ and any other variables."""
         return 2 / 3 * self.H * eps_dot
 
     def sig_eff(self, sig, X):

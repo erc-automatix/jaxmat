@@ -1,35 +1,29 @@
 from abc import abstractmethod
-import jax
-import jax.numpy as jnp
+
 import equinox as eqx
 import optimistix as optx
+
+from jaxmat.solvers import DEFAULT_SOLVERS
 from jaxmat.state import (
     AbstractState,
-    SmallStrainState,
     FiniteStrainState,
+    SmallStrainState,
     make_batched,
 )
-from jaxmat.solvers import DEFAULT_SOLVERS
 
 
 class AbstractBehavior(eqx.Module):
     """Abstract base class describing a mechanical behavior."""
 
     """Internal variables state."""
-    solver: optx.AbstractRootFinder = eqx.field(
-        static=True, init=False, default=DEFAULT_SOLVERS[0]
-    )
+    solver: optx.AbstractRootFinder = eqx.field(static=True, init=False, default=DEFAULT_SOLVERS[0])
     """Implicit solver."""
-    adjoint: optx.AbstractAdjoint = eqx.field(
-        static=True, init=False, default=DEFAULT_SOLVERS[1]
-    )
+    adjoint: optx.AbstractAdjoint = eqx.field(static=True, init=False, default=DEFAULT_SOLVERS[1])
     """Adjoint solver."""
     _batch_size: tuple = eqx.field(static=True, init=False, default=None)
 
     # --- Serializable internal-state class reference ---
-    internal_type: type[AbstractState] = eqx.field(
-        static=True, init=False, default=None
-    )
+    internal_type: type[AbstractState] = eqx.field(static=True, init=False, default=None)
     """Class (type) describing the internal-state structure (serialized with the model)."""
 
     # --- Required by user subclasses ---
@@ -60,10 +54,11 @@ class AbstractBehavior(eqx.Module):
         pass
 
     def batched_constitutive_update(self, inputs, state, dt):
-        """Batched and jitted version of constitutive update along first axis of ``inputs`` and ``state``."""
-        return eqx.filter_jit(
-            eqx.filter_vmap(self.constitutive_update, in_axes=(0, 0, None))
-        )(inputs, state, dt)
+        """Batched and jitted constitutive update along first axis of
+        ``inputs`` and ``state``."""
+        return eqx.filter_jit(eqx.filter_vmap(self.constitutive_update, in_axes=(0, 0, None)))(
+            inputs, state, dt
+        )
 
 
 class SmallStrainBehavior(AbstractBehavior):

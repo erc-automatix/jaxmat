@@ -1,9 +1,10 @@
-import jax.numpy as jnp
 import equinox as eqx
+import jax.numpy as jnp
+
+import jaxmat.materials as jm
 from jaxmat.state import (
     make_batched,
 )
-import jaxmat.materials as jm
 
 
 class YieldStress(eqx.Module):
@@ -17,9 +18,7 @@ def test_small_strain_behavior():
     elasticity = jm.LinearElasticIsotropic(E=200e3, nu=0.25)
     hardening = YieldStress(sig0=300.0)
 
-    material = jm.vonMisesIsotropicHardening(
-        elasticity=elasticity, yield_stress=hardening
-    )
+    material = jm.vonMisesIsotropicHardening(elasticity=elasticity, yield_stress=hardening)
     state = material.init_state()
     assert hasattr(state, "strain")
     assert hasattr(state, "stress")
@@ -33,13 +32,9 @@ def test_small_strain_behavior():
     assert jnp.array_equal(batched_state.internal.epsp, jnp.zeros((Nbatch, 3, 3)))
     assert jnp.array_equal(batched_state.internal.p, jnp.zeros((Nbatch,)))
 
-    material2 = jm.vonMisesIsotropicHardening(
-        elasticity=elasticity, yield_stress=hardening
-    )
+    material2 = jm.vonMisesIsotropicHardening(elasticity=elasticity, yield_stress=hardening)
     batched_material = make_batched(material2, Nbatch)
-    assert jnp.array_equal(
-        batched_material.elasticity.E, jnp.full((Nbatch,), elasticity.E)
-    )
+    assert jnp.array_equal(batched_material.elasticity.E, jnp.full((Nbatch,), elasticity.E))
     state = batched_material.init_state()
     assert jnp.array_equal(state.strain, jnp.zeros((Nbatch, 3, 3)))
     assert jnp.array_equal(state.stress, jnp.zeros((Nbatch, 3, 3)))
@@ -66,9 +61,7 @@ def test_finite_strain_behavior():
     assert hasattr(batched_state, "Cauchy")
     assert hasattr(batched_state.internal, "p")
     assert hasattr(batched_state.internal, "be_bar")
-    assert jnp.array_equal(
-        batched_state.F, jnp.broadcast_to(jnp.eye(3), (Nbatch, 3, 3))
-    )
+    assert jnp.array_equal(batched_state.F, jnp.broadcast_to(jnp.eye(3), (Nbatch, 3, 3)))
     assert jnp.array_equal(batched_state.PK1, jnp.zeros((Nbatch, 3, 3)))
     assert jnp.array_equal(
         batched_state.internal.be_bar, jnp.broadcast_to(jnp.eye(3), (Nbatch, 3, 3))
@@ -77,13 +70,9 @@ def test_finite_strain_behavior():
 
     material2 = jm.FeFpJ2Plasticity(elasticity=elasticity, yield_stress=hardening)
     batched_material = make_batched(material2, Nbatch)
-    assert jnp.array_equal(
-        batched_material.elasticity.E, jnp.full((Nbatch,), elasticity.E)
-    )
+    assert jnp.array_equal(batched_material.elasticity.E, jnp.full((Nbatch,), elasticity.E))
     state = batched_material.init_state()
     assert jnp.array_equal(state.F, jnp.broadcast_to(jnp.eye(3), (Nbatch, 3, 3)))
     assert jnp.array_equal(state.PK1, jnp.zeros((Nbatch, 3, 3)))
-    assert jnp.array_equal(
-        state.internal.be_bar, jnp.broadcast_to(jnp.eye(3), (Nbatch, 3, 3))
-    )
+    assert jnp.array_equal(state.internal.be_bar, jnp.broadcast_to(jnp.eye(3), (Nbatch, 3, 3)))
     assert jnp.array_equal(state.internal.p, jnp.zeros((Nbatch,)))

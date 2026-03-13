@@ -1,9 +1,12 @@
 from abc import abstractmethod
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
+
 from jaxmat.tensors import eigenvalues
-from jaxmat.tensors.linear_algebra import principal_invariants, det33
+from jaxmat.tensors.linear_algebra import det33, principal_invariants
+
 from .behavior import FiniteStrainBehavior
 
 
@@ -19,7 +22,8 @@ class HyperelasticPotential(eqx.Module):
         return (F.inv @ self.PK1(F)).sym
 
     def Cauchy(self, F):
-        # Divide on the right rather than on the left to preserve Tensor object due to operator dispatch priority.
+        # Divide on the right rather than on the left to preserve Tensor object
+        # due to operator dispatch priority.
         return (self.PK1(F) @ F.T).sym / det33(F)
 
 
@@ -53,9 +57,7 @@ class CompressibleNeoHookean(HyperelasticPotential):
         C = F.T @ F
         I1, _, I3 = principal_invariants(C)
         J = jnp.sqrt(I3)
-        return self.mu / 2 * (J ** (-2.0 / 3) * I1 - 3) + self.kappa * self.volumetric(
-            J
-        )
+        return self.mu / 2 * (J ** (-2.0 / 3) * I1 - 3) + self.kappa * self.volumetric(J)
 
 
 class CompressibleMooneyRivlin(HyperelasticPotential):
@@ -110,7 +112,5 @@ class CompressibleOgden(HyperelasticPotential):
     def W_lamb(self, lambCb):
         alp2 = self.alpha / 2
         return jnp.sum(
-            self.mu
-            / self.alpha
-            * (lambCb[0] ** alp2 + lambCb[1] ** alp2 + lambCb[2] ** alp2 - 3)
+            self.mu / self.alpha * (lambCb[0] ** alp2 + lambCb[1] ** alp2 + lambCb[2] ** alp2 - 3)
         )

@@ -1,8 +1,8 @@
 import jax
 import jax.numpy as jnp
+
 import jaxmat.materials as jm
-from jaxmat.tensors import SymmetricTensor2, SymmetricTensor4
-from jaxmat.tensors import utils
+from jaxmat.tensors import SymmetricTensor2, SymmetricTensor4, utils
 
 
 def test_small_strain_orthotropic_rotation():

@@ -1,11 +1,12 @@
 from functools import partial
+
 import jax
 import jax.numpy as jnp
+
+from . import SymmetricTensor2, SymmetricTensor4, Tensor2
 from .linear_algebra import _sqrtm, eig33
-from . import Tensor2, SymmetricTensor2, SymmetricTensor4
 
 
-# These functions apply to tensors
 @partial(jax.jit, static_argnums=1)
 def polar(F, mode="RU"):
     """Computes the 'RU' or 'VR' polar decomposition of F."""
@@ -58,7 +59,7 @@ def stretch_tensor(F):
 
 @jax.custom_jvp
 def eigenvalues(sig):
-    eigvals, eigendyads = eig33(sig)
+    eigvals, _eigendyads = eig33(sig)
     return eigvals
 
 

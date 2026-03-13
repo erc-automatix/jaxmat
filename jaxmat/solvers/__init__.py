@@ -1,8 +1,9 @@
-import optimistix as optx
 import lineax as lx
+import optimistix as optx
+
 from .custom_optimistix_solvers import (
-    GaussNewtonTrustRegion,
     BFGSLinearTrustRegion,
+    GaussNewtonTrustRegion,
     NewtonTrustRegion,
 )
 
@@ -15,3 +16,11 @@ DEFAULT_SOLVERS = (
     ),
     optx.ImplicitAdjoint(linear_solver=DEFAULT_LINEAR_SOLVER),
 )
+
+__all__ = [
+    "DEFAULT_LINEAR_SOLVER",
+    "DEFAULT_SOLVERS",
+    "BFGSLinearTrustRegion",
+    "GaussNewtonTrustRegion",
+    "NewtonTrustRegion",
+]

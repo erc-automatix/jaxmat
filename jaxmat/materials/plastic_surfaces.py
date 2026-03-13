@@ -1,10 +1,12 @@
 from abc import abstractmethod
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
-from jaxmat.utils import default_value, enforce_dtype
-from jaxmat.tensors import eigenvalues, dev, SymmetricTensor2
+
+from jaxmat.tensors import SymmetricTensor2, dev, eigenvalues
 from jaxmat.tensors.utils import safe_norm, safe_sqrt
+from jaxmat.utils import default_value, enforce_dtype
 
 
 def safe_zero(method):

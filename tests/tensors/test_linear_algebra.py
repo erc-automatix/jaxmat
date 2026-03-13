@@ -1,14 +1,15 @@
-import numpy as np
-import scipy.linalg as sl
-import pytest
 import jax
 import jax.numpy as jnp
+import numpy as np
+import pytest
+import scipy.linalg as sl
+
 from jaxmat.tensors.linear_algebra import (
     eig33,
+    inv33,
+    inv_sqrtm,
     isotropic_function,
     sqrtm,
-    inv_sqrtm,
-    inv33,
 )
 
 
@@ -46,22 +47,16 @@ def build_matrix_from_diag_and_quat(diag, quat):
 
 
 def batch_build_A(diag, quats):
-    return jax.jit(jax.vmap(build_matrix_from_diag_and_quat, in_axes=(None, 0)))(
-        diag, quats
-    )
+    return jax.jit(jax.vmap(build_matrix_from_diag_and_quat, in_axes=(None, 0)))(diag, quats)
 
 
 def batch_eigvals(A_batch):
     return jax.vmap(eig33)(A_batch)
 
 
-diags_rand = jnp.array(np.random.rand(3, 3))
-diags_two = jnp.array(
-    [[1, -0.5 + eps / 2, -0.5 - eps / 2] for eps in np.logspace(-3, -15, num=10)]
-)
-diags_two = jnp.array(
-    [[1, -0.5 + eps / 2, -0.5 - eps / 2] for eps in np.logspace(-3, -15, num=10)]
-)
+diags_rand = jnp.array(np.random.default_rng().random((3, 3)))
+diags_two = jnp.array([[1, -0.5 + eps / 2, -0.5 - eps / 2] for eps in np.logspace(-3, -15, num=10)])
+diags_two = jnp.array([[1, -0.5 + eps / 2, -0.5 - eps / 2] for eps in np.logspace(-3, -15, num=10)])
 diags_three = jnp.array([[1, 1, 1]])  # , [0, 0, 0]])
 diags = np.vstack((diags_rand, diags_two, diags_three))
 
@@ -74,7 +69,7 @@ def fixture_diagonal(request):
 @pytest.fixture(name="quaternions")
 def fixture_quaternions():
     key = jax.random.PRNGKey(0)
-    batch_size = int(10)
+    batch_size = 10
     return random_unit_quaternions(key, batch_size)
 
 
@@ -114,7 +109,7 @@ def test_sqrtm(diagonal, quaternions):
 
 
 def test_inv33():
-    A_batch = [jnp.array(np.random.rand(3, 3)) for _ in range(3)]
+    A_batch = [jnp.array(np.random.default_rng().random((3, 3))) for _ in range(3)]
     for A in A_batch:
         iA = inv33(A)
         iA_ = jnp.linalg.inv(A)

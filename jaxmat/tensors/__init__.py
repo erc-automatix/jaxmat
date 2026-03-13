@@ -1,28 +1,43 @@
-import warnings
-
-warnings.filterwarnings(
-    "ignore"
-)  # Suppress all warnings FIXME: this is to remove equinox warnings when using init=False in module definition with arrays
-import jax.numpy as jnp
 from .generic_tensors import (
-    Tensor,
-    Tensor2,
+    IsotropicTensor4,
     SymmetricTensor2,
     SymmetricTensor4,
-    IsotropicTensor4,
-)
-from .tensor_utils import (
-    polar,
-    stretch_tensor,
-    dev,
-    skew,
-    sym,
-    axl,
-    eigenvalues,
+    Tensor,
+    Tensor2,
 )
 from .linear_algebra import (
-    principal_invariants,
     main_invariants,
     pq_invariants,
+    principal_invariants,
 )
-from .utils import safe_norm, safe_sqrt, safe_fun
+from .tensor_utils import (
+    axl,
+    dev,
+    eigenvalues,
+    polar,
+    skew,
+    stretch_tensor,
+    sym,
+)
+from .utils import safe_fun, safe_norm, safe_sqrt
+
+__all__ = [
+    "IsotropicTensor4",
+    "SymmetricTensor2",
+    "SymmetricTensor4",
+    "Tensor",
+    "Tensor2",
+    "axl",
+    "dev",
+    "eigenvalues",
+    "main_invariants",
+    "polar",
+    "pq_invariants",
+    "principal_invariants",
+    "safe_fun",
+    "safe_norm",
+    "safe_sqrt",
+    "skew",
+    "stretch_tensor",
+    "sym",
+]

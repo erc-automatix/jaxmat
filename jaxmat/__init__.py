@@ -1,10 +1,12 @@
+from importlib.metadata import version
+from pathlib import Path
+
 import jax
+
+__version__ = version("jaxmat")
 
 jax.config.update("jax_enable_x64", True)  # use double-precision
 jax.config.update("jax_debug_nans", True)  # raise when encountering nan
-
-
-from pathlib import Path
 
 
 def get_path(notebook_fallback: str | None = None) -> Path:
@@ -20,8 +22,3 @@ def get_path(notebook_fallback: str | None = None) -> Path:
         if notebook_fallback:
             return Path(notebook_fallback).resolve()
         return Path.cwd().resolve()
-
-
-from importlib.metadata import version
-
-__version__ = version("jaxmat")

@@ -1,10 +1,11 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
+
 import jaxmat.materials as jm
-from jaxmat.utils import enforce_dtype
-from jaxmat.tensors import SymmetricTensor2
 from jaxmat.state import AbstractState, make_batched
+from jaxmat.tensors import SymmetricTensor2
+from jaxmat.utils import enforce_dtype
 
 
 class SLSState(AbstractState):
@@ -51,9 +52,7 @@ class StandardLinearSolid(jm.SmallStrainBehavior):
 
         tau = self.maxwell_viscosity / self.maxwell_stiffness.E
         epsv_new = (
-            eps
-            + jnp.exp(-dt / tau) * (epsv_old - eps_old)
-            - jnp.exp(-dt / 2 / tau) * deps
+            eps + jnp.exp(-dt / tau) * (epsv_old - eps_old) - jnp.exp(-dt / 2 / tau) * deps
         ).sym
 
         sig = self.elasticity.C @ eps + self.maxwell_stiffness.C @ (eps - epsv_new)
@@ -87,12 +86,13 @@ class GeneralizedMaxwell(jm.SmallStrainBehavior):
     using a series of Maxwell elements (spring + dashpot), each with its own
     relaxation time $\tau_i$.
 
-    The model can be seen as a Prony series representation of stress relaxation.
+    The model can be seen as a Prony series representation of stress relaxation
+    function.
 
     Notes
     -----
     The total stress is computed as:
-    
+
     $$\bsig = \bsig_\infty + \sum_{i=1}^N \bsig^\text{v}_i$$
 
     where in each viscous branch evolves as:
