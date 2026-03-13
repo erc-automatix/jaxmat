@@ -7,5 +7,7 @@
         "execute notebooks": "jupytext --to notebook --execute docs/demos/**/*.md",
         "generate scripts": "jupytext --to script docs/demos/**/*.md",
         "deploy website": "ghp-import -n -p -f docs/_build/html",
-    }
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda"
 }

@@ -1,9 +1,8 @@
 import equinox as eqx
-import jax.numpy as jnp
 import optimistix as optx
 
 from jaxmat.state import AbstractState
-from jaxmat.tensors import SymmetricTensor2, Tensor2, dev, tr, safe_fun
+from jaxmat.tensors import SymmetricTensor2, Tensor2, dev, safe_fun, tr
 from jaxmat.tensors.linear_algebra import det33 as det
 from jaxmat.tensors.utils import FischerBurmeister as FB
 from jaxmat.utils import default_value

@@ -1,11 +1,13 @@
 from abc import abstractmethod
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
 import jax.scipy as jsc
-import equinox as eqx
+
 from jaxmat.tensors import (
-    SymmetricTensor4,
     IsotropicTensor4,
+    SymmetricTensor4,
     TransverseIsotropicTensor4,
 )
 from jaxmat.utils import enforce_dtype

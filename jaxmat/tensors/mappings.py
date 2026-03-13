@@ -1,13 +1,12 @@
-from typing import Tuple
+
 import jax
 import jax.numpy as jnp
 
+IndexMap2 = tuple[jax.Array, jax.Array]
+IndexMap4 = tuple[jax.Array, jax.Array, jax.Array, jax.Array]
 
-IndexMap2 = Tuple[jax.Array, jax.Array]
-IndexMap4 = Tuple[jax.Array, jax.Array, jax.Array, jax.Array]
 
-
-def full_rank2_map(d: int) -> Tuple[IndexMap2, jax.Array]:
+def full_rank2_map(d: int) -> tuple[IndexMap2, jax.Array]:
     r"""
     Construct an index map for a full (non-symmetric) rank-2 tensor.
 
@@ -56,7 +55,7 @@ def full_rank2_map(d: int) -> Tuple[IndexMap2, jax.Array]:
     return (I, J), W
 
 
-def kelvin_rank2_map(d: int) -> Tuple[IndexMap2, jax.Array]:
+def kelvin_rank2_map(d: int) -> tuple[IndexMap2, jax.Array]:
     r"""
     Construct an index map for a symmetric rank-2 tensor
     in Kelvin-Mandel notation.
@@ -106,7 +105,7 @@ def kelvin_rank2_map(d: int) -> Tuple[IndexMap2, jax.Array]:
     return (I, J), W
 
 
-def full_rank4_map(d: int) -> Tuple[IndexMap4, jax.Array]:
+def full_rank4_map(d: int) -> tuple[IndexMap4, jax.Array]:
     r"""
     Construct an index map for a full (non-symmetric) rank-4 tensor (Tensor4).
 
@@ -151,7 +150,7 @@ def full_rank4_map(d: int) -> Tuple[IndexMap4, jax.Array]:
     return (I, J, K, L), W
 
 
-def kelvin_rank4_map(d: int) -> Tuple[IndexMap4, jax.Array]:
+def kelvin_rank4_map(d: int) -> tuple[IndexMap4, jax.Array]:
     r"""
     Construct an index map for a symmetric rank-4 tensor in Kelvin-Mandel notation.
 

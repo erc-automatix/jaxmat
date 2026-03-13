@@ -1,10 +1,10 @@
-import jax
-import jax.numpy as jnp
-import jaxmat.materials as jm
-from jaxmat.tensors import SymmetricTensor2
-from jaxmat.state import make_batched
 import equinox as eqx
+import jax.numpy as jnp
 import pytest
+
+import jaxmat.materials as jm
+from jaxmat.state import make_batched
+from jaxmat.tensors import SymmetricTensor2
 
 elasticity = jm.LinearElasticIsotropic(E=200e3, nu=0.25)
 hardening = jm.VoceHardening(sig0=350.0, sigu=500.0, b=1e3)

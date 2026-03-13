@@ -1,15 +1,13 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
-from optax.tree_utils import tree_add, tree_zeros_like, tree_scale
+
 from jaxmat.state import (
     SmallStrainState,
-    FiniteStrainState,
     make_batched,
 )
-from jaxmat.utils import default_value
 from jaxmat.tensors import SymmetricTensor2, Tensor
-import pytest
+from jaxmat.utils import default_value
 
 
 class State(SmallStrainState):

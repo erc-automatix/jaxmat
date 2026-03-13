@@ -1,13 +1,12 @@
 import jax
 import jax.numpy as jnp
-import pytest
 
 from jaxmat.tensors import (
-    Tensor2,
-    Tensor4,
+    IsotropicTensor4,
     SymmetricTensor2,
     SymmetricTensor4,
-    IsotropicTensor4,
+    Tensor2,
+    Tensor4,
 )
 
 

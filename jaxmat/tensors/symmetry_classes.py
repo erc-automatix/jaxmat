@@ -1,9 +1,11 @@
 from abc import abstractmethod
+
 import jax
 import jax.numpy as jnp
+
 from jaxmat.tensors.generic_tensors import (
-    SymmetricTensor4,
     SymmetricTensor2,
+    SymmetricTensor4,
 )
 
 

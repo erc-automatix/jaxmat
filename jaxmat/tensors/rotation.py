@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+
 from jaxmat.tensors import safe_norm
 
 

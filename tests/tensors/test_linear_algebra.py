@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 import scipy.linalg as sl
 
-from jaxmat.tensors.rotation import random as random_rotations
 from jaxmat.tensors.linear_algebra import (
     eig33,
     inv33,
@@ -12,6 +11,7 @@ from jaxmat.tensors.linear_algebra import (
     isotropic_function,
     sqrtm,
 )
+from jaxmat.tensors.rotation import random as random_rotations
 
 
 def build_matrix_from_diag_and_rot(diag, R):

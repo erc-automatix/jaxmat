@@ -3,7 +3,6 @@ This module implements various linear algebra operations on matrices.
 Other linear algebra utilities working on jaxmat tensors are available in tensor_utils.py
 """
 
-from functools import partial
 
 import jax
 import jax.numpy as jnp

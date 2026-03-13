@@ -5,10 +5,8 @@ import jax
 import jax.numpy as jnp
 import lineax as lx
 import optimistix as optx
-from typing import Literal
-from jaxmat.tensors import SymmetricTensor2, Tensor2
 
-from jaxmat.tensors import SymmetricTensor2
+from jaxmat.tensors import SymmetricTensor2, Tensor2
 
 linear_solver = lx.AutoLinearSolver(well_posed=False)
 solver, adjoint = (
