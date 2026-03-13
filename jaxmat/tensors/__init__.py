@@ -1,29 +1,20 @@
 from .generic_tensors import (
-    IsotropicTensor4,
     SymmetricTensor2,
-    Tensor4,
     SymmetricTensor4,
-)
-from .symmetry_classes import (
-    IsotropicTensor4,
-    CubicTensor4,
-    TransverseIsotropicTensor4,
-)
-from .tensor_utils import (
-    polar,
-    stretch_tensor,
-    tr,
-    dev,
-    skew,
-    sym,
-    axl,
-    eigenvalues,
+    Tensor,
+    Tensor2,
+    Tensor4,
 )
 from .linear_algebra import (
     main_invariants,
     pq_invariants,
     principal_invariants,
 )
+from .symmetry_classes import (
+    CubicTensor4,
+    IsotropicTensor4,
+    TransverseIsotropicTensor4,
+)
 from .tensor_utils import (
     axl,
     dev,
@@ -32,15 +23,19 @@ from .tensor_utils import (
     skew,
     stretch_tensor,
     sym,
+    tr,
 )
 from .utils import safe_fun, safe_norm, safe_sqrt
 
 __all__ = [
+    "CubicTensor4",
     "IsotropicTensor4",
     "SymmetricTensor2",
     "SymmetricTensor4",
     "Tensor",
     "Tensor2",
+    "Tensor4",
+    "TransverseIsotropicTensor4",
     "axl",
     "dev",
     "eigenvalues",
@@ -54,4 +49,5 @@ __all__ = [
     "skew",
     "stretch_tensor",
     "sym",
+    "tr",
 ]

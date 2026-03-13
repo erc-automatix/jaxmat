@@ -1,9 +1,9 @@
 import abc
-from typing import ClassVar, Tuple  # noqa: UP035
 
 import equinox as eqx
 import jax
 import jax.numpy as jnp
+
 from jaxmat.tensors import linear_algebra, mappings
 
 
@@ -80,13 +80,13 @@ class Tensor(eqx.Module):
     """Vectorial space dimension. Currently only ``dim=3`` is supported."""
     rank: int = eqx.field(static=True)
     """Rank of the tensor."""
-    base_tensor_shape: Tuple[int, ...] = eqx.field(static=True)
+    base_tensor_shape: tuple[int, ...] = eqx.field(static=True)
     """Shape of the base tensor representation. ``(dim,)*rank``."""
-    base_array_shape: Tuple[int, ...] = eqx.field(static=True)
+    base_array_shape: tuple[int, ...] = eqx.field(static=True)
     """Shape of the base array representation."""
 
     # index maps
-    _tensor_indices: Tuple[jax.Array, ...]  # should be of shape base_array_shape
+    _tensor_indices: tuple[jax.Array, ...]  # should be of shape base_array_shape
     _weights: jax.Array  # should be of shape base_array_shape
 
     _array: jax.Array
@@ -115,7 +115,7 @@ class Tensor(eqx.Module):
 
     def _as_array(self, tensor):
         tensor = jnp.asarray(tensor)
-        gathered = tensor[(...,) + self._tensor_indices]
+        gathered = tensor[(..., *self._tensor_indices)]
         return gathered * self._weights
 
     def _as_tensor(self, array):
@@ -129,7 +129,7 @@ class Tensor(eqx.Module):
             array.shape[: -self.array_rank] + self.base_tensor_shape,
             dtype=array.dtype,
         )
-        return out.at[(...,) + self._tensor_indices].add(array * self._weights)
+        return out.at[(..., *self._tensor_indices)].add(array * self._weights)
 
     @property
     def array(self):
@@ -158,7 +158,10 @@ class Tensor(eqx.Module):
 
     @property
     def array_rank(self):
-        """Rank of the base array representation (e.g. 1 for 2nd-rank tensors, 2 for 4th rank tensors)."""
+        """
+        Rank of the base array representation (e.g. 1 for 2nd-rank tensors, 2 for 4th rank
+        tensors).
+        """
         return len(self.base_array_shape)
 
     @property
@@ -189,7 +192,10 @@ class Tensor(eqx.Module):
         return self.__mul__(other)
 
     def __matmul__(self, other):
-        """If either argument is N-D, N > 2, it is treated as a stack of matrices residing in the last two indexes and broadcast accordingly."""
+        """
+        If either argument is N-D, N > 2, it is treated as a stack of matrices residing in the
+        last two indexes and broadcast accordingly.
+        """
         return self.__class__(tensor=jnp.asarray(self) @ jnp.asarray(other))
 
     def __rmatmul__(self, other):

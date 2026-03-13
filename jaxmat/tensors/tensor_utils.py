@@ -2,8 +2,9 @@ from functools import partial
 
 import jax
 import jax.numpy as jnp
-from jaxmat.tensors.linear_algebra import _sqrtm, eig33
+
 from jaxmat.tensors import SymmetricTensor2
+from jaxmat.tensors.linear_algebra import _sqrtm, eig33
 
 
 @partial(jax.jit, static_argnums=1)
@@ -156,7 +157,7 @@ def eigenvalues(sig):
     jax.Array, shape (..., 3)
         Eigenvalues.
     """
-    eigvals, eigendyads = eig33(sig)
+    eigvals, _ = eig33(sig)
     return eigvals
 
 
