@@ -129,6 +129,7 @@ internal_state_variables = state.internal
 print(internal_state_variables.__dict__)
 
 # %%
+from jaxmat.tensors import SymmetricTensor2, SymmetricTensor4
 
 gamma = 1e-3
 new_eps = jnp.array([[0, gamma / 2, 0], [gamma / 2, 0, 0], [0, 0, 0]])
@@ -176,7 +177,8 @@ for i, gamma in enumerate(gamma_list):
     new_eps = jnp.array([[0, gamma / 2, 0], [gamma / 2, 0, 0], [0, 0, 0]])
     new_eps = SymmetricTensor2(tensor=new_eps)
     dt = 0.0
-    Ctang, new_state = tangent_operator(new_eps, state, dt)
+    Ctang_arr, new_state = tangent_operator(new_eps, state, dt)
+    Ctang = SymmetricTensor4(array=Ctang_arr)
     state = new_state
     new_stress = state.stress
     tau = tau.at[i].set(new_stress[0, 1])
@@ -185,12 +187,13 @@ for i, gamma in enumerate(gamma_list):
 
 # %% [markdown]
 # Note that the tangent operator is the derivative of a `SymmetricTensor2` with respect to a
-# `SymmetricTensor2` which is formally equivalent to a 4th-rank tensor. Its component can thus be
-# accessed as `Ctang[i, j, k, l]`. Collecting the value of the tangent shear modulus from `Ctang[0,
-# 1, 0, 1]`, its evolution clearly shows a first constant phase in the elastic regime where
-# $\mu_\text{tang}=\mu=80\text{ GPa}$. We see the sudden drop at the onset of plasticity which is
-# due to the finite initial hardening slope $R'(0)$. We know that the material (elastoplastic)
-# tangent operator is given by:
+# `SymmetricTensor2`. As a result, its array representation is a $6\times 6$ matrix. To represent
+# it explicitly as a 4th-rank tensor, we need to wrap it as a `SymmetricTensor4` object. Its
+# component can thus be accessed as `Ctang[i, j, k, l]`. Collecting the value of the tangent shear
+# modulus from `Ctang[0, 1, 0, 1]`, its evolution clearly shows a first constant phase in the
+# elastic regime where $\mu_\text{tang}=\mu=80\text{ GPa}$. We see the sudden drop at the onset of
+# plasticity which is due to the finite initial hardening slope $R'(0)$. We know that the material
+# (elastoplastic) tangent operator is given by:
 #
 # $$\mathbb{C}^\text{ep} = 3\kappa\mathbb{J} +
 # 2\mu\left(\mathbb{K}-\dfrac{3\mu}{3\mu+R'(p)}\boldsymbol{n}\otimes\boldsymbol{n}\right)$$ where
