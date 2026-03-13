@@ -4,13 +4,14 @@ import pytest
 
 from jaxmat.state import make_batched
 from jaxmat.tensors import (
-    SymmetricTensor2,
-    Tensor2,
-    SymmetricTensor4,
-    Tensor4,
-    IsotropicTensor4,
     CubicTensor4,
+    IsotropicTensor4,
+    SymmetricTensor2,
+    SymmetricTensor4,
+    Tensor2,
+    Tensor4,
     TransverseIsotropicTensor4,
+    dev,
     polar,
     stretch_tensor,
     sym,
@@ -19,7 +20,6 @@ from jaxmat.tensors.symmetry_classes import (
     cubic_projectors,
     transverse_isotropic_projectors,
 )
-from jaxmat.state import make_batched
 
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
@@ -155,8 +155,8 @@ def test_operations_with_ndarrays():
     assert type(T * jnp.asarray(2.0)) is SymmetricTensor2
     assert type(T @ I) is Tensor2
     # left multiplication with jax.Array calls __jax_array__ on tensor
-    assert type(jnp.asarray(2.0) * T) is jax.Array
-    assert type(I @ T) is jax.Array
+    assert isinstance(jnp.asarray(2.0) * T, jax.Array)
+    assert isinstance(I @ T, jax.Array)
 
 
 def test_stretch_tensor():
