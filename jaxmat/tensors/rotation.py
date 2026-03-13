@@ -52,7 +52,7 @@ def from_axis_angle(axis, theta):
         axis=-1,
     )
 
-    return R.reshape(axis.shape[:-1] + (3, 3))
+    return R.reshape((*axis.shape[:-1], 3, 3))
 
 
 # ---------------------------------------------------------
@@ -145,7 +145,7 @@ def from_euler_bunge(phi1, Phi, phi2):
         axis=-1,
     )
 
-    return R.reshape(jnp.shape(phi1) + (3, 3))
+    return R.reshape((*jnp.shape(phi1), 3, 3))
 
 
 def random(key, shape=()):
@@ -168,7 +168,7 @@ def random(key, shape=()):
     R : jax.Array, shape (*shape, 3, 3)
         Random rotation matrix/matrices.
     """
-    u = jax.random.uniform(key, shape + (3,))
+    u = jax.random.uniform(key, (*shape, 3))
     u1, u2, u3 = u[..., 0], u[..., 1], u[..., 2]
 
     q = jnp.stack(

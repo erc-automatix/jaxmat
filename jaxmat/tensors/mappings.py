@@ -1,4 +1,3 @@
-
 import jax
 import jax.numpy as jnp
 
@@ -12,7 +11,8 @@ def full_rank2_map(d: int) -> tuple[IndexMap2, jax.Array]:
 
     The flat array ordering is:
 
-    $$\{\boldsymbol{A}\} = [A_{11}, A_{22}, A_{33}, A_{12}, A_{21}, A_{13}, A_{31}, A_{23}, A_{32}]$$
+    $$\{\boldsymbol{A}\} = [A_{11}, A_{22}, A_{33},
+    A_{12}, A_{21}, A_{13}, A_{31}, A_{23}, A_{32}]$$
 
     for $d=3$.
 
@@ -32,27 +32,27 @@ def full_rank2_map(d: int) -> tuple[IndexMap2, jax.Array]:
         Weight array of shape ``(d*d,)``, filled with ones.
         (Provided for compatibility with weighted indexed tensor backends.)
     """
-    I = []
-    J = []
+    I_ = []
+    J_ = []
 
     # Diagonal terms
     for i in range(d):
-        I.append(i)
-        J.append(i)
+        I_.append(i)
+        J_.append(i)
 
     # Off-diagonal symmetric pairs
     for i in range(d):
         for j in range(i + 1, d):
-            I.append(i)
-            J.append(j)
-            I.append(j)
-            J.append(i)
+            I_.append(i)
+            J_.append(j)
+            I_.append(j)
+            J_.append(i)
 
-    I = jnp.array(I, dtype=jnp.int16)
-    J = jnp.array(J, dtype=jnp.int16)
-    W = jnp.ones_like(I, dtype=jnp.float32)
+    I_ = jnp.array(I_, dtype=jnp.int16)
+    J_ = jnp.array(J_, dtype=jnp.int16)
+    W = jnp.ones_like(I_, dtype=jnp.float32)
 
-    return (I, J), W
+    return (I_, J_), W
 
 
 def kelvin_rank2_map(d: int) -> tuple[IndexMap2, jax.Array]:
@@ -62,7 +62,8 @@ def kelvin_rank2_map(d: int) -> tuple[IndexMap2, jax.Array]:
 
     The Kelvin vector is defined as:
 
-    $$\{\boldsymbol{A}\} = [A_{11}, A_{22}, A_{33}, \sqrt{2} A_{12}, \sqrt{2} A_{13}, \sqrt{2} A_{23}]$$
+    $$\{\boldsymbol{A}\} = [A_{11}, A_{22}, A_{33},
+      \sqrt{2} A_{12}, \sqrt{2} A_{13}, \sqrt{2} A_{23}]$$
 
     for $d=3$.
     This scaling makes the Kelvin basis orthonormal, ensuring:
@@ -81,7 +82,8 @@ def kelvin_rank2_map(d: int) -> tuple[IndexMap2, jax.Array]:
         component to a tensor slot.
 
     W : jax.Array
-        Weight array of shape ``(d(d+1)/2,)`` containing $1$ for diagonal components, $\sqrt{2}$ for off-diagonal components.
+        Weight array of shape ``(d(d+1)/2,)`` containing $1$ for diagonal components, $\sqrt{2}$
+        for off-diagonal components.
     """
     sqrt2 = jnp.sqrt(2.0)
 
@@ -92,8 +94,8 @@ def kelvin_rank2_map(d: int) -> tuple[IndexMap2, jax.Array]:
     # Upper triangular off-diagonal (i < j)
     i_off, j_off = jnp.triu_indices(d, k=1)
 
-    I = jnp.concatenate([i_diag, i_off])
-    J = jnp.concatenate([j_diag, j_off])
+    I_ = jnp.concatenate([i_diag, i_off])
+    J_ = jnp.concatenate([j_diag, j_off])
 
     W = jnp.concatenate(
         [
@@ -102,7 +104,7 @@ def kelvin_rank2_map(d: int) -> tuple[IndexMap2, jax.Array]:
         ]
     )
 
-    return (I, J), W
+    return (I_, J_), W
 
 
 def full_rank4_map(d: int) -> tuple[IndexMap4, jax.Array]:
@@ -134,20 +136,20 @@ def full_rank4_map(d: int) -> tuple[IndexMap4, jax.Array]:
     """
 
     # Rank-2 full (non-symmetric) map
-    (I2, J2), W2 = full_rank2_map(d)
+    (I2, J2), _ = full_rank2_map(d)
     N = I2.shape[0]  # N = d*d
 
     a, b = jnp.meshgrid(jnp.arange(N), jnp.arange(N), indexing="ij")
 
-    I = I2[a]
-    J = J2[a]
-    K = I2[b]
-    L = J2[b]
+    I_ = I2[a]
+    J_ = J2[a]
+    K_ = I2[b]
+    L_ = J2[b]
 
     # No Kelvin scaling for full Tensor4
     W = jnp.ones((N, N), dtype=jnp.float32)
 
-    return (I, J, K, L), W
+    return (I_, J_, K_, L_), W
 
 
 def kelvin_rank4_map(d: int) -> tuple[IndexMap4, jax.Array]:
@@ -158,10 +160,11 @@ def kelvin_rank4_map(d: int) -> tuple[IndexMap4, jax.Array]:
 
     $$C_{\alpha\beta} = s_{\alpha} s_{\beta} C_{ijkl}$$
 
-    where $\alpha$ and $\beta$ are the Kelvin coefficients (weights $s_{\alpha},s_{\beta}$ are 1 and $\sqrt{2}$
-    for shear components) of the $(i,j)$ and $(k,l)$ index pairs.
+    where $\alpha$ and $\beta$ are the Kelvin coefficients (weights $s_{\alpha},s_{\beta}$ are 1 and
+    $\sqrt{2}$ for shear components) of the $(i,j)$ and $(k,l)$ index pairs.
 
-    For $d = 3$, this produces a $6\times 6$ representation of a 4th-rank tensor with minor symmetries.
+    For $d = 3$, this produces a $6\times 6$ representation of a 4th-rank tensor with minor
+    symmetries.
 
     Parameters
     ----------
@@ -191,12 +194,12 @@ def kelvin_rank4_map(d: int) -> tuple[IndexMap4, jax.Array]:
     # Build rank-4 index grids
     a, b = jnp.meshgrid(jnp.arange(N), jnp.arange(N), indexing="ij")
 
-    I = I2[a]
-    J = J2[a]
-    K = I2[b]
-    L = J2[b]
+    I_ = I2[a]
+    J_ = J2[a]
+    K_ = I2[b]
+    L_ = J2[b]
 
-    # Kelvin–Mandel weights
+    # Kelvin-Mandel weights
     W = W2[a] * W2[b]
 
-    return (I, J, K, L), W
+    return (I_, J_, K_, L_), W

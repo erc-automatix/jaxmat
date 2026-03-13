@@ -129,7 +129,7 @@ internal_state_variables = state.internal
 print(internal_state_variables.__dict__)
 
 # %%
-from jaxmat.tensors import SymmetricTensor4
+from jaxmat.tensors import SymmetricTensor4  # noqa: E402
 
 gamma = 1e-3
 new_eps = jnp.array([[0, gamma / 2, 0], [gamma / 2, 0, 0], [0, 0, 0]])

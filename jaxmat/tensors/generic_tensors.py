@@ -486,7 +486,8 @@ class SymmetricTensor4(Tensor4):
     @classmethod
     def identity(cls):
         r"""
-        Fourth-rank symmetric identity operator $I_{ijkl}=\frac{1}{2}(\delta_{ik}\delta_{jl}+\delta_{il}\delta_{jk})$
+        Fourth-rank symmetric identity operator $I_{ijkl}=\frac{1}{2}(\delta_{ik}\delta_{jl}
+        +\delta_{il}\delta_{jk})$
 
         Returns
         -------

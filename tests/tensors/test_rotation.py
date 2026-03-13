@@ -11,9 +11,9 @@ from jaxmat.tensors import (
 
 
 def random_rotation(key):
-    """Generate a proper orthogonal 3×3 rotation matrix."""
+    """Generate a proper orthogonal 3x3 rotation matrix."""
     A = jax.random.normal(key, (3, 3))
-    Q, R = jnp.linalg.qr(A)
+    Q, _ = jnp.linalg.qr(A)
     # enforce det = +1
     Q = Q * jnp.sign(jnp.linalg.det(Q))
     return Q
@@ -21,24 +21,24 @@ def random_rotation(key):
 
 def test_rotate_identity_rank2():
     T = Tensor2(tensor=jnp.arange(9.0).reshape(3, 3))
-    I = jnp.eye(3)
+    Id = jnp.eye(3)
 
-    T_rot = T.rotate(I)
+    T_rot = T.rotate(Id)
 
     assert jnp.allclose(T_rot, T)
 
 
 def test_rotate_identity_rank4():
     T = Tensor4(tensor=jnp.arange(81.0).reshape(3, 3, 3, 3))
-    I = jnp.eye(3)
+    Id = jnp.eye(3)
 
-    T_rot = T.rotate(I)
+    T_rot = T.rotate(Id)
     assert jnp.allclose(T_rot, T)
 
     T_ = jnp.arange(36.0).reshape(6, 6)
     T = SymmetricTensor4(array=T_)
 
-    T_rot = T.rotate(I)
+    T_rot = T.rotate(Id)
 
     assert jnp.allclose(T_rot, T)
 

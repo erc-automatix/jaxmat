@@ -23,7 +23,7 @@ from jaxmat.tensors.symmetry_classes import (
 
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
-def test_tensor_shapes(cls):
+def test_tensor_shapes(cls: Tensor2 | SymmetricTensor2):
     if issubclass(cls, SymmetricTensor2):
         array_shape = (6,)
     elif issubclass(cls, Tensor2):
@@ -51,7 +51,7 @@ def test_tensor_shapes(cls):
             assert T.base_array_shape == array_shape
             assert T.batch_shape == batch_dim
             assert T.shape == batch_dim + array_shape
-            assert T.tensor_shape == batch_dim + (3, 3)
+            assert T.tensor_shape == (*batch_dim, 3, 3)
 
 
 def _tensor2_init(tensor_type, T_, T_vect_):
@@ -148,15 +148,15 @@ def test_symmetries():
 
 def test_operations_with_ndarrays():
     T = SymmetricTensor2()
-    I = jnp.eye(3)
-    assert type(T + I) is SymmetricTensor2
-    assert type(T - I) is SymmetricTensor2
+    Id = jnp.eye(3)
+    assert type(T + Id) is SymmetricTensor2
+    assert type(T - Id) is SymmetricTensor2
     # right multiplication keeps Tensor type
     assert type(T * jnp.asarray(2.0)) is SymmetricTensor2
-    assert type(T @ I) is Tensor2
+    assert type(T @ Id) is Tensor2
     # left multiplication with jax.Array calls __jax_array__ on tensor
     assert isinstance(jnp.asarray(2.0) * T, jax.Array)
-    assert isinstance(I @ T, jax.Array)
+    assert isinstance(Id @ T, jax.Array)
 
 
 def test_stretch_tensor():
@@ -302,7 +302,7 @@ def test_cubic_projectors():
     key = jax.random.PRNGKey(0)
     b_ = jax.random.normal(key, (3, 3))
     b = SymmetricTensor2(tensor=b_)
-    J, Ka, Kb = cubic_projectors()
+    _, Ka, Kb = cubic_projectors()
     Ka = SymmetricTensor4(array=Ka)
     Kb = SymmetricTensor4(array=Kb)
     bdiag = jnp.diag(jnp.diag(b))
@@ -434,7 +434,7 @@ def test_operator_symmetry():
 
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
-def test_batch_tensors(cls):
+def test_batch_tensors(cls: Tensor2 | SymmetricTensor2):
     Nbatch = 5
     val = 0.5 * jnp.eye(3)
     A = make_batched(cls(tensor=val), Nbatch=Nbatch)
@@ -448,9 +448,11 @@ def test_batch_tensors(cls):
     assert jnp.allclose(A[1], val)
     assert type(A + A) is cls
     assert jnp.allclose(A + A, jnp.broadcast_to(2 * val, (Nbatch, 3, 3)))
-    # matmult doc: If either argument is N-D, N > 2, it is treated as a stack of matrices residing in the last two indexes and broadcast accordingly.
+    # matmult doc: If either argument is N-D, N > 2, it is treated as a stack of matrices residing
+    # in the last two indexes and broadcast accordingly.
     assert type(A @ A) is cls if cls == Tensor2 else Tensor2
-    # matmult doc: If either argument is N-D, N > 2, it is treated as a stack of matrices residing in the last two indexes and broadcast accordingly.
+    # matmult doc: If either argument is N-D, N > 2, it is treated as a stack of matrices residing
+    # in the last two indexes and broadcast accordingly.
     assert jnp.allclose(A @ A, jnp.broadcast_to(val @ val, (Nbatch, 3, 3)))
 
 
@@ -470,7 +472,6 @@ def test_tangent_tensor():
 
     eps = SymmetricTensor2.identity()
     sig = jax.grad(energy)
-    sig = lambda eps: C @ eps
     Ct = jax.jacfwd(sig)(eps)
     assert type(Ct) is SymmetricTensor2
     assert Ct.shape == (6, 6)
@@ -480,7 +481,7 @@ def test_tangent_tensor():
 
 
 @pytest.mark.parametrize("cls", [Tensor2, SymmetricTensor2])
-def test_double_batch_tensors(cls):
+def test_double_batch_tensors(cls: Tensor2 | SymmetricTensor2):
     Nbatch1, Nbatch2 = 4, 5
     val = 0.5 * jnp.eye(3)
     A_ = make_batched(cls(tensor=val), Nbatch=Nbatch2)
