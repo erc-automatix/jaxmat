@@ -117,6 +117,7 @@ plt.show()
 # trained with differentiable solvers.
 
 
+
 # %%
 class SumExpHardening(eqx.Module):
     sig0: float = eqx.field(converter=jnp.asarray)

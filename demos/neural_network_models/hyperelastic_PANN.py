@@ -193,6 +193,7 @@ test_output = {key: dataset[key][1] for key in labels if key not in training_cas
 # PANN material model.
 
 
+
 # %%
 class PANN(ICNN):
     def nn_energy(self, lambC):
@@ -257,6 +258,7 @@ plt.show()
 # by mapping the `error` function over the training load cases defined as a PyTree. The
 # `total_error` takes as a first argument the PANN model PyTree `material` while training data are
 # stored in the second `args` argument.
+
 
 
 # %%

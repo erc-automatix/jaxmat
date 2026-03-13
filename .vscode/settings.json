@@ -3,7 +3,7 @@
     "command-runner.commands": {
         
         "quick preview Jupyter book": "jupytext --sync docs/demos/**/*.md && jupyter-book build docs/ && firefox docs/_build/html/index.html &",
-        "process, build and preview Jupyter book": "jupytext --pipe black --sync docs/demos/**/*.md && jupyter-book build docs/ && firefox docs/_build/html/index.html &",
+        "process, build and preview Jupyter book": "jupytext --pipe \"ruff format -\" --sync docs/demos/**/*.md && jupyter-book build docs/ && firefox docs/_build/html/index.html &",
         "execute notebooks": "jupytext --to notebook --execute docs/demos/**/*.md",
         "generate scripts": "jupytext --to script docs/demos/**/*.md",
         "deploy website": "ghp-import -n -p -f docs/_build/html",

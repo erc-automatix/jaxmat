@@ -239,6 +239,7 @@ plt.show()
 # the $x,y$ direction.
 
 
+
 # %%
 @eqx.filter_jit
 def compute_evolution(material, gamma_list, dt=0.0):
@@ -336,6 +337,7 @@ plt.show()
 #
 # The overall optimizer is built using `optax.chain`, where each transformation acts sequentially
 # on the gradient:
+
 
 
 # %%

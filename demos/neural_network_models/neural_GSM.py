@@ -271,7 +271,9 @@ class ICNNDissipationPotential(ICNN):
         alpha_dot = isv_dot.alpha.tensor
         return (
             self.icnn_potential(alpha_dot)
-            - jax.jvp(self.icnn_potential, (jnp.zeros_like(alpha_dot),), (alpha_dot,))[1]
+            - jax.jvp(self.icnn_potential, (jnp.zeros_like(alpha_dot),), (alpha_dot,))[
+                1
+            ]
         )
 
 
@@ -489,7 +491,9 @@ for Nmax in Nmax_list:
     )
 
 for maxwell, Nmax in zip(maxwell_list, Nmax_list):
-    trainable, static = partition_by_node_names(maxwell, ["elasticity", "relaxation_times"])
+    trainable, static = partition_by_node_names(
+        maxwell, ["elasticity", "relaxation_times"]
+    )
 
     sol = optx.minimise(
         loss,
