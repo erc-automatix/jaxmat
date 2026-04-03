@@ -1,5 +1,6 @@
 import equinox as eqx
 import jax.numpy as jnp
+import numpy as np
 
 
 def default_value(value, dtype=jnp.float64, **kwargs):
@@ -123,7 +124,7 @@ def print_eqx_fields(obj, fields=None, indent=0, file=None, format=""):
                     format=v_formatter,
                     file=file,
                 )
-            elif isinstance(v, (list, tuple)):
+            elif isinstance(v, (list, tuple, np.ndarray)):
                 print(f"{pad}  {k} = {format_list_tupple(v, v_formatter)}", file=file)
             else:
                 print(f"{pad}  {k} = {v:{v_formatter}}", file=file)
