@@ -1,4 +1,5 @@
 import equinox as eqx
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -124,8 +125,13 @@ def print_eqx_fields(obj, fields=None, indent=0, file=None, format=""):
                     format=v_formatter,
                     file=file,
                 )
-            elif isinstance(v, (list, tuple, np.ndarray)):
+            elif isinstance(v, (list, tuple)):
                 print(f"{pad}  {k} = {format_list_tupple(v, v_formatter)}", file=file)
+            elif isinstance(v, (np.ndarray, jax.Array)) and v.shape is not ():
+                with np.printoptions(
+                    formatter={"all": ("{:" + v_formatter + "}").format}
+                ):
+                    print(f"{pad}  {k} = {v}", file=file)
             else:
                 print(f"{pad}  {k} = {v:{v_formatter}}", file=file)
     elif isinstance(obj, (list, tuple)):
