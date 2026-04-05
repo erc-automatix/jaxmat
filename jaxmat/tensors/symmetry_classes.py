@@ -35,7 +35,7 @@ Symmetry class          Coeffs    Projectors  Composition rule
 ======================  ========  ==========  ===========================
 Isotropic               2         J, K        elementwise (orthogonal)
 Cubic                   3         J, Kₐ, K_b  elementwise (orthogonal)
-Transverse isotropic    6         Walpole     2×2 block + scalar pairs
+Transverse isotropic    6         Walpole     2x2 block + scalar pairs
 ======================  ========  ==========  ===========================
 """
 
@@ -50,7 +50,6 @@ from jaxmat.tensors.generic_tensors import (
     SymmetricTensor4,
     _array4,
 )
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Projector constructors
@@ -189,7 +188,7 @@ class AbstractStructuredTensor4(eqx.Module):
 
     # ── abstract interface ─────────────────────────────────────────────────────
 
-    def _rebuild(self, new_coeffs: jax.Array) -> "AbstractStructuredTensor4":
+    def _rebuild(self, new_coeffs: jax.Array) -> AbstractStructuredTensor4:
         """
         Return a new same-type instance with updated coefficients.
 
@@ -206,7 +205,7 @@ class AbstractStructuredTensor4(eqx.Module):
         raise NotImplementedError
 
     @property
-    def inv(self) -> "AbstractStructuredTensor4":
+    def inv(self) -> AbstractStructuredTensor4:
         r"""
         Inverse of the tensor operator.
 
@@ -420,13 +419,11 @@ class IsotropicTensor4(AbstractStructuredTensor4):
         if coeffs is None:
             if kappa is None or mu is None:
                 raise ValueError("Provide either coeffs or (kappa, mu)")
-            coeffs = jnp.stack(
-                [3.0 * jnp.asarray(kappa), 2.0 * jnp.asarray(mu)], axis=-1
-            )
+            coeffs = jnp.stack([3.0 * jnp.asarray(kappa), 2.0 * jnp.asarray(mu)], axis=-1)
         object.__setattr__(self, "_coeffs", jnp.asarray(coeffs))
         object.__setattr__(self, "_basis_arrays", _ISO_BASIS)
 
-    def _rebuild(self, new_coeffs: jax.Array) -> "IsotropicTensor4":
+    def _rebuild(self, new_coeffs: jax.Array) -> IsotropicTensor4:
         return IsotropicTensor4(coeffs=new_coeffs)
 
     @property
@@ -440,7 +437,7 @@ class IsotropicTensor4(AbstractStructuredTensor4):
         return self._coeffs[..., 1] / 2.0
 
     @property
-    def inv(self) -> "IsotropicTensor4":
+    def inv(self) -> IsotropicTensor4:
         r"""
         Inverse $\mathbb{C}^{-1}$.
 
@@ -454,7 +451,7 @@ class IsotropicTensor4(AbstractStructuredTensor4):
         """
         return IsotropicTensor4(coeffs=1.0 / self._coeffs)
 
-    def rotate(self, R: jax.Array) -> "IsotropicTensor4":
+    def rotate(self, R: jax.Array) -> IsotropicTensor4:
         r"""
         Isotropic tensors are invariant under all rotations.
 
@@ -484,7 +481,7 @@ class IsotropicTensor4(AbstractStructuredTensor4):
         return super().__matmul__(other)
 
     @classmethod
-    def project(cls, C: SymmetricTensor4) -> "IsotropicTensor4":
+    def project(cls, C: SymmetricTensor4) -> IsotropicTensor4:
         r"""
         Project a :class:`SymmetricTensor4` onto the isotropic subspace.
 
@@ -563,11 +560,11 @@ class CubicTensor4(AbstractStructuredTensor4):
         object.__setattr__(self, "_coeffs", jnp.asarray(coeffs))
         object.__setattr__(self, "_basis_arrays", _CUB_BASIS)
 
-    def _rebuild(self, new_coeffs: jax.Array) -> "CubicTensor4":
+    def _rebuild(self, new_coeffs: jax.Array) -> CubicTensor4:
         return CubicTensor4(coeffs=new_coeffs)
 
     @property
-    def inv(self) -> "CubicTensor4":
+    def inv(self) -> CubicTensor4:
         r"""
         Inverse $\mathbb{C}^{-1}$.
 
@@ -593,7 +590,7 @@ class CubicTensor4(AbstractStructuredTensor4):
         return super().__matmul__(other)
 
     @classmethod
-    def project(cls, C: SymmetricTensor4) -> "CubicTensor4":
+    def project(cls, C: SymmetricTensor4) -> CubicTensor4:
         r"""
         Project a :class:`SymmetricTensor4` onto the cubic subspace.
 
@@ -653,11 +650,11 @@ class TransverseIsotropicTensor4(AbstractStructuredTensor4):
         object.__setattr__(self, "_coeffs", jnp.asarray(coeffs))
         object.__setattr__(self, "_basis_arrays", basis)
 
-    def _rebuild(self, new_coeffs: jax.Array) -> "TransverseIsotropicTensor4":
+    def _rebuild(self, new_coeffs: jax.Array) -> TransverseIsotropicTensor4:
         return TransverseIsotropicTensor4(self.axis, new_coeffs)
 
     @property
-    def inv(self) -> "TransverseIsotropicTensor4":
+    def inv(self) -> TransverseIsotropicTensor4:
         r"""
         Inverse operator within the transverse-isotropic subspace.
 
@@ -693,9 +690,7 @@ class TransverseIsotropicTensor4(AbstractStructuredTensor4):
         return TransverseIsotropicTensor4(self.axis, inv_c)
 
     @classmethod
-    def project(
-        cls, axis: jax.Array, C: SymmetricTensor4
-    ) -> "TransverseIsotropicTensor4":
+    def project(cls, axis: jax.Array, C: SymmetricTensor4) -> TransverseIsotropicTensor4:
         r"""
         Project a :class:`SymmetricTensor4` onto the transverse-isotropic subspace.
 

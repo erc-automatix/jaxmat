@@ -98,7 +98,7 @@ def test_tensor2_init():
     assert T.tensor.shape == (4, 5, 3, 3)
     with pytest.raises(ValueError):
         Tensor2(tensor=jnp.ones((4, 4, 3)))
-    T2 = Tensor2(tensor=Tensor2.identity())
+    Tensor2(tensor=Tensor2.identity())
 
 
 def test_sym_tensor2_init():
@@ -107,7 +107,7 @@ def test_sym_tensor2_init():
         [0, 3, 5, jnp.sqrt(2) * 1, jnp.sqrt(2) * 2, jnp.sqrt(2) * 4], dtype=jnp.float64
     )
     # this passes
-    St = Tensor2(tensor=S_)
+    Tensor2(tensor=S_)
     # this does not
     with pytest.raises(ValueError):
         Tensor2(array=S_vect_)
