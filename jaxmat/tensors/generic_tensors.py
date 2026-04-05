@@ -21,11 +21,11 @@ Design principles
 * Named methods for algebraically unambiguous operations:
   :meth:`~Tensor2.double_contract`, :meth:`~Tensor2.matvec`,
   :meth:`~_AbstractTensor4.fourth_contract`.
-* :class:`_AbstractTensor4` centralises all code shared between
+* :class:`_AbstractTensor4` centralizes all code shared between
   :class:`Tensor4` and :class:`SymmetricTensor4`; subclasses supply only
   ``__init__``, ``tensor``, ``__matmul__``, ``base_array_shape``, and
   ``identity``.
-"""
+"""  # noqa: E501
 
 import equinox as eqx
 import jax
@@ -37,7 +37,6 @@ from jaxmat.tensors.mappings import (
     kelvin_rank2_map,
     kelvin_rank4_map,
 )
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Module-level index maps — computed once at import, shared by all instances
@@ -72,8 +71,7 @@ def _check_trailing(arr, expected, name):
     """Raise ``ValueError`` if the trailing shape of ``arr`` does not match ``expected``."""
     if arr.shape[-len(expected) :] != tuple(expected):
         raise ValueError(
-            f"Wrong {name} trailing shape {arr.shape[-len(expected):]}; "
-            f"expected {tuple(expected)}"
+            f"Wrong {name} trailing shape {arr.shape[-len(expected) :]}; expected {tuple(expected)}"
         )
 
 
@@ -149,7 +147,7 @@ class Tensor2(eqx.Module):
     Notes
     -----
     Exactly one of ``tensor`` or ``array`` may be provided.  If neither is
-    given the tensor is initialised to zero.
+    given the tensor is initialized to zero.
 
     Batch dimensions precede the storage dimension: a batch of $N$ tensors
     has ``array.shape == (N, 9)`` and ``tensor.shape == (N, 3, 3)``.
@@ -214,7 +212,7 @@ class Tensor2(eqx.Module):
         jax.Array
             Shape ``(..., 3, 3)``.
         """
-        return self._array[..., _T2_RECON33].reshape(self._array.shape[:-1] + (3, 3))
+        return self._array[..., _T2_RECON33].reshape((*self._array.shape[:-1], 3, 3))
 
     @property
     def shape(self) -> tuple:
@@ -286,9 +284,7 @@ class Tensor2(eqx.Module):
         -------
         SymmetricTensor2
         """
-        return SymmetricTensor2(
-            tensor=0.5 * (self.tensor + jnp.swapaxes(self.tensor, -1, -2))
-        )
+        return SymmetricTensor2(tensor=0.5 * (self.tensor + jnp.swapaxes(self.tensor, -1, -2)))
 
     @property
     def skw(self) -> "Tensor2":
@@ -517,7 +513,7 @@ class SymmetricTensor2(Tensor2):
             Shape ``(..., 3, 3)``.
         """
         array = _raw_array(self._array)  # (..., 6) JAX array
-        out = jnp.zeros(array.shape[:-1] + (3, 3), dtype=array.dtype)
+        out = jnp.zeros((*array.shape[:-1], 3, 3), dtype=array.dtype)
         out = out.at[..., _S2_I, _S2_J].add(array * _S2_W)
         return 0.5 * (out + jnp.swapaxes(out, -1, -2))
 
@@ -749,16 +745,14 @@ class Tensor4(_AbstractTensor4):
 
     - :class:`Tensor4` ``@`` :class:`Tensor2` → $C_{ijkl}\varepsilon_{kl}$ → :class:`Tensor2`.
     - :class:`Tensor4` ``@`` :class:`Tensor4` → $(C:D)_{ijmn} = C_{ijkl}D_{klmn}$ → :class:`Tensor4`.
-    """
+    """  # noqa: E501
 
     base_array_shape = (9, 9)
     """Shape of the base (unbatched) Kelvin matrix."""
 
     def __init__(self, *, tensor=None, array=None):
         if tensor is not None:
-            object.__setattr__(
-                self, "_array", jnp.asarray(tensor)[..., _T4_I, _T4_J, _T4_K, _T4_L]
-            )
+            object.__setattr__(self, "_array", jnp.asarray(tensor)[..., _T4_I, _T4_J, _T4_K, _T4_L])
         elif array is not None:
             object.__setattr__(self, "_array", _raw_array(array))
         else:
@@ -774,9 +768,7 @@ class Tensor4(_AbstractTensor4):
         jax.Array
             Shape ``(..., 3, 3, 3, 3)``.
         """
-        return self._array[
-            ..., _T2_RECON33[:, :, None, None], _T2_RECON33[None, None, :, :]
-        ]
+        return self._array[..., _T2_RECON33[:, :, None, None], _T2_RECON33[None, None, :, :]]
 
     def __matmul__(self, other):
         r"""
