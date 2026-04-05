@@ -1,7 +1,6 @@
 from .generic_tensors import (
     SymmetricTensor2,
     SymmetricTensor4,
-    Tensor,
     Tensor2,
     Tensor4,
 )
@@ -32,7 +31,6 @@ __all__ = [
     "IsotropicTensor4",
     "SymmetricTensor2",
     "SymmetricTensor4",
-    "Tensor",
     "Tensor2",
     "Tensor4",
     "TransverseIsotropicTensor4",
