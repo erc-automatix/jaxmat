@@ -3,39 +3,52 @@ import optax
 
 
 def safe_fun(fun, x, norm=None, eps=1e-16):
-    """
-    Safely applies a function to an input, avoiding numerical issues near zero.
+    r"""
+    Apply a function safely, avoiding evaluation at or near zero.
 
-    This function applies ``fun(x)`` only when the norm of ``x`` exceeds a small
-    tolerance ``eps``. Otherwise, it returns zero. This is useful for ensuring
-    numerical stability in cases where evaluating ``fun`` at or near zero could
-    result in undefined or unstable behavior (e.g., division by zero).
+    The input ``x`` is replaced by a small positive sentinel ``eps`` whenever
+    ``norm(x) <= eps`` before calling ``fun``.  The final result is then
+    masked to return zero in that case.  This sentinel strategy ensures that
+    ``fun`` is always evaluated at a numerically safe point, so that gradients
+    through ``fun`` remain finite under automatic differentiation.
+
+    This is consistent with :func:`safe_sqrt`:
+    ``safe_fun(jnp.sqrt, x)`` produces the same values and gradients as
+    ``safe_sqrt(x)``.
 
     Parameters
     ----------
-    fun : Callable
-        The function to apply safely.
-    x : array-like
-        Input array or tensor.
-    norm : Callable, optional
-        A norm or magnitude function used to test whether ``x`` is sufficiently
-        large. Defaults to the identity function.
+    fun : callable
+        Scalar or array function to apply safely.
+    x : array_like
+        Input value.
+    norm : callable, optional
+        Scalar-valued function of ``x`` used to test proximity to zero.
+        Defaults to the identity (i.e. ``x`` itself is the magnitude).
     eps : float, optional
-        Small threshold to determine whether ``x`` is treated as nonzero.
-        Defaults to 1e-16.
+        Threshold below which ``x`` is considered zero.  Defaults to ``1e-16``.
 
     Returns
     -------
-    array-like
-        ``fun(x)`` if ``norm(x) > eps``, otherwise ``0`` (of the same shape as ``x``).
+    jax.Array
+        ``fun(x)`` where ``norm(x) > eps``, otherwise ``0``.
+
+    Notes
+    -----
+    The key property is that the *sentinel-substituted* input ``eps`` (not
+    ``0``) is passed to ``fun`` in the masked branch.  This prevents
+    ``jax.grad`` from encountering undefined derivatives (e.g.
+    ``1 / (2 sqrt(0))`` for ``fun = jnp.sqrt``).
     """
     if norm is None:
 
         def norm(x):
             return x
 
-    nonzero_x = jnp.where(norm(x) > eps, x, 0 * x)
-    return jnp.where(norm(x) > eps, fun(nonzero_x), 0)
+    is_nonzero = norm(x) > eps
+    # Use eps as sentinel (not 0) so fun is always evaluated at a safe point.
+    safe_x = jnp.where(is_nonzero, x, eps)
+    return jnp.where(is_nonzero, fun(safe_x), 0 * fun(safe_x))
 
 
 def safe_sqrt(x, eps=1e-16):
