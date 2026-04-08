@@ -3,6 +3,7 @@
 from .generic_tensors import (
     SymmetricTensor2,
     SymmetricTensor4,
+    Tensor,
     Tensor2,
     Tensor4,
 )
@@ -43,6 +44,7 @@ from .tensor_utils import (
 from .utils import safe_fun, safe_norm, safe_sqrt
 
 __all__ = [  # noqa: RUF022
+    "Tensor",
     # rank-2 tensors
     "SymmetricTensor2",
     "Tensor2",

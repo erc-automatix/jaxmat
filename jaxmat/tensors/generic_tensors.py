@@ -125,11 +125,29 @@ def _array4(obj) -> jax.Array:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Marker base class
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class Tensor(eqx.Module):
+    """
+    Empty marker base class for all jaxmat tensor objects.
+
+    Provides a single type to test against with ``isinstance(x, Tensor)``
+    without coupling to any specific rank or symmetry class.
+
+    Both rank-2 classes (:class:`Tensor2`, :class:`SymmetricTensor2`) and
+    rank-4 classes (:class:`Tensor4`, :class:`SymmetricTensor4`, and the
+    symmetry-reduced subclasses) inherit from this marker.
+    """
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Rank-2 tensors
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-class Tensor2(eqx.Module):
+class Tensor2(Tensor):
     r"""
     Full (non-symmetric) second-rank tensor in 3-D.
 
@@ -568,7 +586,7 @@ class SymmetricTensor2(Tensor2):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-class _AbstractTensor4(eqx.Module):
+class _AbstractTensor4(Tensor):
     r"""
     Abstract base class shared by :class:`Tensor4` and :class:`SymmetricTensor4`.
 
