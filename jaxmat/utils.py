@@ -49,7 +49,7 @@ def partition_by_node_names(model, freeze_names):
     return trainable, static
 
 
-def print_eqx_fields(obj, fields=None, indent=0, file=None, format=""):
+def print_eqx_fields(obj, fields=None, indent=0, format=""):
     """
     Recursively print fields of an Equinox module or dataclass-like object.
 
@@ -95,7 +95,7 @@ def print_eqx_fields(obj, fields=None, indent=0, file=None, format=""):
         return template.format(*to_format)
 
     if isinstance(obj, eqx.Module):
-        print(f"{pad}{obj.__class__.__name__}:", file=file)
+        print(f"{pad}{obj.__class__.__name__}:")
         for k, v in obj.__dict__.items():
             if not matches(k):
                 continue  # skip fields not requested
@@ -117,23 +117,19 @@ def print_eqx_fields(obj, fields=None, indent=0, file=None, format=""):
                 v_formatter = format
 
             if isinstance(v, eqx.Module):
-                print(f"{pad}  {k}:", file=file)
+                print(f"{pad}  {k}:")
                 print_eqx_fields(
-                    v,
-                    fields=subfields,
-                    indent=indent + 4,
-                    format=v_formatter,
-                    file=file,
+                    v, fields=subfields, indent=indent + 4, format=v_formatter
                 )
             elif isinstance(v, (list, tuple)):
-                print(f"{pad}  {k} = {format_list_tupple(v, v_formatter)}", file=file)
+                print(f"{pad}  {k} = {format_list_tupple(v, v_formatter)}")
             elif isinstance(v, (np.ndarray, jax.Array)) and v.shape is not ():
                 with np.printoptions(
                     formatter={"all": ("{:" + v_formatter + "}").format}
                 ):
-                    print(f"{pad}  {k} = {v}", file=file)
+                    print(f"{pad}  {k} = {v}")
             else:
-                print(f"{pad}  {k} = {v:{v_formatter}}", file=file)
+                print(f"{pad}  {k} = {v:{v_formatter}}")
     elif isinstance(obj, (list, tuple)):
         for i, v in enumerate(obj):
             v_formatter: str
@@ -142,7 +138,7 @@ def print_eqx_fields(obj, fields=None, indent=0, file=None, format=""):
             else:
                 v_formatter = format
 
-            print(f"{pad}[{i}]: {v:{v_formatter}}", file=file)
+            print(f"{pad}[{i}]: {v:{v_formatter}}")
 
     else:
-        print(f"{pad}{obj}", file=file)
+        print(f"{pad}{obj}")
