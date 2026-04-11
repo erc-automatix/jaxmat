@@ -60,7 +60,7 @@
 #
 # where $\langle \cdot \rangle_+ = \max\{\cdot, 0\}$ is the positive part, $K$ controls the
 # viscosity and $m$ is the Norton exponent.
-#
+
 # %%
 import equinox as eqx
 import jax
@@ -95,8 +95,7 @@ jax.config.update("jax_platform_name", "cpu")
 # initial value.
 #
 # [^1]: Since we assume no hardening, we do not need to declare the cumulated plastic strain $p$.
-#
-#
+
 # %%
 class InternalState(jaxmat.state.AbstractState):
     epsvp: SymmetricTensor2 = eqx.field(default_factory=lambda: SymmetricTensor2())
@@ -112,8 +111,7 @@ class InternalState(jaxmat.state.AbstractState):
 # to avoid NaNs when the stress tensor is zero, which may happen upon initialization for instance.
 # To avoid NaNs in `jnp.where` sections in adjoint computations, we use the [double `where`
 # trick](https://docs.jax.dev/en/latest/faq.html#gradients-contain-nan-where-using-where).
-#
-#
+
 # %%
 def safe_zero(method):
     def wrapper(self, x):
@@ -142,8 +140,7 @@ class GreenYieldSurface(eqx.Module):
 #
 # Next, the Norton flow is defined similarly as a module with two material parameters `K` and `m`.
 # It takes as input to `__call__` the overstress.
-#
-#
+
 # %%
 class NortonFlow(eqx.Module):
     K: float = eqx.field(converter=jnp.asarray)
@@ -180,8 +177,7 @@ class NortonFlow(eqx.Module):
 # where $\bn = \partial f /\partial\bsig$ is the yield surface normal evaluated at the final stress.
 #
 # The full implementation reads:
-#
-#
+
 # %%
 class GreenViscoPlasticity(jm.SmallStrainBehavior):
     elasticity: jm.LinearElasticIsotropic
@@ -242,7 +238,7 @@ class GreenViscoPlasticity(jm.SmallStrainBehavior):
 # ## Evaluating the model
 #
 # We now instantiate the Green viscoplastic model from its different components
-#
+
 # %%
 elasticity = jm.LinearElasticIsotropic(E=210e3, nu=0.3)
 sig0 = 300.0
@@ -259,8 +255,7 @@ material = GreenViscoPlasticity(
 # %% [markdown]
 # Below, we evaluate the Green yield surface and its normal in the $(p, q)$ space of hydrostatic and
 # deviatoric stresses.
-#
-#
+
 # %% tags=["hide-input"]
 def compute_pq(sig):
     p = jnp.trace(sig) / 3
@@ -316,7 +311,7 @@ plt.show()
 # will be evaluated simultaneously. We thus start with a default initial state with
 # `material.init_state` with a batch dimension `Nbatch=9`. Then, we modify, in the `state` PyTree,
 # the `stress` field with the imposed initial hydrostatic stresses.
-#
+
 # %%
 Nbatch = 9
 press_vals = jnp.linspace(-sig0, sig0, Nbatch)
@@ -347,7 +342,7 @@ print(initial_state.stress[:, 0, 0])
 #
 # [^2]: Note that, here, it would also have been possible to impose the total strain `Eps` since the
 #       load-case is purely strain-driven.
-#
+
 # %%
 for eps_dot in [1e-4, 1e-2, 1e0, 1e2]:
     eps_max = 2e-3

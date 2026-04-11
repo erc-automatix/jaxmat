@@ -121,7 +121,7 @@
 # In short, __post_init__ lets us safely set up shape-dependent fields while keeping the model
 # compatible with JAX transformations like `jit` and `vmap`.
 # ```
-#
+
 # %%
 import equinox as eqx
 import jax
@@ -168,8 +168,7 @@ class InternalState(AbstractState):
 # solved together within a single implicit solve.
 #
 # Finally, the `@eqx.filter_jit` decorator enables JIT compilation for efficiency.
-#
-#
+
 # %%
 class MultiSurfacePlasticity(SmallStrainBehavior):
     elasticity: LinearElasticIsotropic
@@ -241,8 +240,7 @@ class MultiSurfacePlasticity(SmallStrainBehavior):
 # A simple `YieldStress` class is first introduced to represent constant yield limits for each
 # surface (no hardening). It simply returns a constant scalar value $\sigma_{0i}$ independent of
 # plastic strain.
-#
-#
+
 # %%
 class YieldStress(eqx.Module):
     sig0: float = eqx.field(converter=jnp.asarray)
@@ -262,8 +260,7 @@ class YieldStress(eqx.Module):
 # $$
 # where $M$ controls the ellipse aspect ratio, $p_0$ its center along the hydrostatic axis and
 # $\sigma_c$ corresponds to the maximum compressive hydrostatic strength.
-#
-#
+
 # %%
 class EllipticCap(jm.AbstractPlasticSurface):
     M: float = eqx.field(converter=jnp.asarray)
@@ -284,8 +281,7 @@ class EllipticCap(jm.AbstractPlasticSurface):
 # f_\text{t}(p) = \sigma_m = \tfrac{1}{3}\tr(\bsig) \leq \sigma_t
 # $$
 # where $\sigma_t$ is the tensile strength.
-#
-#
+
 # %%
 class HydrostaticTensionCutoff(jm.AbstractPlasticSurface):
     def __call__(self, sig):
@@ -310,7 +306,7 @@ class HydrostaticTensionCutoff(jm.AbstractPlasticSurface):
 # We then select some numerical values and instantiate the final behavior. Its `constitutive_update`
 # method is then vectorized using `jax.vmap` to allow evaluation of multiple strain paths in
 # parallel.
-#
+
 # %%
 sig0 = 15.0
 tauc = sig0 / jnp.sqrt(3)
@@ -344,7 +340,7 @@ batched_constitutive_update = jax.vmap(
 # stress space — from pure compression to pure tension. This is done by parameterizing the strain
 # directions with an angle $\theta \in [0, \pi]$ and converting them into strain tensors consistent
 # with these directions.
-#
+
 # %%
 N = 40
 state = material.init_state(N)
@@ -361,7 +357,7 @@ eps_dir = eps_dir.at[:, 2, 2].set(ep - eq / 3)
 # The initial stress state is set to a hydrostatic compression $\bsig_0 = -5\sigma_0 \bI$ to ensure
 # that all paths start well within the elastic domain. This serves as a convenient reference point
 # for the subsequent stress paths.
-#
+
 # %%
 sig_init = jnp.zeros((N, 3, 3))
 sig_init = sig_init.at[:, 0, 0].set(-5 * sig0)
@@ -377,7 +373,7 @@ state = eqx.tree_at(
 # corresponding stress responses using the batched constitutive update. At each increment, the
 # imposed strain tensor is updated and the nonlinear local problem is solved for each direction. The
 # resulting stress is transformed to $(p, q)$ coordinates for plotting.
-#
+
 # %%
 Nincr = 100
 eps_list = jnp.linspace(0, 4e-3, Nincr)
@@ -405,7 +401,7 @@ plt.ioff()  # prevents Jupyter from displaying it automatically
 # This visualization allows verifying that the stress paths remain within or tangent to the yield
 # surfaces, and that the model correctly reproduces the expected multi-surface plastic behavior of
 # pressure-sensitive materials.
-#
+
 # %%
 p_DP = jnp.linspace(-2 * sigc, 2 * sigc, Nincr)
 q_DP = jnp.sqrt(3) * (tauc - alpha * 3 * p_DP)

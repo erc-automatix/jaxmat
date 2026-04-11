@@ -41,7 +41,7 @@
 #
 # We first represent $\boldsymbol{\varepsilon}$ as a batched `SymmetricTensor2` with shape `(N, 3,
 # 3)`. By convention, the batch dimension is always the first axis.
-#
+
 # %%
 import equinox as eqx
 import jax
@@ -67,7 +67,7 @@ eps = SymmetricTensor2(tensor=eps)
 # Next, we define an elastoplastic material based on `GeneralIsotropicHardening`, which allows us to
 # consider different yield surfaces. Here, we choose a Hosford surface and will vary its shape
 # parameter $a$. The yield stress is nearly constant to mimic perfect plasticity.
-#
+
 # %%
 sig0 = 300.0
 
@@ -88,7 +88,7 @@ material = jm.GeneralIsotropicHardening(
 
 # %% [markdown]
 # We then initialize the state for all $N$ points:
-#
+
 # %%
 state = material.init_state(Nbatch=N)
 
@@ -97,7 +97,7 @@ state = material.init_state(Nbatch=N)
 # using the `jax.vmap` transform. The method signature is `(material, strain, state, dt)`, so
 # `in_axes=(None, 0, 0, None)` specifies that only the first axes of `strain` and `state` are
 # vectorized, while `material` and the time step `dt` are shared across the batch.
-#
+
 # %%
 batched_constitutive_update = jax.vmap(
     jm.GeneralIsotropicHardening.constitutive_update, in_axes=(None, 0, 0, None)
@@ -116,8 +116,7 @@ batched_constitutive_update = jax.vmap(
 # update the material PyTree to define a new material instance, then evaluate the batched
 # constitutive update for the batch of strains and states. The resulting batched stress tensors are
 # then plotted on the deviatoric $\pi$-plane.
-#
-#
+
 # %% tags=["hide-input"]
 def scatter_pi_plane(stress, marker="o", **kwargs):
     from jaxmat.tensors import eigenvalues

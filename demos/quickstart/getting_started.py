@@ -23,7 +23,7 @@
 # We first import `jax` and may specify whether we want to run on the CPU or the GPU. We will also
 # need the `equinox` package from which we use `Module`s to define the different behavior bricks,
 # see [more details on the use of `equinox.Module`.](./../../docs/pytrees.md).
-#
+
 # %%
 import equinox as eqx
 import jax
@@ -34,7 +34,6 @@ import jaxmat.materials as jm
 from jaxmat.tensors import SymmetricTensor2
 
 jax.config.update("jax_platform_name", "cpu")
-
 
 # %% [markdown]
 # ## Defining a behavior
@@ -55,7 +54,7 @@ jax.config.update("jax_platform_name", "cpu")
 # For this purpose, we simply define an `equinox.Module` with the material parameter attributes
 # $(\sigma_0,\sigma_u, b)$ and a `__call__` function which evaluates the current yield stress as a
 # function of the cumulated plastic strain $p$.
-#
+
 # %%
 elasticity = jm.LinearElasticIsotropic(E=200e3, nu=0.25)
 
@@ -76,7 +75,7 @@ hardening = VoceHardening(sig0=350.0, sigu=500.0, b=1e3)
 # it is a module containing an `elasticity` submodule and a `yield_stress` submodule. Each of these
 # submodule holds its own material properties. The elastic submodule also allows to access the
 # material elastic shear modulus for instance, which is 80 GPa here.
-#
+
 # %%
 material = jm.vonMisesIsotropicHardening(elasticity=elasticity, yield_stress=hardening)
 print(material)
@@ -90,7 +89,7 @@ print(f"\nShear modulus = {1e-3 * mu} GPa")
 # Since `hardening` is a JAX function, we can also compute its derivative using `jax.grad` to obtain
 # the corresponding hardening modulus. Below, we evaluate this modulus on an array of values of
 # cumulated plastic strain and plot the result.
-#
+
 # %%
 hardening_modulus = jax.grad(hardening)
 
@@ -166,7 +165,7 @@ tangent_operator = jax.jacfwd(material.constitutive_update, argnums=0, has_aux=T
 # and the new material state. We have formally replaced the first output of `constitutive_update`
 # with its Jacobian with respect to the applied strain. As a result, the stress is not directly
 # returned as before. We can however retrieve it from the new state as `new_state.stress`.
-#
+
 # %%
 gamma_list = jnp.linspace(0, 1e-2, 100)
 state = material.init_state()
@@ -199,10 +198,11 @@ for i, gamma in enumerate(gamma_list):
 # 2\mu\left(\mathbb{K}-\dfrac{3\mu}{3\mu+R'(p)}\boldsymbol{n}\otimes\boldsymbol{n}\right)$$ where
 # $\boldsymbol{n}$ is the unit normal vector in the direction of the plastic flow. For pure shear
 # conditions, this gives the elastoplastic tangent shear modulus:
+#
 # $$
 # \mu^\text{ep} = \mu\left(1-\dfrac{3\mu}{3\mu+R'(p)}\right) = \mu\dfrac{R'(p)}{3\mu+R'(p)}
 # $$
-#
+
 # %%
 plt.plot(gamma_list, mu_tang * 1e-3, "-k", label="Consistent")
 mu_ep = jnp.full_like(gamma_list, mu)

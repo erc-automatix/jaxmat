@@ -30,7 +30,7 @@
 # * How to define and minimize a loss function against a time series
 # * How to split the material model between a trainable and a frozen part
 # ```
-#
+
 # %%
 import equinox as eqx
 import jax
@@ -141,7 +141,7 @@ key = jax.random.PRNGKey(15071988)
 # ```
 #
 # ### Implementation
-#
+
 # %%
 elasticity = jm.LinearElasticIsotropic(E=jnp.float64(200.0e3), nu=jnp.float64(0.25))
 
@@ -198,7 +198,7 @@ material = jm.GeneralHardening(
 # will allow us to test the robustness of the identification procedure.
 #
 # The following figure shows the clean and noisy cyclic data used for training.
-#
+
 # %%
 data = np.loadtxt("mixed_hardening_data.csv", delimiter=",", skiprows=1)
 gamma_train = data[:, 0]
@@ -238,8 +238,6 @@ plt.show()
 # state, we use `jax.lax.scan` to replace Python `for` loops and output the computed shear stress in
 # the $x,y$ direction.
 
-
-
 # %%
 @eqx.filter_jit
 def compute_evolution(material, gamma_list, dt=0.0):
@@ -277,7 +275,7 @@ def compute_evolution(material, gamma_list, dt=0.0):
 # The plot below shows the initial model response (before calibration) against the noisy reference
 # data. At this stage, the predicted hysteresis loops do not match with that observed in the target
 # data.
-#
+
 # %%
 tau = compute_evolution(material, gamma_train)
 
@@ -338,8 +336,6 @@ plt.show()
 # The overall optimizer is built using `optax.chain`, where each transformation acts sequentially
 # on the gradient:
 
-
-
 # %%
 @eqx.filter_jit
 def loss(trainable, args):
@@ -385,7 +381,7 @@ solver = optx.OptaxMinimiser(
 #
 # After training, the final trained model is reconstructed by combining the trained part with the
 # static part using `eqx.combine`.
-#
+
 # %%
 trainable, static = partition_by_node_names(
     material, ["elasticity", "combined_hardening.isotropic.sig0"]
@@ -416,7 +412,7 @@ else:
 # The next figure compares the predicted and experimental stress-strain curves. The trained model
 # captures both the isotropic hardening (loop expansion) and the kinematic hardening (loop
 # translation) effects.
-#
+
 # %%
 plt.figure()
 plt.plot(gamma_train, tau_train, "-C3", alpha=0.75, label="Ground truth")
