@@ -19,8 +19,8 @@ parts:
     chapters:
     - file: pheno_models.md
       sections:
-        - file: demos/phenomenological_models/Green_viscoplasticity.ipynb
-        - file: demos/phenomenological_models/CamClay.ipynb
+        - file: demos/phenomenological_models/green_viscoplasticity.ipynb
+        - file: demos/phenomenological_models/cam_clay.ipynb
         - file: demos/phenomenological_models/multisurface_plasticity.ipynb    
     - file: identification.md  
       sections:

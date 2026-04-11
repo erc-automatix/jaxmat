@@ -34,7 +34,7 @@
 # ```
 #
 # The workflow follows the same structure as in the [Green viscoplastic model
-# demo](./Green_viscoplasticity.ipynb): we successively define the internal variables, the yield
+# demo](./green_viscoplasticity.ipynb): we successively define the internal variables, the yield
 # surface, the hardening law, and the constitutive update. We then simulate several
 # over-consolidation ratios (OCRs) to study the material's transition from contractant to dilatant
 # behavior.
@@ -83,7 +83,7 @@
 # ## Model implementation
 #
 # We now proceed to implement the model step by step with `jaxmat`.
-#
+
 # %%
 import equinox as eqx
 import jax
@@ -111,8 +111,8 @@ jax.config.update("jax_platform_name", "cpu")
 #
 # The internal variable for the Modified Cam-Clay model is the plastic strain tensor $\bepsp$. We
 # define a small subclass of `AbstractState` to store and update this tensor between time steps.
-#
-#
+
+
 # %%
 # Define internal state to store plastic strain
 class InternalState(jaxmat.state.AbstractState):
@@ -126,9 +126,9 @@ class InternalState(jaxmat.state.AbstractState):
 # thus automatically computes the normal vector to the yield surface via its `normal` method. We
 # simply need to implement the expression of the yield surface in the `__call__` dunder method. We
 # decorate the latter with  the `safe_zero` decorator as described in the
-# [](./Green_viscoplasticity.ipynb) demo.
-#
-#
+# [](./green_viscoplasticity.ipynb) demo.
+
+
 # %%
 class CamClaySurface(jm.AbstractPlasticSurface):
     M: float = eqx.field(converter=jnp.asarray)  # critical state line parameter
@@ -145,8 +145,8 @@ class CamClaySurface(jm.AbstractPlasticSurface):
 # ### Hardening law
 #
 # We next define the exponential hardening rule for the preconsolidation pressure:
-#
-#
+
+
 # %%
 class Hardening(eqx.Module):
     beta: float = eqx.field(converter=jnp.asarray)
@@ -193,8 +193,8 @@ class Hardening(eqx.Module):
 #
 # We solve the nonlinear system with `optimistix.root_find`, using automatic differentiation for the
 # Jacobian and finally return the updated stress $\bsig$ and internal variable $\bepsp$.
-#
-#
+
+
 # %%
 class ModifiedCamClay(jm.SmallStrainBehavior):
     elasticity: jm.LinearElasticIsotropic
@@ -250,15 +250,13 @@ class ModifiedCamClay(jm.SmallStrainBehavior):
 #
 # We instantiate below the MCC material by choosing $M=0.9$ and $\beta=30$, corresponding to typical
 # clay parameters. The initial critical pressure is chosen here to be $p_{c0}=1\text{ MPa}$.
-#
+
 # %%
 elasticity = jm.LinearElasticIsotropic(E=248.28, nu=0.241)
 cc_surface = CamClaySurface(M=0.9)
 pc0 = 1.0
 hardening = Hardening(pc0=pc0, beta=30.0)
-material = ModifiedCamClay(
-    elasticity=elasticity, hardening=hardening, plastic_surface=cc_surface
-)
+material = ModifiedCamClay(elasticity=elasticity, hardening=hardening, plastic_surface=cc_surface)
 
 
 # %% [markdown]
@@ -278,8 +276,8 @@ material = ModifiedCamClay(
 # $\sigma_{xx}=\sigma_{yy}=-p_0$.
 #
 # All 6 OCR load cases are integrated simultaneously as a batched simulation.
-#
-#
+
+
 # %%
 def compute_pq(sig):
     p = -jnp.trace(sig) / 3
@@ -333,7 +331,7 @@ for i, dt in enumerate(jnp.diff(times)):
 # between contractance and dilatance during the softening evolutions. Finally, the last plot
 # represents the stress paths in the $(p,q)$ space. The star symbols denote the final stress state
 # for each cases which all fall on the critical state line of equation $q=Mp$.
-#
+
 # %% tags=["hide-input"]
 cmap = plt.get_cmap("coolwarm")
 colors = cmap(jnp.linspace(0, 1, Nbatch))
