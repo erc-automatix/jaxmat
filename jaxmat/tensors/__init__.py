@@ -43,6 +43,22 @@ from .tensor_utils import (
 )
 from .utils import safe_fun, safe_norm, safe_sqrt
 
+# Advertise the public re-exports as belonging to jaxmat.tensors so that
+# Sphinx resolves cross-references to a single canonical path rather than
+# emitting "more than one target found" warnings.
+for _cls in [
+    Tensor,
+    Tensor2,
+    SymmetricTensor2,
+    Tensor4,
+    SymmetricTensor4,
+    CubicTensor4,
+    IsotropicTensor4,
+    TransverseIsotropicTensor4,
+]:
+    _cls.__module__ = __name__
+del _cls
+
 __all__ = [  # noqa: RUF022
     "Tensor",
     # rank-2 tensors
