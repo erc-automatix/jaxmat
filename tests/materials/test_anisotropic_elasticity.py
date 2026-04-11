@@ -89,7 +89,6 @@ def test_small_strain_orthotropic_rotation():
     assert jnp.allclose(sig_rotated, sig_C_rotated)
 
 
-
 def test_transverse_isotropy():
     EL = 12.0e3
     ET = 0.8e3
@@ -121,4 +120,4 @@ def test_transverse_isotropy():
     angle = jnp.pi / 3
     R = rotation.from_axis_angle(axis, angle)
     C_ = SymmetricTensor4(array=elasticity.C.array)
-    assert jnp.allclose(elasticity.C, C_.rotate(R))
+    assert jnp.allclose(elasticity.C.to_symmetric(), C_.rotate(R))

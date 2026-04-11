@@ -47,7 +47,8 @@ def _dev(A) -> jax.Array:
     r"""
     Deviatoric part of a $d \times d$ matrix $\mathbf{A}$.
 
-    .. math:: \operatorname{dev}(\mathbf{A}) = \mathbf{A} - \frac{1}{d}\operatorname{tr}(\mathbf{A})\,\mathbf{I}
+    .. math:: \operatorname{dev}(\mathbf{A}) = \mathbf{A} -
+        \frac{1}{d}\operatorname{tr}(\mathbf{A})\,\mathbf{I}
     """
     d = _dim(A)
     return A - _tr(A) / d * jnp.eye(d)
@@ -234,9 +235,9 @@ def eig33_HA(A, rtol=1e-16) -> tuple[jax.Array, jax.Array]:
         :class: seealso
 
         Harari, I., & Albocher, U. (2023). Computation of eigenvalues of a
-        real, symmetric 3×3 matrix with particular reference to the
+        real, symmetric 3x3 matrix with particular reference to the
         pernicious case of two nearly equal eigenvalues. *International
-        Journal for Numerical Methods in Engineering*, 124(5), 1089–1110.
+        Journal for Numerical Methods in Engineering*, 124(5), 1089-1110.
     """
 
     def _compute(A):
@@ -379,7 +380,7 @@ def _sqrtm(C) -> tuple[jax.Array, jax.Array]:
     Parameters
     ----------
     C : array_like, shape (3, 3)
-        Symmetric positive definite matrix (typically the right Cauchy–Green
+        Symmetric positive definite matrix (typically the right Cauchy-Green
         deformation tensor $\mathbf{C} = \mathbf{F}^{\mathsf{T}}\mathbf{F}$).
 
     Returns
