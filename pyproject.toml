@@ -18,6 +18,10 @@ dependencies = [
     "optimistix",
     "lineax"
 ]
+[project.urls]
+Homepage = "https://erc-automatix.github.io/jaxmat/"
+Repository = "https://github.com/erc-automatix/jaxmat"
+Documentation = "https://erc-automatix.github.io/jaxmat/"
 
 [project.optional-dependencies]
 docs = [
