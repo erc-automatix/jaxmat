@@ -2,7 +2,7 @@
 # jupyter:
 #   jupytext:
 #     default_lexer: ipython3
-#     formats: md:myst,py:percent,ipynb
+#     formats: py:percent,ipynb
 #     text_representation:
 #       extension: .py
 #       format_name: percent
@@ -116,6 +116,7 @@ batched_constitutive_update = jax.vmap(
 # update the material PyTree to define a new material instance, then evaluate the batched
 # constitutive update for the batch of strains and states. The resulting batched stress tensors are
 # then plotted on the deviatoric $\pi$-plane.
+
 
 # %% tags=["hide-input"]
 def scatter_pi_plane(stress, marker="o", **kwargs):

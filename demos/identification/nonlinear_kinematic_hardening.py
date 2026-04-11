@@ -2,7 +2,7 @@
 # jupyter:
 #   jupytext:
 #     default_lexer: ipython3
-#     formats: md:myst,py:percent,ipynb
+#     formats: py:percent,ipynb
 #     text_representation:
 #       extension: .py
 #       format_name: percent
@@ -170,9 +170,7 @@ class CombinedHardening(eqx.Module):
         return self.isotropic(p)
 
 
-hardening = CombinedHardening(
-    isotropic=jm.VoceHardening(sig0=0.0, sigu=200.0, b=50.0), H=1e3
-)
+hardening = CombinedHardening(isotropic=jm.VoceHardening(sig0=0.0, sigu=200.0, b=50.0), H=1e3)
 
 material = jm.GeneralHardening(
     elasticity=elasticity,
@@ -205,17 +203,13 @@ gamma_train = data[:, 0]
 tau_train = data[:, 1]
 
 noise_level = 5e-2
-tau_noise = (
-    tau_train + jax.random.normal(key, tau_train.shape) * max(tau_train) * noise_level
-)
+tau_noise = tau_train + jax.random.normal(key, tau_train.shape) * max(tau_train) * noise_level
 
 cmap = plt.get_cmap("viridis")
 Ndata = len(gamma_train) - 1
 colors = cmap(jnp.linspace(0, 1, Ndata))
 for i in range(Ndata):
-    plt.plot(
-        gamma_train[i : i + 2], tau_train[i : i + 2], "-", color=colors[i], alpha=0.75
-    )
+    plt.plot(gamma_train[i : i + 2], tau_train[i : i + 2], "-", color=colors[i], alpha=0.75)
     plt.plot(
         gamma_train[i : i + 2],
         tau_noise[i : i + 2],
@@ -237,6 +231,7 @@ plt.show()
 # cyclic stress response as a function of a given shear strain time series. Starting from a initial
 # state, we use `jax.lax.scan` to replace Python `for` loops and output the computed shear stress in
 # the $x,y$ direction.
+
 
 # %%
 @eqx.filter_jit
@@ -335,6 +330,7 @@ plt.show()
 #
 # The overall optimizer is built using `optax.chain`, where each transformation acts sequentially
 # on the gradient:
+
 
 # %%
 @eqx.filter_jit
@@ -436,9 +432,7 @@ plt.show()
 # \text{ MPa}$.
 
 # %%
-print_eqx_fields(
-    trained_material, fields=["elasticity", "yield_stress", "combined_hardening"]
-)
+print_eqx_fields(trained_material, fields=["elasticity", "yield_stress", "combined_hardening"])
 
 # %% [markdown]
 # Overall, this workflow demonstrates how `jaxmat`, in combination with `equinox`, `optax`, and

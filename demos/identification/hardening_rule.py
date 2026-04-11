@@ -2,7 +2,7 @@
 # jupyter:
 #   jupytext:
 #     default_lexer: ipython3
-#     formats: md:myst,py:percent,ipynb
+#     formats: py:percent,ipynb
 #     text_representation:
 #       extension: .py
 #       format_name: percent
@@ -116,6 +116,7 @@ plt.show()
 # Both models are implemented as `equinox.Module`s, allowing them to be handled as JAX PyTrees and
 # trained with differentiable solvers.
 
+
 # %%
 class SumExpHardening(eqx.Module):
     sig0: float = eqx.field(converter=jnp.asarray)
@@ -157,6 +158,7 @@ icnn_hardening = HardeningICNN(0, [N], key)
 # where $M$ is the number of data points, $\gamma$ is a regularization coefficient and $n_{\btheta}$
 # denotes the total number of parameters in $\btheta$. Both the data loss and the regularization
 # term are written in a fully JAX-compatible manner.
+
 
 # %%
 def loss(hardening, args):
@@ -222,9 +224,7 @@ for hardening in [sumexp_hardening, icnn_hardening]:
 
     epsp_extrap = jnp.linspace(5e-2, 14e-2, 100)
     sig_extrap = jax.vmap(trained_hardening)(epsp_extrap)
-    plt.plot(
-        epsp_extrap, sig_extrap, "-C0", linewidth=4, alpha=0.5, label="Extrapolation"
-    )
+    plt.plot(epsp_extrap, sig_extrap, "-C0", linewidth=4, alpha=0.5, label="Extrapolation")
     plt.xlim(0, 14e-2)
     plt.ylim(400, 1e3)
     plt.xlabel("Equivalent plastic strain $p$")

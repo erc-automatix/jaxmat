@@ -3,7 +3,7 @@
 #   jupytext:
 #     cell_metadata_filter: -all
 #     default_lexer: ipython3
-#     formats: md:myst,py:percent,ipynb
+#     formats: py:percent,ipynb
 #     text_representation:
 #       extension: .py
 #       format_name: percent
@@ -170,6 +170,7 @@ gamma = jnp.full_like(jnp.diff(times), fill_value=gamma_r)
 # full stress history. By using `jax.lax.scan`, the loop over time increments is efficiently
 # compiled by JAX, ensuring high performance and differentiability.
 
+
 # %%
 def compute_evolution(material, gamma_list, times):
     # Initial material state
@@ -209,6 +210,7 @@ def compute_evolution(material, gamma_list, times):
 # We first define the internal state PyTree as a batch of symmetric strain tensors $\balpha_i$
 # representing the $N_\text{var}$ viscous strains in each Maxwell-like branch.
 
+
 # %%
 class InternalState(AbstractState):
     alpha: SymmetricTensor2 = eqx.field(init=False)
@@ -224,6 +226,7 @@ class InternalState(AbstractState):
 # The free energy is implemented as a sum of quadratic elastic contributions in the form of an
 # `equinox.Module`. The free energy `__call__` function takes as arguments the total strain $\beps$
 # (`eps`) and the PyTree (`isv`) of internal state variables $(\balpha_i)$.
+
 
 # %%
 class FreeEnergy(eqx.Module):
@@ -257,6 +260,7 @@ class FreeEnergy(eqx.Module):
 # \Nn_\text{ICNN}}{\partial\balpha_i}(\balpha_i=0):\balpha_i
 # $$
 
+
 # %%
 class ICNNDissipationPotential(ICNN):
     def icnn_potential(self, alpha_dot):
@@ -267,9 +271,7 @@ class ICNNDissipationPotential(ICNN):
         alpha_dot = isv_dot.alpha.tensor
         return (
             self.icnn_potential(alpha_dot)
-            - jax.jvp(self.icnn_potential, (jnp.zeros_like(alpha_dot),), (alpha_dot,))[
-                1
-            ]
+            - jax.jvp(self.icnn_potential, (jnp.zeros_like(alpha_dot),), (alpha_dot,))[1]
         )
 
 
@@ -361,6 +363,7 @@ plt.show()
 # history-dependent.
 # Gradients are automatically computed by JAX through the full time integration and solver
 # iterations.
+
 
 # %%
 @eqx.filter_jit
@@ -486,9 +489,7 @@ for Nmax in Nmax_list:
     )
 
 for maxwell, Nmax in zip(maxwell_list, Nmax_list):
-    trainable, static = partition_by_node_names(
-        maxwell, ["elasticity", "relaxation_times"]
-    )
+    trainable, static = partition_by_node_names(maxwell, ["elasticity", "relaxation_times"])
 
     sol = optx.minimise(
         loss,

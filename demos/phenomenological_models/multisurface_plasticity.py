@@ -2,7 +2,7 @@
 # jupyter:
 #   jupytext:
 #     default_lexer: ipython3
-#     formats: md:myst,py:percent,ipynb
+#     formats: py:percent,ipynb
 #     text_representation:
 #       extension: .py
 #       format_name: percent
@@ -169,6 +169,7 @@ class InternalState(AbstractState):
 #
 # Finally, the `@eqx.filter_jit` decorator enables JIT compilation for efficiency.
 
+
 # %%
 class MultiSurfacePlasticity(SmallStrainBehavior):
     elasticity: LinearElasticIsotropic
@@ -205,9 +206,7 @@ class MultiSurfacePlasticity(SmallStrainBehavior):
                 res_epsp = depsp
                 res_plast = []
                 for i in range(self.n_surf):
-                    yield_criterion = self.plastic_surfaces[i](
-                        sig
-                    ) - self.yield_stresses[i](p[i])
+                    yield_criterion = self.plastic_surfaces[i](sig) - self.yield_stresses[i](p[i])
                     n = self.plastic_surfaces[i].normal(sig)
                     res_plast.append(FB(-yield_criterion / self.elasticity.E, dp[i]))
                     res_epsp -= n * dp[i]
@@ -241,6 +240,7 @@ class MultiSurfacePlasticity(SmallStrainBehavior):
 # surface (no hardening). It simply returns a constant scalar value $\sigma_{0i}$ independent of
 # plastic strain.
 
+
 # %%
 class YieldStress(eqx.Module):
     sig0: float = eqx.field(converter=jnp.asarray)
@@ -260,6 +260,7 @@ class YieldStress(eqx.Module):
 # $$
 # where $M$ controls the ellipse aspect ratio, $p_0$ its center along the hydrostatic axis and
 # $\sigma_c$ corresponds to the maximum compressive hydrostatic strength.
+
 
 # %%
 class EllipticCap(jm.AbstractPlasticSurface):
@@ -281,6 +282,7 @@ class EllipticCap(jm.AbstractPlasticSurface):
 # f_\text{t}(p) = \sigma_m = \tfrac{1}{3}\tr(\bsig) \leq \sigma_t
 # $$
 # where $\sigma_t$ is the tensile strength.
+
 
 # %%
 class HydrostaticTensionCutoff(jm.AbstractPlasticSurface):
@@ -329,9 +331,7 @@ material = MultiSurfacePlasticity(
 )
 
 
-batched_constitutive_update = jax.vmap(
-    material.constitutive_update, in_axes=(0, 0, None)
-)
+batched_constitutive_update = jax.vmap(material.constitutive_update, in_axes=(0, 0, None))
 
 # %% [markdown]
 # ## Loading setup
@@ -364,9 +364,7 @@ sig_init = sig_init.at[:, 0, 0].set(-5 * sig0)
 sig_init = sig_init.at[:, 1, 1].set(-5 * sig0)
 sig_init = sig_init.at[:, 2, 2].set(-5 * sig0)
 
-state = eqx.tree_at(
-    lambda s: s.stress, state, replace=SymmetricTensor2(tensor=sig_init)
-)
+state = eqx.tree_at(lambda s: s.stress, state, replace=SymmetricTensor2(tensor=sig_init))
 
 # %% [markdown]
 # We now incrementally apply total strain magnitudes in the defined directions and compute the

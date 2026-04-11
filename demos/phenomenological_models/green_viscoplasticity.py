@@ -2,7 +2,7 @@
 # jupyter:
 #   jupytext:
 #     default_lexer: ipython3
-#     formats: md:myst,py:percent,ipynb
+#     formats: py:percent,ipynb
 #     text_representation:
 #       extension: .py
 #       format_name: percent
@@ -96,6 +96,7 @@ jax.config.update("jax_platform_name", "cpu")
 #
 # [^1]: Since we assume no hardening, we do not need to declare the cumulated plastic strain $p$.
 
+
 # %%
 class InternalState(jaxmat.state.AbstractState):
     epsvp: SymmetricTensor2 = eqx.field(default_factory=lambda: SymmetricTensor2())
@@ -111,6 +112,7 @@ class InternalState(jaxmat.state.AbstractState):
 # to avoid NaNs when the stress tensor is zero, which may happen upon initialization for instance.
 # To avoid NaNs in `jnp.where` sections in adjoint computations, we use the [double `where`
 # trick](https://docs.jax.dev/en/latest/faq.html#gradients-contain-nan-where-using-where).
+
 
 # %%
 def safe_zero(method):
@@ -129,7 +131,7 @@ class GreenYieldSurface(eqx.Module):
     def __call__(self, sig):
         sig_m = jnp.trace(sig) / 3
         s = dev(sig)
-        return jnp.sqrt(self.A**2 * sig_m**2 + 3.0 / 2.0 * jnp.vdot(s, s))
+        return jnp.sqrt(self.A**2 * sig_m**2 + 3.0 / 2.0 * s.double_contract(s))
 
     def normal(self, sig):
         return jax.jacfwd(self.__call__)(sig)
@@ -140,6 +142,7 @@ class GreenYieldSurface(eqx.Module):
 #
 # Next, the Norton flow is defined similarly as a module with two material parameters `K` and `m`.
 # It takes as input to `__call__` the overstress.
+
 
 # %%
 class NortonFlow(eqx.Module):
@@ -177,6 +180,7 @@ class NortonFlow(eqx.Module):
 # where $\bn = \partial f /\partial\bsig$ is the yield surface normal evaluated at the final stress.
 #
 # The full implementation reads:
+
 
 # %%
 class GreenViscoPlasticity(jm.SmallStrainBehavior):
@@ -256,6 +260,7 @@ material = GreenViscoPlasticity(
 # Below, we evaluate the Green yield surface and its normal in the $(p, q)$ space of hydrostatic and
 # deviatoric stresses.
 
+
 # %% tags=["hide-input"]
 def compute_pq(sig):
     p = jnp.trace(sig) / 3
@@ -265,9 +270,7 @@ def compute_pq(sig):
 
 
 def compute_surface_normals(p, q):
-    sig = SymmetricTensor2(
-        tensor=jnp.diag(jnp.asarray([p + 2 * q / 3, p - q / 3, p - q / 3]))
-    )
+    sig = SymmetricTensor2(tensor=jnp.diag(jnp.asarray([p + 2 * q / 3, p - q / 3, p - q / 3])))
     ys = green_ys(sig)
     n = green_ys.normal(sig)
     x, y = p / ys, q / ys
@@ -362,9 +365,7 @@ for eps_dot in [1e-4, 1e-2, 1e0, 1e2]:
         imposed_eps += eps_dot * dt
         imposed_eps = jnp.minimum(imposed_eps, eps_max)
 
-        loading = ImposedLoading(
-            epsxx=imposed_eps, epsyy=-imposed_eps / 2, epszz=-imposed_eps / 2
-        )
+        loading = ImposedLoading(epsxx=imposed_eps, epsyy=-imposed_eps / 2, epszz=-imposed_eps / 2)
 
         Eps = state.strain
         Eps, state, stats = global_solve(Eps, state, loading, material, dt)
