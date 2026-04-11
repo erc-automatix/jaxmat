@@ -20,6 +20,8 @@ Private (internal helpers)
 _dim, _tr, _dev, _sqrtm
 """
 
+from functools import partial
+
 import jax
 import jax.numpy as jnp
 from jax import lax
@@ -45,8 +47,7 @@ def _dev(A) -> jax.Array:
     r"""
     Deviatoric part of a $d \times d$ matrix $\mathbf{A}$.
 
-    .. math:: \operatorname{dev}(\mathbf{A}) =
-    \mathbf{A} - \frac{1}{d}\operatorname{tr}(\mathbf{A})\,\mathbf{I}
+    .. math:: \operatorname{dev}(\mathbf{A}) = \mathbf{A} - \frac{1}{d}\operatorname{tr}(\mathbf{A})\,\mathbf{I}
     """
     d = _dim(A)
     return A - _tr(A) / d * jnp.eye(d)
@@ -198,7 +199,7 @@ def pq_invariants(sig) -> tuple[jax.Array, jax.Array]:
     return p, q
 
 
-def eig33(A, rtol=1e-16) -> tuple[jax.Array, jax.Array]:
+def eig33_HA(A, rtol=1e-16) -> tuple[jax.Array, jax.Array]:
     r"""
     Eigenvalues and eigenvalue dyads of a $3 \times 3$ real symmetric matrix.
 
@@ -233,9 +234,9 @@ def eig33(A, rtol=1e-16) -> tuple[jax.Array, jax.Array]:
         :class: seealso
 
         Harari, I., & Albocher, U. (2023). Computation of eigenvalues of a
-        real, symmetric 3x3 matrix with particular reference to the
+        real, symmetric 3×3 matrix with particular reference to the
         pernicious case of two nearly equal eigenvalues. *International
-        Journal for Numerical Methods in Engineering*, 124(5), 1089-1110.
+        Journal for Numerical Methods in Engineering*, 124(5), 1089–1110.
     """
 
     def _compute(A):
@@ -263,15 +264,10 @@ def eig33(A, rtol=1e-16) -> tuple[jax.Array, jax.Array]:
                 return ev, ev
 
             def _three(_):
-                alpha = 2 / 3 * jnp.arctan(d**sj)
+                alpha = 2 / 3 * jnp.arctan2(safe_norm(T - s * S) ** sj, safe_norm(T + s * S) ** sj)
                 ld = 2 * sj * s * jnp.cos(alpha)
                 sd = jnp.sqrt(3) * s * jnp.sin(alpha)
-                ev_dev = lax.cond(
-                    ld > 0,
-                    lambda _: jnp.array([-ld / 2 - sd, -ld / 2 + sd, ld]),
-                    lambda _: jnp.array([ld, -ld / 2 - sd, -ld / 2 + sd]),
-                    operand=None,
-                )
+                ev_dev = jnp.array([-ld / 2 - sd, -ld / 2 + sd, ld])
                 return ev_dev + I1 / 3, ev_dev + I1 / 3
 
             return lax.cond(cond, _two, _three, operand=None)
@@ -279,6 +275,91 @@ def eig33(A, rtol=1e-16) -> tuple[jax.Array, jax.Array]:
         return lax.cond(s < rtol * norm, _near_iso, _general, operand=None)
 
     eigendyads, eigvals = jax.jacfwd(_compute, has_aux=True)(A)
+    order = jnp.argsort(eigvals)
+    eigvals = eigvals[order]
+    eigendyads = eigendyads[order]
+    eigendyads = 0.5 * (eigendyads + jnp.swapaxes(eigendyads, -1, -2))
+    return eigvals, eigendyads
+
+
+@partial(jax.jit, static_argnums=1)
+def eig33(A, rtol=1e-16):
+    def J2s(A):
+        d0 = A[0, 0] - A[1, 1]
+        d1 = A[0, 0] - A[2, 2]
+        d2 = A[1, 1] - A[2, 2]
+        offdiag = A[0, 1] ** 2 + A[0, 2] ** 2 + A[1, 2] ** 2
+        diag = (d0**2 + d1**2 + d2**2) / 6.0
+        return offdiag + diag
+
+    def J3s(A):
+        d0 = A[0, 0] - A[1, 1]
+        d1 = A[0, 0] - A[2, 2]
+        d2 = A[1, 1] - A[2, 2]
+        t1 = d1 + d2
+        t2 = d0 - d2
+        t3 = -d0 - d1
+        offdiag = 2.0 * A[0, 1] * A[1, 2] * A[0, 2]
+        mixed = (A[0, 1] ** 2 * t1 + A[0, 2] ** 2 * t2 + A[1, 2] ** 2 * t3) / 3.0
+        diag = (t1 * t2 * t3) / 27.0
+        return offdiag + mixed - diag
+
+    def dxs(A):
+        d0 = A[0, 0] - A[1, 1]
+        d1 = A[0, 0] - A[2, 2]
+        d2 = A[1, 1] - A[2, 2]
+
+        w = A[0, 1]
+        v = A[0, 2]
+        u = A[1, 2]
+
+        alpha = d2
+        beta = -d1
+        gamma = d0
+
+        return jnp.asarray(
+            [
+                3.0 * jnp.sqrt(3.0) * (v * w * alpha + u * (v * v - w * w)),
+                alpha * beta * gamma + alpha * u * u + beta * v * v + gamma * w * w,
+                2.0 * u * beta * gamma - v * w * (beta - gamma) + u * (2.0 * u * u - v * v - w * w),
+                2.0
+                * (v * alpha * gamma + u * w * (beta - gamma) + v * (v * v + w * w - 2.0 * u * u)),
+                2.0
+                * (w * alpha * beta + u * v * (beta - gamma) + w * (v * v + w * w - 2.0 * u * u)),
+            ],
+            dtype=A.dtype,
+        )
+
+    def discs(A):
+        terms = dxs(A)
+        return jnp.sum(terms * terms)
+
+    def compute_eigvals(A):
+        A = jnp.asarray(A)
+        I1 = jnp.trace(A)
+        j2 = J2s(A)
+        j3 = J3s(A)
+        discriminant = discs(A)
+        normA = safe_norm(A)
+
+        def branch_near_iso(_):
+            eigvals = jnp.ones((3,), dtype=A.dtype) * I1 / 3.0
+            return eigvals, eigvals
+
+        def branch_general(_):
+            phi = jnp.arctan2(safe_sqrt(27.0 * discriminant), 27.0 * j3)
+            amplitude = 2.0 * safe_sqrt(3.0 * j2)
+            shifts = 2.0 * jnp.pi * jnp.asarray([1.0, 2.0, 3.0], dtype=A.dtype)
+            eigvals = (amplitude * jnp.cos((phi + shifts) / 3.0) + I1) / 3.0
+            return eigvals, eigvals
+
+        return lax.cond(j2 < rtol * normA, branch_near_iso, branch_general, operand=None)
+
+    eigendyads, eigvals = jax.jacfwd(compute_eigvals, has_aux=True)(A)
+    order = jnp.argsort(eigvals)
+    eigvals = eigvals[order]
+    eigendyads = eigendyads[order]
+    eigendyads = 0.5 * (eigendyads + jnp.swapaxes(eigendyads, -1, -2))
     return eigvals, eigendyads
 
 
@@ -298,7 +379,7 @@ def _sqrtm(C) -> tuple[jax.Array, jax.Array]:
     Parameters
     ----------
     C : array_like, shape (3, 3)
-        Symmetric positive definite matrix (typically the right Cauchy-Green
+        Symmetric positive definite matrix (typically the right Cauchy–Green
         deformation tensor $\mathbf{C} = \mathbf{F}^{\mathsf{T}}\mathbf{F}$).
 
     Returns
@@ -348,9 +429,14 @@ def isotropic_function(fun, A) -> jax.Array:
     jax.Array
         Shape (3, 3).
     """
-    eigvals, eigendyads = eig33(A)
-    f = fun(eigvals)
-    return sum(fi * Ni for fi, Ni in zip(f, eigendyads))
+    eigvals, projectors = eig33(jnp.asarray(A))
+    # The projectors P_i = ∂λ_i/∂A come from jacfwd, which perturbs each
+    # element of A independently (without enforcing A_{ij} = A_{ji}).  This
+    # means P_i may have a small antisymmetric component.  Symmetrising before
+    # the spectral reconstruction removes that noise and ensures f(A) is
+    # symmetric, consistent with the reference implementation.
+    projectors = 0.5 * (projectors + jnp.swapaxes(projectors, -1, -2))
+    return jnp.einsum("a,aij->ij", fun(eigvals), projectors)
 
 
 def sqrtm(A) -> jax.Array:
