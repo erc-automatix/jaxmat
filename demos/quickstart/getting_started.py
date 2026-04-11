@@ -22,7 +22,7 @@
 #
 # We first import `jax` and may specify whether we want to run on the CPU or the GPU. We will also
 # need the `equinox` package from which we use `Module`s to define the different behavior bricks,
-# see [more details on the use of `equinox.Module`.](./../../docs/pytrees.md).
+# see [more details on the use of `equinox.Module`.](./../../pytrees.md).
 
 # %%
 import equinox as eqx
@@ -117,7 +117,7 @@ plt.show()
 # material provides an `init_state` method to initialize its corresponding mechanical state with
 # default initial values (usually 0). Below, we see that the present state contains a `strain` and a
 # `stress`, each of them being a symmetric 2nd-rank tensor, see [here for more details on tensors in
-# `jaxmat`.](./tensors.md). In addition, it also contains an `internal` field, which is itself a
+# `jaxmat`.](./tensors.ipynb). In addition, it also contains an `internal` field, which is itself a
 # state consisting of many internal state variables. In the present case, both the cumulated plastic
 # strain $p$ and the total plastic strain $\bepsp$ are declared as internal state variables.
 
@@ -195,7 +195,9 @@ for i, gamma in enumerate(gamma_list):
 # (elastoplastic) tangent operator is given by:
 #
 # $$\mathbb{C}^\text{ep} = 3\kappa\mathbb{J} +
-# 2\mu\left(\mathbb{K}-\dfrac{3\mu}{3\mu+R'(p)}\boldsymbol{n}\otimes\boldsymbol{n}\right)$$ where
+# 2\mu\left(\mathbb{K}-\dfrac{3\mu}{3\mu+R'(p)}\boldsymbol{n}\otimes\boldsymbol{n}\right)$$
+#
+# where
 # $\boldsymbol{n}$ is the unit normal vector in the direction of the plastic flow. For pure shear
 # conditions, this gives the elastoplastic tangent shear modulus:
 #
