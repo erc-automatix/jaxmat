@@ -6,7 +6,6 @@ import jax
 __version__ = version("jaxmat")
 
 jax.config.update("jax_enable_x64", True)  # use double-precision
-jax.config.update("jax_debug_nans", True)  # raise when encountering nan
 
 
 def get_path(notebook_fallback: str | None = None) -> Path:
