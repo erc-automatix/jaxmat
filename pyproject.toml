@@ -1,6 +1,6 @@
 [project]
 name = "jaxmat"
-version = "0.0.1"
+version = "0.0.3"
 description = "Automated material constitutive modeling in JAX"
 readme = "README.md"
 authors = [
@@ -8,7 +8,7 @@ authors = [
     { name = "Paul Bouteiller", email = "paul.bouteiller@cea.fr" },
     { name = "Jack S. Hale", email = "jack.hale@uni.lu" }
 ]
-license = { text = "GNU GPLv3" }  # Replace or remove if not using MIT
+license = { text = "LGPL-3.0" }
 keywords = ["material science", "machine learning", "material modeling", "solid mechanics", "automatic differentiation"]
 requires-python = ">=3.11"
 dependencies = [
@@ -18,6 +18,10 @@ dependencies = [
     "optimistix",
     "lineax"
 ]
+[project.urls]
+Homepage = "https://erc-automatix.github.io/jaxmat/"
+Repository = "https://github.com/erc-automatix/jaxmat"
+Documentation = "https://erc-automatix.github.io/jaxmat/"
 
 [project.optional-dependencies]
 docs = [

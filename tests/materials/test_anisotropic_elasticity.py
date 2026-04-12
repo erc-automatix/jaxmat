@@ -2,7 +2,7 @@ import jax
 import jax.numpy as jnp
 
 import jaxmat.materials as jm
-from jaxmat.tensors import SymmetricTensor2, SymmetricTensor4, utils
+from jaxmat.tensors import SymmetricTensor2, SymmetricTensor4, rotation
 
 
 def test_small_strain_orthotropic_rotation():
@@ -38,7 +38,7 @@ def test_small_strain_orthotropic_rotation():
 
     angle = jnp.pi / 2
     axis = jnp.array([0, 0, 1])
-    R = utils.rotation_matrix_direct(angle, axis)
+    R = rotation.from_axis_angle(axis, angle)
 
     material = jm.ElasticBehavior(elasticity=elasticity)
     mat_state = material.init_state()
@@ -87,3 +87,37 @@ def test_small_strain_orthotropic_rotation():
     sig_rotated = jax.vmap(rotate_stress_strain)(eps)
 
     assert jnp.allclose(sig_rotated, sig_C_rotated)
+
+
+def test_transverse_isotropy():
+    EL = 12.0e3
+    ET = 0.8e3
+    nuT = 0.43
+    nuL = 0.292
+    muL = 0.7e3
+    axis = jnp.array([0, 0, 1])
+    elasticity = jm.LinearElasticTransverseIsotropic(
+        axis=axis,
+        EL=EL,
+        ET=ET,
+        nuT=nuT,
+        nuL=nuL,
+        muL=muL,
+    )
+    S = jnp.asarray(
+        [
+            [1 / ET, -nuT / ET, -nuL / EL, 0, 0, 0],
+            [-nuT / ET, 1 / ET, -nuL / EL, 0, 0, 0],
+            [-nuL / EL, -nuL / EL, 1 / EL, 0, 0, 0],
+            [0, 0, 0, (1 + nuT) / ET, 0, 0],
+            [0, 0, 0, 0, 1 / 2 / muL, 0],
+            [0, 0, 0, 0, 0, 1 / 2 / muL],
+        ]
+    )
+    assert jnp.allclose(S, elasticity.S.array)
+
+    # test symmetry by rotation around isotropy axis
+    angle = jnp.pi / 3
+    R = rotation.from_axis_angle(axis, angle)
+    C_ = SymmetricTensor4(array=elasticity.C.array)
+    assert jnp.allclose(elasticity.C.to_symmetric(), C_.rotate(R))

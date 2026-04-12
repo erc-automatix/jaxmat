@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import lineax as lx
 import optimistix as optx
 
-from jaxmat.tensors import SymmetricTensor2
+from jaxmat.tensors import SymmetricTensor2, Tensor2
 
 linear_solver = lx.AutoLinearSolver(well_posed=False)
 solver, adjoint = (
@@ -58,7 +58,9 @@ class ImposedLoading(eqx.Module):
         return self.eps_vals, self.sig_vals, self.strain_mask
 
     def __len__(self):
-        lens = {arr.shape[0] for arr in (self.eps_vals, self.sig_vals, self.strain_mask)}
+        lens = {
+            arr.shape[0] for arr in (self.eps_vals, self.sig_vals, self.strain_mask)
+        }
         if len(lens) != 1:
             info = f"{[arr.shape for arr in (self.eps_vals, self.sig_vals, self.strain_mask)]}"
             raise ValueError(f"Inconsistent batch sizes: {info}")
@@ -77,7 +79,11 @@ def _make_imposed_loading(
             # if j >= i
         }
         if hypothesis == "small_strain"
-        else {f"{xi}{xj}": (i, j) for i, xi in enumerate("XYZ") for j, xj in enumerate("XYZ")}
+        else {
+            f"{xi}{xj}": (i, j)
+            for i, xi in enumerate("XYZ")
+            for j, xj in enumerate("XYZ")
+        }
     )
     labels = ("eps", "sig") if hypothesis == "small_strain" else ("F", "P")
 
@@ -121,26 +127,29 @@ def _make_imposed_loading(
     return eps_vals, sig_vals, strain_mask
 
 
-def residual(material, loader: ImposedLoading, eps: jnp.ndarray, state: dict, dt: float):
+def residual(
+    material, loader: ImposedLoading, eps: jnp.ndarray, state: dict, dt: float
+):
     eps_vals, sig_vals, strain_mask = loader()
 
     # Flatten mask to array accounting for symmetry class of strain
     if isinstance(eps, SymmetricTensor2):
 
         def to_array(x):
-            return SymmetricTensor2(tensor=x).array
+            return SymmetricTensor2(tensor=x)
+
     else:
 
         def to_array(x):
-            return x
+            return Tensor2(tensor=x)
 
     strain_mask = to_array(strain_mask)
 
     sig, state = material.constitutive_update(eps, state, dt)
 
     # Same flattening for residuals
-    deps = to_array(eps - eps_vals)
-    dsig = to_array(sig - sig_vals)
+    deps = to_array(eps.tensor - eps_vals)
+    dsig = to_array(sig.tensor - sig_vals)
 
     eps_residual = jnp.where(strain_mask, deps, 0.0)
     sig_residual = jnp.where(jnp.logical_not(strain_mask), dsig, 0.0)
@@ -166,9 +175,13 @@ def solve_mechanical_state(eps0, state, loading_data: ImposedLoading, material, 
     return eps, new_state, sol.stats
 
 
-def global_solve(Eps0, state, loading_data, material, dt, in_axes=(0, 0, 0, None, None)):
+def global_solve(
+    Eps0, state, loading_data, material, dt, in_axes=(0, 0, 0, None, None)
+):
     if in_axes is None:  # we don't vmap
-        return eqx.filter_jit(solve_mechanical_state)(Eps0, state, loading_data, material, dt)
+        return eqx.filter_jit(solve_mechanical_state)(
+            Eps0, state, loading_data, material, dt
+        )
     else:
         return eqx.filter_jit(eqx.filter_vmap(solve_mechanical_state, in_axes=in_axes))(
             Eps0, state, loading_data, material, dt

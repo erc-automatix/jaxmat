@@ -2,7 +2,7 @@
 # jupyter:
 #   jupytext:
 #     default_lexer: ipython3
-#     formats: md:myst,py:percent,ipynb
+#     formats: py:percent,ipynb
 #     text_representation:
 #       extension: .py
 #       format_name: percent
@@ -27,7 +27,7 @@
 # In this example, we consider the response of a single physical point, but by sampling $N$
 # independent realizations of the material parameters, we effectively compute the response of a
 # batch of $N$ stochastic material points.
-#
+
 # %%
 import equinox as eqx
 import jax
@@ -62,7 +62,7 @@ print("A single material instance:", material)
 # hardening parameter $b$. We use a log-normal distribution to introduce small random variations
 # around a nominal value of $b=10^3$. `sorting` will be used later to order the realizations for
 # consistent plotting.
-#
+
 # %%
 key = jax.random.PRNGKey(42)
 N = 100
@@ -74,7 +74,7 @@ sorting = jnp.argsort(b_values)
 # replicates the material PyTree $N$ times along a new batch axis. `eqx.tree_at` updates the $b$
 # parameter in each instance with the sampled stochastic values. The resulting `batched_material` is
 # a PyTree containing $N$ distinct material instances, ready for vectorized constitutive updates.
-#
+
 # %%
 batched_material = make_batched(material, N)
 batched_material = eqx.tree_at(lambda m: m.yield_stress.b, batched_material, b_values)
@@ -85,9 +85,9 @@ print(f"A batch of {N} material instances:", batched_material)
 # shear loading. We use `eqx.filter_vmap` to vectorize the constitutive update over the batch of
 # materials, while keeping the applied strain and time step fixed. The resulting shear stresses are
 # stored for each realization.
-#
+
 # %%
-state = batched_material.init_state()
+batched_state = batched_material.init_state(N)
 gamma_list = jnp.linspace(0.0, 1e-2, 50)
 tau = jnp.zeros((N, len(gamma_list)))
 
@@ -99,7 +99,7 @@ for i, gamma in enumerate(gamma_list):
     # Compute batch stress update
     new_stress, new_state = eqx.filter_vmap(
         jm.vonMisesIsotropicHardening.constitutive_update, in_axes=(0, None, 0, None)
-    )(batched_material, new_eps, state, 0.0)
+    )(batched_material, new_eps, batched_state, 0.0)
 
     state = new_state
     tau = tau.at[:, i].set(new_stress[:, 0, 1])
@@ -116,7 +116,7 @@ for i, gamma in enumerate(gamma_list):
 # Finally, we visualize the results. Each line represents the shear response of one stochastic
 # material realization. The mean response is plotted in black, with the standard deviation shown as
 # error bars to highlight the variability due to uncertain hardening parameters.
-#
+
 # %%
 cmap = plt.get_cmap("bwr")
 colors = cmap(jnp.linspace(0, 1, N))

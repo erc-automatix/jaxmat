@@ -1,9 +1,8 @@
 import equinox as eqx
-import jax.numpy as jnp
 import optimistix as optx
 
 from jaxmat.state import AbstractState
-from jaxmat.tensors import SymmetricTensor2, Tensor2, dev, safe_fun
+from jaxmat.tensors import SymmetricTensor2, Tensor2, dev, safe_fun, tr
 from jaxmat.tensors.linear_algebra import det33 as det
 from jaxmat.tensors.utils import FischerBurmeister as FB
 from jaxmat.utils import default_value
@@ -44,29 +43,37 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
             # relative strain and elastic predictor
             f = F @ F_old.inv
             f_bar = f * safe_fun(lambda J: J ** (-1 / 3), det(f))
-            be_bar_trial = f_bar.T @ be_bar_old @ f_bar
+            be_bar_trial = (f_bar.T @ be_bar_old @ f_bar).sym
 
             def residual(dy, args):
-                # FIXME: currently we don't account for symmetry of be_bar
-                dp, be_bar = dy.p, dy.be_bar
+                dp, be_bar = dy  # .p, dy.be_bar
                 s = self.elasticity.mu * dev(be_bar)
                 yield_criterion = self.plastic_surface(s) - self.yield_stress(p_old + dp)
                 n = self.plastic_surface.normal(s)
                 res = (
                     FB(-yield_criterion / self.elasticity.E, dp),
-                    dev(be_bar - be_bar_trial)
-                    + 2 * dp * jnp.linalg.trace(be_bar) / 3 * n
-                    + Id * (det(be_bar) - 1),
+                    (
+                        dev(be_bar - be_bar_trial)
+                        + 2 * dp * tr(be_bar) / 3 * n
+                        + Id * (det(be_bar) - 1)
+                    ).sym,
                 )
+                # import jax
+
+                # jax.debug.print("Residual = {}", res)
                 return res
 
-            dy0 = isv_old.update(p=0, be_bar=be_bar_trial)
-            sol = optx.root_find(residual, self.solver, dy0, adjoint=self.adjoint, throw=False)
+            # dy0 = isv_old.update(p=0, be_bar=be_bar_trial)
+            dy0 = 0.0, be_bar_trial
+            sol = optx.root_find(
+                residual, self.solver, dy0, adjoint=self.adjoint, throw=False
+            )
             return sol.value, be_bar_trial
 
         dy, _ = solve_state(F)
-        be_bar = dy.be_bar.sym  # enforce symmetry
-        dp = dy.p
+        dp, be_bar = dy
+        # be_bar = dy.be_bar.sym  # enforce symmetry
+        # dp = dy.p
         y = isv_old.update(p=isv_old.p + dp, be_bar=be_bar)
 
         s = self.elasticity.mu * dev(be_bar)

@@ -5,6 +5,7 @@ from .elasticity import (
     LinearElastic,
     LinearElasticIsotropic,
     LinearElasticOrthotropic,
+    LinearElasticTransverseIsotropic,
 )
 from .elastoplasticity import (
     GeneralHardening,
@@ -64,6 +65,7 @@ __all__ = [
     "LinearElastic",
     "LinearElasticIsotropic",
     "LinearElasticOrthotropic",
+    "LinearElasticTransverseIsotropic",
     "NortonFlow",
     "SmallStrainBehavior",
     "StandardLinearSolid",

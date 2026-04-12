@@ -3,7 +3,7 @@
 #   jupytext:
 #     cell_metadata_filter: -all
 #     default_lexer: ipython3
-#     formats: md:myst,py:percent,ipynb
+#     formats: py:percent,ipynb
 #     text_representation:
 #       extension: .py
 #       format_name: percent
@@ -108,7 +108,7 @@
 # \dot{\beps}_i^\text{v}:\dot{\beps}_i^\text{v}
 # $$
 # ```
-#
+
 # %% [markdown]
 # ## Ground-truth data generation
 #
@@ -116,7 +116,7 @@
 # viscous elements are generated so that their relaxation times are spaced within the interval
 # $0.005\text{ s}$--$10\text{ s}$ with random stiffness values. The synthetic stress-strain data
 # obtained from this model will serve as our training target.
-#
+
 # %%
 import equinox as eqx
 import jax
@@ -155,7 +155,7 @@ material = jm.GeneralizedMaxwell(
 # $\epsilon_{xy}=\gamma_r/2$ with $\gamma_r=10^{-3}$ applied over a time interval
 # $10^{-3}--10^2\text{ s}$. The time discretization is logarithmic to capture both the fast initial
 # relaxation and the slower long-term response.
-#
+
 # %%
 Nincr = 50
 times = jnp.logspace(-3, 2, Nincr + 1)
@@ -169,8 +169,8 @@ gamma = jnp.full_like(jnp.diff(times), fill_value=gamma_r)
 # incrementally at each time step using the internal solver provided by `jaxmat` and returns the
 # full stress history. By using `jax.lax.scan`, the loop over time increments is efficiently
 # compiled by JAX, ensuring high performance and differentiability.
-#
-#
+
+
 # %%
 def compute_evolution(material, gamma_list, times):
     # Initial material state
@@ -209,8 +209,8 @@ def compute_evolution(material, gamma_list, times):
 #
 # We first define the internal state PyTree as a batch of symmetric strain tensors $\balpha_i$
 # representing the $N_\text{var}$ viscous strains in each Maxwell-like branch.
-#
-#
+
+
 # %%
 class InternalState(AbstractState):
     alpha: SymmetricTensor2 = eqx.field(init=False)
@@ -226,8 +226,8 @@ class InternalState(AbstractState):
 # The free energy is implemented as a sum of quadratic elastic contributions in the form of an
 # `equinox.Module`. The free energy `__call__` function takes as arguments the total strain $\beps$
 # (`eps`) and the PyTree (`isv`) of internal state variables $(\balpha_i)$.
-#
-#
+
+
 # %%
 class FreeEnergy(eqx.Module):
     elasticity: jm.AbstractLinearElastic
@@ -259,8 +259,8 @@ class FreeEnergy(eqx.Module):
 # \Phi(\balpha_i) = \Nn_\text{ICNN}(\balpha_i) - \dfrac{\partial
 # \Nn_\text{ICNN}}{\partial\balpha_i}(\balpha_i=0):\balpha_i
 # $$
-#
-#
+
+
 # %%
 class ICNNDissipationPotential(ICNN):
     def icnn_potential(self, alpha_dot):
@@ -288,7 +288,7 @@ class ICNNDissipationPotential(ICNN):
 #
 # The idea is to assess how the complexity of the internal structure (i.e., the number of internal
 # variables) affects the ability of the neural GSM to reproduce the reference relaxation behavior.
-#
+
 # %%
 Nvar_list = [1, 2, 3]
 gsm_list = []
@@ -323,7 +323,7 @@ for Nvar in Nvar_list:
 # At this stage, the predicted stress does not match the target relaxation curve — the neural
 # model's dissipation potential is untrained and cannot yet capture the correct time-dependent
 # decay.
-#
+
 # %%
 sig_train = compute_evolution(material, gamma, times)
 sig_noise = SymmetricTensor2(
@@ -363,8 +363,8 @@ plt.show()
 # history-dependent.
 # Gradients are automatically computed by JAX through the full time integration and solver
 # iterations.
-#
-#
+
+
 # %%
 @eqx.filter_jit
 def loss(trainable, args):
@@ -390,7 +390,7 @@ def loss(trainable, args):
 #
 # The optimization is wrapped in an `optimistix.OptaxMinimiser`, which provides a clean interface
 # for running the differentiable solver loop.
-#
+
 # %%
 learning_rate = 5e-2
 optimizer = optax.chain(
@@ -431,7 +431,7 @@ solver = optx.OptaxMinimiser(
 # This demonstrates that the neural GSM can efficiently compress the complex 6-branch Maxwell
 # response into a reduced number of internal variables, while maintaining full thermodynamic
 # consistency.
-#
+
 # %%
 for gsm, Nvar in zip(gsm_list, Nvar_list):
     trainable, static = partition_by_node_names(gsm, ["free_energy.elasticity"])
@@ -474,7 +474,7 @@ for gsm, Nvar in zip(gsm_list, Nvar_list):
 # Finally, we can train in a very similar fashion a generalized Maxwell model with a reduced number
 # of branches. Below, we show how to do it by fixing the values for the relaxation times and
 # learning only the viscous branches stiffness values.
-#
+
 # %%
 maxwell_list = []
 Nmax_list = [2, 4, 8]
