@@ -469,7 +469,7 @@ soils near the critical state.</p>
 <p>We now proceed to implement the model step by step with <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
@@ -497,7 +497,7 @@ way.</p>
 define a small subclass of <code class="docutils literal notranslate"><span class="pre">AbstractState</span></code> to store and update this tensor between time steps.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define internal state to store plastic strain</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define internal state to store plastic strain</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">InternalState</span><span class="p">(</span><span class="n">jaxmat</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">AbstractState</span><span class="p">):</span>
     <span class="n">epsp</span><span class="p">:</span> <span class="n">SymmetricTensor2</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">SymmetricTensor2</span><span class="p">())</span>
 </pre></div>
@@ -514,7 +514,7 @@ decorate the latter with  the <code class="docutils literal notranslate"><span c
 <a class="reference internal" href="green_viscoplasticity.html"><span class="std std-doc">Norton viscoplastic model with a Green yield surface</span></a> demo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">CamClaySurface</span><span class="p">(</span><span class="n">jm</span><span class="o">.</span><span class="n">AbstractPlasticSurface</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">CamClaySurface</span><span class="p">(</span><span class="n">jm</span><span class="o">.</span><span class="n">AbstractPlasticSurface</span><span class="p">):</span>
     <span class="n">M</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">converter</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">)</span>  <span class="c1"># critical state line parameter</span>
 
     <span class="nd">@jm</span><span class="o">.</span><span class="n">safe_zero</span>
@@ -533,7 +533,7 @@ decorate the latter with  the <code class="docutils literal notranslate"><span c
 <p>We next define the exponential hardening rule for the preconsolidation pressure:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Hardening</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Hardening</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">converter</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">)</span>
     <span class="n">pc0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">converter</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">)</span>
 
@@ -574,7 +574,7 @@ where the last line is equivalent to:</p>
 Jacobian and finally return the updated stress <span class="math notranslate nohighlight">\(\bsig\)</span> and internal variable <span class="math notranslate nohighlight">\(\bepsp\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ModifiedCamClay</span><span class="p">(</span><span class="n">jm</span><span class="o">.</span><span class="n">SmallStrainBehavior</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ModifiedCamClay</span><span class="p">(</span><span class="n">jm</span><span class="o">.</span><span class="n">SmallStrainBehavior</span><span class="p">):</span>
     <span class="n">elasticity</span><span class="p">:</span> <span class="n">jm</span><span class="o">.</span><span class="n">LinearElasticIsotropic</span>
     <span class="n">plastic_surface</span><span class="p">:</span> <span class="n">CamClaySurface</span>
     <span class="n">hardening</span><span class="p">:</span> <span class="n">Hardening</span>
@@ -595,7 +595,7 @@ Jacobian and finally return the updated stress <span class="math notranslate noh
         <span class="k">def</span><span class="w"> </span><span class="nf">solve_state</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">epsp_old</span><span class="p">):</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">residual</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-                <span class="n">_dlamb</span><span class="p">,</span> <span class="n">depsp</span> <span class="o">=</span> <span class="n">dy</span>
+                <span class="n">dlamb</span><span class="p">,</span> <span class="n">depsp</span> <span class="o">=</span> <span class="n">dy</span>
                 <span class="n">sig</span> <span class="o">=</span> <span class="n">eval_stress</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">depsp</span><span class="p">)</span>
                 <span class="n">epsp</span> <span class="o">=</span> <span class="n">epsp_old</span> <span class="o">+</span> <span class="n">depsp</span>
                 <span class="n">epspv</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">epsp</span><span class="p">)</span>
@@ -633,11 +633,46 @@ Jacobian and finally return the updated stress <span class="math notranslate noh
 clay parameters. The initial critical pressure is chosen here to be <span class="math notranslate nohighlight">\(p_{c0}=1\text{ MPa}\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">elasticity</span> <span class="o">=</span> <span class="n">jm</span><span class="o">.</span><span class="n">LinearElasticIsotropic</span><span class="p">(</span><span class="n">E</span><span class="o">=</span><span class="mf">248.28</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">0.241</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">elasticity</span> <span class="o">=</span> <span class="n">jm</span><span class="o">.</span><span class="n">LinearElasticIsotropic</span><span class="p">(</span><span class="n">E</span><span class="o">=</span><span class="mf">248.28</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">0.241</span><span class="p">)</span>
 <span class="n">cc_surface</span> <span class="o">=</span> <span class="n">CamClaySurface</span><span class="p">(</span><span class="n">M</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 <span class="n">pc0</span> <span class="o">=</span> <span class="mf">1.0</span>
 <span class="n">hardening</span> <span class="o">=</span> <span class="n">Hardening</span><span class="p">(</span><span class="n">pc0</span><span class="o">=</span><span class="n">pc0</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">30.0</span><span class="p">)</span>
 <span class="n">material</span> <span class="o">=</span> <span class="n">ModifiedCamClay</span><span class="p">(</span><span class="n">elasticity</span><span class="o">=</span><span class="n">elasticity</span><span class="p">,</span> <span class="n">hardening</span><span class="o">=</span><span class="n">hardening</span><span class="p">,</span> <span class="n">plastic_surface</span><span class="o">=</span><span class="n">cc_surface</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_99734/4171009808.py:5: UserWarning: Using `field(init=False)` on `equinox.Module` can lead to surprising behaviour when used around `jax.grad`. In the following example, observe how JAX computes gradients with respect to the `.len` attribute (which is a PyTree leaf passed across the `jax.grad` boundary) and that there are no gradients with respect to `.a` or `.b`:
+
+```
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+
+class Foo(eqx.Module):
+    a: jax.Array
+    b: jax.Array
+    len: jax.Array = eqx.field(init=False)
+
+    def __post_init__(self):
+        self.len = jnp.sqrt(self.a**2 + self.b**2)
+
+    def __call__(self, x):
+        return self.len * x
+
+@jax.jit
+@jax.grad
+def call(module, x):
+    return module(x)
+
+grads = call(Foo(jnp.array(3.0), jnp.array(4.0)), 5)
+# Foo(
+#   a=Array(0., dtype=float32, weak_type=True),
+#   b=Array(0., dtype=float32, weak_type=True),
+#   len=Array(5., dtype=float32, weak_type=True)
+# )
+```
+  material = ModifiedCamClay(elasticity=elasticity, hardening=hardening, plastic_surface=cc_surface)
 </pre></div>
 </div>
 </div>
@@ -659,7 +694,7 @@ under shear, while normally consolidated clays (low OCR) tend to contract.</p>
 <p>All 6 OCR load cases are integrated simultaneously as a batched simulation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_pq</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_pq</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">dev</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vdot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
@@ -720,7 +755,7 @@ for each cases which all fall on the critical state line of equation <span class
 <p class="expanded admonition-title">Hide code cell source</p>
 </summary>
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;coolwarm&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;coolwarm&quot;</span><span class="p">)</span>
 <span class="n">colors</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Nbatch</span><span class="p">))</span>
 <span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">,</span> <span class="n">ax3</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
 <span class="n">theta</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
@@ -755,6 +790,9 @@ for each cases which all fall on the critical state line of equation <span class
 </div>
 </div>
 </details>
+<div class="cell_output docutils container">
+<img alt="../../_images/8290abaa893c12258d5953c4e15506c23c940ef2c04d81b452d12e0b23ba3ca4.png" src="../../_images/8290abaa893c12258d5953c4e15506c23c940ef2c04d81b452d12e0b23ba3ca4.png" />
+</div>
 </div>
 </section>
 </section>

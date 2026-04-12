@@ -189,7 +189,10 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -376,7 +379,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="AbstractLinearElastic">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.AbstractLinearElastic">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.AbstractLinearElastic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AbstractLinearElastic</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Small-strain elastic model.&quot;&quot;&quot;</span>
 
@@ -393,7 +396,7 @@ document.write(`
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="o">.</span><span class="n">inv</span>
 
 <div class="viewcode-block" id="AbstractLinearElastic.strain_energy">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.AbstractLinearElastic.strain_energy">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.AbstractLinearElastic.strain_energy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">strain_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Strain energy density</span>
 
@@ -410,7 +413,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="LinearElastic">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.LinearElastic">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElastic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearElastic</span><span class="p">(</span><span class="n">AbstractLinearElastic</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A generic linear elastic model with custom stiffness tensor.&quot;&quot;&quot;</span>
 
@@ -425,7 +428,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="LinearElasticIsotropic">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.LinearElasticIsotropic">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticIsotropic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearElasticIsotropic</span><span class="p">(</span><span class="n">AbstractLinearElastic</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An isotropic linear elastic model.&quot;&quot;&quot;</span>
 
@@ -474,7 +477,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="LinearElasticTransverseIsotropic">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.LinearElasticTransverseIsotropic">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearElasticTransverseIsotropic</span><span class="p">(</span><span class="n">AbstractLinearElastic</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A transversely isotropic linear elastic model.&quot;&quot;&quot;</span>
 
@@ -513,7 +516,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="LinearElasticOrthotropic">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.LinearElasticOrthotropic">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticOrthotropic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearElasticOrthotropic</span><span class="p">(</span><span class="n">AbstractLinearElastic</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An orthotropic linear elastic model.&quot;&quot;&quot;</span>
 
@@ -567,7 +570,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="ElasticBehavior">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.ElasticBehavior">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.ElasticBehavior">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ElasticBehavior</span><span class="p">(</span><span class="n">SmallStrainBehavior</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A small strain linear elastic behavior.&quot;&quot;&quot;</span>
 
@@ -575,7 +578,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The corresponding linear elastic model.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ElasticBehavior.constitutive_update">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.ElasticBehavior.constitutive_update">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.ElasticBehavior.constitutive_update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="n">sig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="n">eps</span>
         <span class="n">new_state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">strain</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">stress</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
