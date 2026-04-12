@@ -217,7 +217,7 @@ class ModifiedCamClay(jm.SmallStrainBehavior):
         def solve_state(deps, epsp_old):
 
             def residual(dy, args):
-                _dlamb, depsp = dy
+                dlamb, depsp = dy
                 sig = eval_stress(deps, depsp)
                 epsp = epsp_old + depsp
                 epspv = jnp.trace(epsp)
