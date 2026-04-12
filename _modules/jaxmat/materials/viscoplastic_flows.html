@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -184,14 +184,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -209,7 +207,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +234,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -360,14 +359,16 @@ document.write(`
                   
   <h1>Source code for jaxmat.materials.viscoplastic_flows</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">enforce_dtype</span>
 
 
 <div class="viewcode-block" id="VoceHardening">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.VoceHardening">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.VoceHardening">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VoceHardening</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Voce hardening model for stress-strain behavior.</span>
@@ -396,7 +397,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="NortonFlow">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.NortonFlow">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.NortonFlow">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NortonFlow</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;A Norton viscoplastic flow with overstress.</span>
 
@@ -416,7 +417,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="AbstractKinematicHardening">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.AbstractKinematicHardening">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.AbstractKinematicHardening">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AbstractKinematicHardening</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An abstract module for Armstrong-Frederic type kinematic hardening.&quot;&quot;&quot;</span>
 
@@ -425,11 +426,12 @@ document.write(`
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the expression for $\dot{\bX}$ as a function of the backstress $\bX$ and, possibly, other variables.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the expression for $\dot{\bX}$ as a function of the</span>
+<span class="sd">        backstress $\bX$ and any other variables.&quot;&quot;&quot;</span>
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="AbstractKinematicHardening.sig_eff">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.AbstractKinematicHardening.sig_eff">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.AbstractKinematicHardening.sig_eff">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sig_eff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Effective stress $\bsig-\sum_i \bX_i$ where $\bX_i$ is the $i$-th backstress.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">sig</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
@@ -438,7 +440,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="LinearKinematicHardening">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.LinearKinematicHardening">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.LinearKinematicHardening">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearKinematicHardening</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Linear kinematic hardening model.</span>
@@ -448,7 +450,8 @@ document.write(`
 <span class="sd">    .. admonition:: References</span>
 <span class="sd">        :class: seealso</span>
 
-<span class="sd">        Prager, W. (1956). A new method of analyzing stresses and strains in work-hardening plastic solids.</span>
+<span class="sd">        Prager, W. (1956). A new method of analyzing stresses and strains in work-hardening</span>
+<span class="sd">        plastic solids.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">H</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">enforce_dtype</span><span class="p">()</span>
@@ -457,11 +460,12 @@ document.write(`
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps_dot</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the expression for $\dot{\bX}$ as a function of the backstress $\bX$ and, possibly, other variables.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the expression for $\dot{\bX}$ as a function of the</span>
+<span class="sd">        backstress $\bX$ and any other variables.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">*</span> <span class="n">eps_dot</span>
 
 <div class="viewcode-block" id="LinearKinematicHardening.sig_eff">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.LinearKinematicHardening.sig_eff">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.LinearKinematicHardening.sig_eff">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sig_eff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Effective stress $\bsig-\sum_i \bX_i$ where $\bX_i$ is the $i$-th backstress.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">sig</span> <span class="o">-</span> <span class="n">X</span></div>
@@ -470,7 +474,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="ArmstrongFrederickHardening">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.ArmstrongFrederickHardening">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.ArmstrongFrederickHardening">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ArmstrongFrederickHardening</span><span class="p">(</span><span class="n">AbstractKinematicHardening</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Armstrong-Frederick kinematic hardening model.</span>
@@ -499,18 +503,18 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">evolution</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
-            <span class="k">return</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">C</span> <span class="o">*</span> <span class="n">epsp_dot</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">p_dot</span>
+            <span class="k">return</span> <span class="n">epsp_dot</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">C</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span> <span class="o">*</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">p_dot</span>
 
         <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">evolution</span><span class="p">)(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ArmstrongFrederickHardening.sig_eff">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.ArmstrongFrederickHardening.sig_eff">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.ArmstrongFrederickHardening.sig_eff">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sig_eff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Effective stress is here:</span>
 
 <span class="sd">        $$\bsig-\frac{2}{3}C\sum_{i=1}^\text{nvars}a_i$$</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">sig</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">sig</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">sym</span></div>
 </div>
 
 </pre></div>

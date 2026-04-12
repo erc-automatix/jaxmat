@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -185,13 +185,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -210,7 +211,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -238,6 +238,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -395,14 +397,14 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AFInternalState.X"><code class="docutils literal notranslate"><span class="pre">AFInternalState.X</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity</span></code></a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.elasticity"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.elasticity</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.yield_stress"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.yield_stress</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.viscous_flow"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.viscous_flow</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.kinematic_hardening"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.kinematic_hardening</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.plastic_surface"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.plastic_surface</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.internal_type"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.internal_type</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.constitutive_update"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.constitutive_update()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.elasticity"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.elasticity</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.yield_stress"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.yield_stress</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.viscous_flow"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.viscous_flow</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.kinematic_hardening"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.kinematic_hardening</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.plastic_surface"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.plastic_surface</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.internal_type"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.internal_type</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.constitutive_update"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.constitutive_update()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.GenericInternalState"><code class="docutils literal notranslate"><span class="pre">GenericInternalState</span></code></a><ul class="visible nav section-nav flex-column">
@@ -438,7 +440,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AFInternalState">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AFInternalState</span></span><a class="reference internal" href="../_modules/jaxmat/materials/viscoplasticity.html#AFInternalState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AFInternalState" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="jaxmat.state.html#jaxmat.state.SmallStrainState" title="jaxmat.state.SmallStrainState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SmallStrainState</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="jaxmat.state.html#jaxmat.state.AbstractState" title="jaxmat.state.AbstractState"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractState</span></code></a></p>
 <p>Internal state for the Armstrong-Frederick model</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AFInternalState.p">
@@ -448,21 +450,21 @@ document.write(`
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AFInternalState.epsp">
-<span class="sig-name descname"><span class="pre">epsp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2" title="jaxmat.tensors.generic_tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AFInternalState.epsp" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">epsp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2" title="jaxmat.tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AFInternalState.epsp" title="Link to this definition">#</a></dt>
 <dd><p>Plastic strain tensor</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AFInternalState.X">
-<span class="sig-name descname"><span class="pre">X</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2" title="jaxmat.tensors.generic_tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AFInternalState.X" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">X</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2" title="jaxmat.tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AFInternalState.X" title="Link to this definition">#</a></dt>
 <dd><p>Backstress tensors</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AmrstrongFrederickViscoplasticity</span></span><a class="reference internal" href="../_modules/jaxmat/materials/viscoplasticity.html#AmrstrongFrederickViscoplasticity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ArmstrongFrederickViscoplasticity</span></span><a class="reference internal" href="../_modules/jaxmat/materials/viscoplasticity.html#ArmstrongFrederickViscoplasticity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="jaxmat.materials.behavior.html#jaxmat.materials.behavior.SmallStrainBehavior" title="jaxmat.materials.behavior.SmallStrainBehavior"><code class="xref py py-class docutils literal notranslate"><span class="pre">SmallStrainBehavior</span></code></a></p>
 <p>Small-strain viscoplastic constitutive model with Armstrong-Frederick
 kinematic hardening, Voce isotropic hardening, and Norton-type viscous flow.</p>
@@ -497,46 +499,46 @@ Hardening Materials.” CEGB Report RD/B/N731.</p>
 </ul>
 </div>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.elasticity">
-<span class="sig-name descname"><span class="pre">elasticity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticIsotropic" title="jaxmat.materials.elasticity.LinearElasticIsotropic"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearElasticIsotropic</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.elasticity" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.elasticity">
+<span class="sig-name descname"><span class="pre">elasticity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticIsotropic" title="jaxmat.materials.elasticity.LinearElasticIsotropic"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearElasticIsotropic</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.elasticity" title="Link to this definition">#</a></dt>
 <dd><p>Linear isotropic elasticity defined by Young modulus and Poisson ratio.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.yield_stress">
-<span class="sig-name descname"><span class="pre">yield_stress</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.yield_stress" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.yield_stress">
+<span class="sig-name descname"><span class="pre">yield_stress</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.yield_stress" title="Link to this definition">#</a></dt>
 <dd><p>Isotropic hardening law controlling the evolution of the yield surface size.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.viscous_flow">
-<span class="sig-name descname"><span class="pre">viscous_flow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.NortonFlow" title="jaxmat.materials.viscoplastic_flows.NortonFlow"><code class="xref py py-class docutils literal notranslate"><span class="pre">NortonFlow</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.viscous_flow" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.viscous_flow">
+<span class="sig-name descname"><span class="pre">viscous_flow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.NortonFlow" title="jaxmat.materials.viscoplastic_flows.NortonFlow"><code class="xref py py-class docutils literal notranslate"><span class="pre">NortonFlow</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.viscous_flow" title="Link to this definition">#</a></dt>
 <dd><p>Viscoplastic flow rule following Norton (power-law) viscosity formulation.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.kinematic_hardening">
-<span class="sig-name descname"><span class="pre">kinematic_hardening</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.ArmstrongFrederickHardening" title="jaxmat.materials.viscoplastic_flows.ArmstrongFrederickHardening"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArmstrongFrederickHardening</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.kinematic_hardening" title="Link to this definition">#</a></dt>
-<dd><p>Kinematic hardening model defining the backstress evolution rate with dynamic
-recovery (Armstrong-Frederick formulation).</p>
+<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.kinematic_hardening">
+<span class="sig-name descname"><span class="pre">kinematic_hardening</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.ArmstrongFrederickHardening" title="jaxmat.materials.viscoplastic_flows.ArmstrongFrederickHardening"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArmstrongFrederickHardening</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.kinematic_hardening" title="Link to this definition">#</a></dt>
+<dd><p>Kinematic hardening model defining the backstress evolution rate with
+dynamic recovery (Armstrong-Frederick formulation).</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.plastic_surface">
-<span class="sig-name descname"><span class="pre">plastic_surface</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">vonMises()</span></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.plastic_surface" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.plastic_surface">
+<span class="sig-name descname"><span class="pre">plastic_surface</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">vonMises()</span></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.plastic_surface" title="Link to this definition">#</a></dt>
 <dd><p>J2-type yield (or loading) surface based on the deviatoric stress invariant.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.internal_type">
-<span class="sig-name descname"><span class="pre">internal_type</span></span><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.internal_type" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.internal_type">
+<span class="sig-name descname"><span class="pre">internal_type</span></span><a class="headerlink" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.internal_type" title="Link to this definition">#</a></dt>
 <dd><p>Internal variables associated with the accumulated plastic strain and backstress tensor.</p>
 <p>alias of <a class="reference internal" href="#jaxmat.materials.viscoplasticity.AFInternalState" title="jaxmat.materials.viscoplasticity.AFInternalState"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFInternalState</span></code></a></p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.constitutive_update">
-<span class="sig-name descname"><span class="pre">constitutive_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/materials/viscoplasticity.html#AmrstrongFrederickViscoplasticity.constitutive_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.constitutive_update" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.constitutive_update">
+<span class="sig-name descname"><span class="pre">constitutive_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/materials/viscoplasticity.html#ArmstrongFrederickViscoplasticity.constitutive_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.constitutive_update" title="Link to this definition">#</a></dt>
 <dd><p>Perform the constitutive update for a given small strain increment
 for a small-strain behavior.</p>
 <p>This abstract method defines the interface for advancing the material
@@ -573,7 +575,7 @@ constitutive behaviors (elastic, plastic, viscoplastic, etc.).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.GenericInternalState">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GenericInternalState</span></span><a class="reference internal" href="../_modules/jaxmat/materials/viscoplasticity.html#GenericInternalState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.materials.viscoplasticity.GenericInternalState" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="jaxmat.state.html#jaxmat.state.SmallStrainState" title="jaxmat.state.SmallStrainState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SmallStrainState</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="jaxmat.state.html#jaxmat.state.AbstractState" title="jaxmat.state.AbstractState"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractState</span></code></a></p>
 <p>Internal state for the generic elastoviscoplastic model.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.GenericInternalState.p">
@@ -583,7 +585,7 @@ constitutive behaviors (elastic, plastic, viscoplastic, etc.).</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.GenericInternalState.epsp">
-<span class="sig-name descname"><span class="pre">epsp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2" title="jaxmat.tensors.generic_tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.GenericInternalState.epsp" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">epsp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2" title="jaxmat.tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.GenericInternalState.epsp" title="Link to this definition">#</a></dt>
 <dd><p>Plastic strain tensor</p>
 </dd></dl>
 
@@ -595,7 +597,7 @@ constitutive behaviors (elastic, plastic, viscoplastic, etc.).</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.viscoplasticity.GenericInternalState.X">
-<span class="sig-name descname"><span class="pre">X</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2" title="jaxmat.tensors.generic_tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.GenericInternalState.X" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">X</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2" title="jaxmat.tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.viscoplasticity.GenericInternalState.X" title="Link to this definition">#</a></dt>
 <dd><p>Backstress tensors</p>
 </dd></dl>
 
@@ -751,14 +753,14 @@ constitutive behaviors (elastic, plastic, viscoplastic, etc.).</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AFInternalState.X"><code class="docutils literal notranslate"><span class="pre">AFInternalState.X</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity</span></code></a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.elasticity"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.elasticity</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.yield_stress"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.yield_stress</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.viscous_flow"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.viscous_flow</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.kinematic_hardening"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.kinematic_hardening</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.plastic_surface"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.plastic_surface</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.internal_type"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.internal_type</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.AmrstrongFrederickViscoplasticity.constitutive_update"><code class="docutils literal notranslate"><span class="pre">AmrstrongFrederickViscoplasticity.constitutive_update()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.elasticity"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.elasticity</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.yield_stress"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.yield_stress</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.viscous_flow"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.viscous_flow</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.kinematic_hardening"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.kinematic_hardening</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.plastic_surface"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.plastic_surface</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.internal_type"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.internal_type</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.constitutive_update"><code class="docutils literal notranslate"><span class="pre">ArmstrongFrederickViscoplasticity.constitutive_update()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.viscoplasticity.GenericInternalState"><code class="docutils literal notranslate"><span class="pre">GenericInternalState</span></code></a><ul class="visible nav section-nav flex-column">

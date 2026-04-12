@@ -1,0 +1,982 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Norton viscoplastic model with a Green yield surface &#8212; jaxmat</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "displayMath": [["$$", "$$"], ["\\[", "\\]"]], "macros": {"ba": "\\boldsymbol{a}", "bb": "\\boldsymbol{b}", "bc": "\\boldsymbol{c}", "bd": "\\boldsymbol{d}", "be": "\\boldsymbol{e}", "bf": "\\boldsymbol{f}", "bg": "\\boldsymbol{g}", "bh": "\\boldsymbol{h}", "bi": "\\boldsymbol{i}", "bj": "\\boldsymbol{j}", "bk": "\\boldsymbol{k}", "bl": "\\boldsymbol{l}", "bm": "\\boldsymbol{m}", "bn": "\\boldsymbol{n}", "bo": "\\boldsymbol{o}", "bp": "\\boldsymbol{p}", "bq": "\\boldsymbol{q}", "br": "\\boldsymbol{r}", "bs": "\\boldsymbol{s}", "bt": "\\boldsymbol{t}", "bu": "\\boldsymbol{u}", "bv": "\\boldsymbol{v}", "bw": "\\boldsymbol{w}", "bx": "\\boldsymbol{x}", "by": "\\boldsymbol{y}", "bz": "\\boldsymbol{z}", "bA": "\\boldsymbol{A}", "bB": "\\boldsymbol{B}", "bC": "\\boldsymbol{C}", "bD": "\\boldsymbol{D}", "bE": "\\boldsymbol{E}", "bF": "\\boldsymbol{F}", "bG": "\\boldsymbol{G}", "bH": "\\boldsymbol{H}", "bI": "\\boldsymbol{I}", "bJ": "\\boldsymbol{J}", "bK": "\\boldsymbol{K}", "bL": "\\boldsymbol{L}", "bM": "\\boldsymbol{M}", "bN": "\\boldsymbol{N}", "bO": "\\boldsymbol{O}", "bP": "\\boldsymbol{P}", "bQ": "\\boldsymbol{Q}", "bR": "\\boldsymbol{R}", "bS": "\\boldsymbol{S}", "bT": "\\boldsymbol{T}", "bU": "\\boldsymbol{U}", "bV": "\\boldsymbol{V}", "bW": "\\boldsymbol{W}", "bX": "\\boldsymbol{X}", "bY": "\\boldsymbol{Y}", "bZ": "\\boldsymbol{Z}", "balpha": "\\boldsymbol{\\alpha}", "bbeta": "\\boldsymbol{\\beta}", "bgamma": "\\boldsymbol{\\gamma}", "bdelta": "\\boldsymbol{\\delta}", "bepsilon": "\\boldsymbol{\\epsilon}", "bvarepsilon": "\\boldsymbol{\\varepsilon}", "bzeta": "\\boldsymbol{\\zeta}", "boeta": "\\boldsymbol{\\eta}", "btheta": "\\boldsymbol{\\theta}", "bvartheta": "\\boldsymbol{\\vartheta}", "biota": "\\boldsymbol{\\iota}", "bkappa": "\\boldsymbol{\\kappa}", "blambda": "\\boldsymbol{\\lambda}", "bmu": "\\boldsymbol{\\mu}", "bnu": "\\boldsymbol{\\nu}", "bxi": "\\boldsymbol{\\xi}", "bpi": "\\boldsymbol{\\pi}", "brho": "\\boldsymbol{\\rho}", "bvarrho": "\\boldsymbol{\\varrho}", "bsig": "\\boldsymbol{\\sigma}", "btau": "\\boldsymbol{\\tau}", "bupsilon": "\\boldsymbol{\\upsilon}", "bphi": "\\boldsymbol{\\phi}", "bvarphi": "\\boldsymbol{\\varphi}", "bchi": "\\boldsymbol{\\chi}", "bpsi": "\\boldsymbol{\\psi}", "bomega": "\\boldsymbol{\\omega}", "bGamma": "\\boldsymbol{\\Gamma}", "bDelta": "\\boldsymbol{\\Delta}", "bTheta": "\\boldsymbol{\\Theta}", "bLambda": "\\boldsymbol{\\Lambda}", "bXi": "\\boldsymbol{\\Xi}", "bPi": "\\boldsymbol{\\Pi}", "bSig": "\\boldsymbol{\\Sigma}", "bUpsilon": "\\boldsymbol{\\Upsilon}", "bPhi": "\\boldsymbol{\\Phi}", "bPsi": "\\boldsymbol{\\Psi}", "bOmega": "\\boldsymbol{\\Omega}", "Aa": "\\mathcal{A}", "Bb": "\\mathcal{B}", "Cc": "\\mathcal{C}", "Dd": "\\mathcal{D}", "Ee": "\\mathcal{E}", "Ff": "\\mathcal{F}", "Gg": "\\mathcal{G}", "Hh": "\\mathcal{H}", "Ii": "\\mathcal{I}", "Jj": "\\mathcal{J}", "Kk": "\\mathcal{K}", "Ll": "\\mathcal{L}", "Mm": "\\mathcal{M}", "Nn": "\\mathcal{N}", "Oo": "\\mathcal{O}", "Pp": "\\mathcal{P}", "Qq": "\\mathcal{Q}", "Rr": "\\mathcal{R}", "Ss": "\\mathcal{S}", "Tt": "\\mathcal{T}", "Uu": "\\mathcal{U}", "Vv": "\\mathcal{V}", "Ww": "\\mathcal{W}", "Xx": "\\mathcal{X}", "Yy": "\\mathcal{Y}", "Zz": "\\mathcal{Z}", "AA": "\\mathbb{A}", "BB": "\\mathbb{B}", "CC": "\\mathbb{C}", "DD": "\\mathbb{D}", "EE": "\\mathbb{E}", "FF": "\\mathbb{F}", "GG": "\\mathbb{G}", "HH": "\\mathbb{H}", "II": "\\mathbb{I}", "JJ": "\\mathbb{J}", "KK": "\\mathbb{K}", "LL": "\\mathbb{L}", "MM": "\\mathbb{M}", "NN": "\\mathbb{N}", "OO": "\\mathbb{O}", "PP": "\\mathbb{P}", "QQ": "\\mathbb{Q}", "RR": "\\mathbb{R}", "SS": "\\mathbb{S}", "TT": "\\mathbb{T}", "UU": "\\mathbb{U}", "VV": "\\mathbb{V}", "WW": "\\mathbb{W}", "XX": "\\mathbb{X}", "YY": "\\mathbb{Y}", "ZZ": "\\mathbb{Z}", "diff": "\\,\\text{d}", "div": "\\operatorname{div}", "dev": "\\operatorname{dev}", "sym": "\\operatorname{sym}", "diag": "\\operatorname{diag}", "skew": "\\operatorname{skew}", "tr": "\\operatorname{tr}", "cof": "\\operatorname{cof}", "T": "^{\\text{T}}", "utilde": "\\tilde{#1}", "uttilde": "\\tilde{\\tilde{#1}}", "tgrad": "\\utilde{\\nabla}", "dOm": "\\,\\text{d}\\Omega", "Neumann": "\\partial\\Omega_{\\text{N}}", "Dirichlet": "\\partial\\Omega_{\\text{D}}", "dt": "\\,\\text{d}t", "beps": "\\bvarepsilon", "epsi": "\\varepsilon", "bepsel": "\\bvarepsilon^{\\text{el}}", "bepsp": "\\bvarepsilon^{\\text{p}}", "bepsvp": "\\bvarepsilon^{\\text{vp}}", "epsp": "\\varepsilon^{\\text{p}}"}}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'demos/phenomenological_models/green_viscoplasticity';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Modified Cam-Clay" href="cam_clay.html" />
+    <link rel="prev" title="Phenomenological models" href="../../pheno_models.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/jaxmat_logo.svg" class="logo__image only-light" alt="jaxmat - Home"/>
+    <script>document.write(`<img src="../../_static/jaxmat_logo.svg" class="logo__image only-dark" alt="jaxmat - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    Documentation
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Quickstart tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/getting_started.html">Getting started with <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/batched_computation.html">Batching across material points</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/tensors.html">Working with tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytrees.html">Composable and differentiable material models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../pheno_models.html">Phenomenological models</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cam_clay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">General resources</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Nonlinear constitutive behaviors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../computational.html">Computational aspects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sharp_bits.html">Sharp bits</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.loader.html">jaxmat.loader module</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.state.html">jaxmat.state module</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/erc-automatix/jaxmat" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/erc-automatix/jaxmat/edit/main/demos/phenomenological_models/green_viscoplasticity.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Norton viscoplastic model with a Green yield surface</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-overview">Model overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-implementation">Model implementation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#internal-state">Internal state</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#green-yield-surface">Green yield surface</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#viscoplastic-flow">Viscoplastic flow</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#implicit-integration">Implicit integration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluating-the-model">Evaluating the model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-dependent-load-cases">Time-dependent load-cases</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#initial-state">Initial state</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="norton-viscoplastic-model-with-a-green-yield-surface">
+<h1>Norton viscoplastic model with a Green yield surface<a class="headerlink" href="#norton-viscoplastic-model-with-a-green-yield-surface" title="Link to this heading">#</a></h1>
+<p>In this example, we implement and solve a rate-dependent viscoplastic constitutive model that
+combines a Green-type yield surface with a Norton viscoplastic flow rule.</p>
+<div class="important admonition">
+<p class="admonition-title">Objectives</p>
+<p>The goal of this demo is to illustrate how to:</p>
+<ul class="simple">
+<li><p>Define a custom yield surface in stress space that depends on both hydrostatic and deviatoric
+stress components.</p></li>
+<li><p>Implement a Norton-type overstress law, which governs how the viscoplastic strain rate increases
+with the level of overstress.</p></li>
+<li><p>Integrate the constitutive equations over a time step using implicit local updates, solved
+automatically with the <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> root-finding engine.</p></li>
+<li><p>Evaluate the model response for a batch of load cases and initial states.</p></li>
+</ul>
+</div>
+<section id="model-overview">
+<h2>Model overview<a class="headerlink" href="#model-overview" title="Link to this heading">#</a></h2>
+<p>The Green yield function is defined as:</p>
+<div class="math notranslate nohighlight">
+\[f(\bsig) = \sqrt{A^2\,\sigma_m^2 + \frac{3}{2}\,\bs:\bs}\]</div>
+<p>where</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\sigma_m = \frac{1}{3}\,\tr(\bsig)\)</span> is the mean (hydrostatic) stress, and</p></li>
+<li><p><span class="math notranslate nohighlight">\(\bs = \bsig - \sigma_m \boldsymbol{I}\)</span> is the deviatoric stress tensor.</p></li>
+<li><p><span class="math notranslate nohighlight">\(A\)</span> is a material parameter describing the eccentricity of the Green ellipse.</p></li>
+</ul>
+<p>The Norton flow law relates the viscoplastic strain rate to the overstress <span class="math notranslate nohighlight">\(f(\bsig) - \sigma_y\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\dot{\beps}^\text{vp} =
+\left\langle\dfrac{f - \sigma_y}{K}\right\rangle_+^m\]</div>
+<p>where <span class="math notranslate nohighlight">\(\langle \cdot \rangle_+ = \max\{\cdot, 0\}\)</span> is the positive part, <span class="math notranslate nohighlight">\(K\)</span> controls the
+viscosity and <span class="math notranslate nohighlight">\(m\)</span> is the Norton exponent.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImposedLoading</span><span class="p">,</span> <span class="n">global_solve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">dev</span>
+
+<span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_platform_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="model-implementation">
+<h2>Model implementation<a class="headerlink" href="#model-implementation" title="Link to this heading">#</a></h2>
+<p>The final viscoplastic behavior is represented in <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> as an <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code> consisting of
+several other submodules corresponding to:</p>
+<ul class="simple">
+<li><p>the elastic model (isotropic elasticity here)</p></li>
+<li><p>the plastic yield surface</p></li>
+<li><p>the viscoplastic flow rule</p></li>
+<li><p>the material yield stress (no hardening in this example)</p></li>
+</ul>
+<section id="internal-state">
+<h3>Internal state<a class="headerlink" href="#internal-state" title="Link to this heading">#</a></h3>
+<p>Attached to this behavior, we will also need to define the material internal state. The latter
+derives from <code class="docutils literal notranslate"><span class="pre">jaxmat.state.AbstractState</span></code> and consists here of the total viscoplastic strain
+<span class="math notranslate nohighlight">\(\bepsvp\)</span><a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. We define the default factory functions to choose the internal state variable
+initial value.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">InternalState</span><span class="p">(</span><span class="n">jaxmat</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">AbstractState</span><span class="p">):</span>
+    <span class="n">epsvp</span><span class="p">:</span> <span class="n">SymmetricTensor2</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">SymmetricTensor2</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="green-yield-surface">
+<h3>Green yield surface<a class="headerlink" href="#green-yield-surface" title="Link to this heading">#</a></h3>
+<p>We now first define the Green plastic yield surface as the <code class="docutils literal notranslate"><span class="pre">GreenYieldSurface</span></code> module. It takes a
+single float parameter <code class="docutils literal notranslate"><span class="pre">A</span></code> describing the ellipsoid eccentricity. The yield surface expression is
+defined in the <code class="docutils literal notranslate"><span class="pre">__call__</span></code> dunder method. A <code class="docutils literal notranslate"><span class="pre">normal</span></code> method is then defined from the yield surface
+gradient to compute the (non-unitary) normal vector. Note that we define a <code class="docutils literal notranslate"><span class="pre">safe_zero</span></code> decorator
+to avoid NaNs when the stress tensor is zero, which may happen upon initialization for instance.
+To avoid NaNs in <code class="docutils literal notranslate"><span class="pre">jnp.where</span></code> sections in adjoint computations, we use the <a class="reference external" href="https://docs.jax.dev/en/latest/faq.html#gradients-contain-nan-where-using-where">double <code class="docutils literal notranslate"><span class="pre">where</span></code>
+trick</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">safe_zero</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x_norm</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x_safe</span> <span class="o">=</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x_norm</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x_norm</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_safe</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GreenYieldSurface</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="n">A</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">converter</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">)</span>
+
+    <span class="nd">@safe_zero</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
+        <span class="n">sig_m</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">dev</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sig_m</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">s</span><span class="o">.</span><span class="n">double_contract</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">normal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">jacfwd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">)(</span><span class="n">sig</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="viscoplastic-flow">
+<h3>Viscoplastic flow<a class="headerlink" href="#viscoplastic-flow" title="Link to this heading">#</a></h3>
+<p>Next, the Norton flow is defined similarly as a module with two material parameters <code class="docutils literal notranslate"><span class="pre">K</span></code> and <code class="docutils literal notranslate"><span class="pre">m</span></code>.
+It takes as input to <code class="docutils literal notranslate"><span class="pre">__call__</span></code> the overstress.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">NortonFlow</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="n">K</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">converter</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">)</span>
+    <span class="n">m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">converter</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overstress</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">overstress</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="implicit-integration">
+<h3>Implicit integration<a class="headerlink" href="#implicit-integration" title="Link to this heading">#</a></h3>
+<p>Finally, we can now define the <code class="docutils literal notranslate"><span class="pre">GreenViscoPlasticity</span></code> behavior. The latter is a subclass of
+<code class="docutils literal notranslate"><span class="pre">SmallStrainBehavior</span></code> and requires an elastic model, a yield stress (a float here), a plastic
+yield surface (of Green type here) and a viscoplastic flow (of Norton type here), in addition to
+its internal state.</p>
+<p>The constitutive update is then implemented by first gathering the previous values for the stress
+and internal state variables. An <code class="docutils literal notranslate"><span class="pre">eval_stress</span></code> method is defined as follows:</p>
+<div class="math notranslate nohighlight">
+\[\bsig =\bsig_n + \CC:(\Delta\beps - \Delta\bepsvp)\]</div>
+<p>Finally, the <code class="docutils literal notranslate"><span class="pre">solve_state</span></code> function implemented below computes the new viscoplastic strain
+<span class="math notranslate nohighlight">\(\bepsvp\)</span> as a function of the old value <span class="math notranslate nohighlight">\(\bepsvp_n\)</span> and the strain increment <span class="math notranslate nohighlight">\(\Delta \beps\)</span> by
+solving the implicit discretized system of evolution equations:</p>
+<div class="math notranslate nohighlight">
+\[\Delta\bepsvp - \bn \Delta p = \Delta\bepsvp - \dfrac{\partial f}{\partial \bsig}(\bsig) \Delta t
+\left\langle\dfrac{f(\bsig) - \sigma_y}{K}\right\rangle_+^m = 0\]</div>
+<p>where <span class="math notranslate nohighlight">\(\bn = \partial f /\partial\bsig\)</span> is the yield surface normal evaluated at the final stress.</p>
+<p>The full implementation reads:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GreenViscoPlasticity</span><span class="p">(</span><span class="n">jm</span><span class="o">.</span><span class="n">SmallStrainBehavior</span><span class="p">):</span>
+    <span class="n">elasticity</span><span class="p">:</span> <span class="n">jm</span><span class="o">.</span><span class="n">LinearElasticIsotropic</span>
+    <span class="n">yield_stress</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">converter</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">)</span>
+    <span class="n">plastic_surface</span><span class="p">:</span> <span class="n">GreenYieldSurface</span>
+    <span class="n">viscoplastic_flow</span><span class="p">:</span> <span class="n">NortonFlow</span>
+    <span class="n">internal_type</span> <span class="o">=</span> <span class="n">InternalState</span>
+
+    <span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
+    <span class="nd">@eqx</span><span class="o">.</span><span class="n">debug</span><span class="o">.</span><span class="n">assert_max_traces</span><span class="p">(</span><span class="n">max_traces</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="n">eps_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">strain</span>
+        <span class="n">deps</span> <span class="o">=</span> <span class="n">eps</span> <span class="o">-</span> <span class="n">eps_old</span>
+        <span class="n">isv_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">internal</span>
+        <span class="n">epsvp_old</span> <span class="o">=</span> <span class="n">isv_old</span><span class="o">.</span><span class="n">epsvp</span>
+        <span class="n">sig_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">stress</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">eval_stress</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">depsvp</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">sig_old</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="p">(</span><span class="n">deps</span> <span class="o">-</span> <span class="n">depsvp</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">solve_state</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">epsvp_old</span><span class="p">):</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">residual</span><span class="p">(</span><span class="n">depsvp</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+                <span class="n">sig</span> <span class="o">=</span> <span class="n">eval_stress</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">depsvp</span><span class="p">)</span>
+                <span class="n">overstress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surface</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_stress</span>
+                <span class="n">dp</span> <span class="o">=</span> <span class="n">dt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">viscoplastic_flow</span><span class="p">(</span><span class="n">overstress</span><span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surface</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">depsvp</span> <span class="o">-</span> <span class="n">n</span> <span class="o">*</span> <span class="n">dp</span>
+                <span class="n">epsvp</span> <span class="o">=</span> <span class="n">epsvp_old</span> <span class="o">+</span> <span class="n">depsvp</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">epsvp</span><span class="p">)</span>
+
+            <span class="n">sol</span> <span class="o">=</span> <span class="n">optx</span><span class="o">.</span><span class="n">root_find</span><span class="p">(</span>
+                <span class="n">residual</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">epsvp_old</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">adjoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adjoint</span>
+            <span class="p">)</span>
+            <span class="n">depsvp</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">epsvp</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">aux</span>
+            <span class="n">sig</span> <span class="o">=</span> <span class="n">eval_stress</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">depsvp</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">sig</span><span class="p">,</span> <span class="n">epsvp</span>
+
+        <span class="n">sig</span><span class="p">,</span> <span class="n">epsvp</span> <span class="o">=</span> <span class="n">solve_state</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">epsvp_old</span><span class="p">)</span>
+        <span class="n">isv</span> <span class="o">=</span> <span class="n">isv_old</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">epsvp</span><span class="o">=</span><span class="n">epsvp</span><span class="p">)</span>
+        <span class="n">new_state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">strain</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">stress</span><span class="o">=</span><span class="n">sig</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="n">isv</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sig</span><span class="p">,</span> <span class="n">new_state</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">residual</span></code> function returns the above residual as well as the new viscoplastic
+strain as an auxiliary argument. We then solve an <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> root-finding problem with a default
+Newton solver (<code class="docutils literal notranslate"><span class="pre">self.solver</span></code>). In <code class="docutils literal notranslate"><span class="pre">optimistix</span></code>, an adjoint method is also defined in order to
+compute gradients through the root-finding solver. By default, we use an implicit ajoint solver
+which back-propagates gradient using the Implicit Function Theorem, <a class="reference external" href="https://docs.kidger.site/optimistix/api/adjoints/#optimistix.ImplicitAdjoint">see the <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> docs
+section</a> for more
+details.</p>
+<p>Finally, after solving, we recover the final stress and viscoplastic strain and update the state
+and internal state variables accordingly.</p>
+</section>
+</section>
+<section id="evaluating-the-model">
+<h2>Evaluating the model<a class="headerlink" href="#evaluating-the-model" title="Link to this heading">#</a></h2>
+<p>We now instantiate the Green viscoplastic model from its different components</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">elasticity</span> <span class="o">=</span> <span class="n">jm</span><span class="o">.</span><span class="n">LinearElasticIsotropic</span><span class="p">(</span><span class="n">E</span><span class="o">=</span><span class="mf">210e3</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">sig0</span> <span class="o">=</span> <span class="mf">300.0</span>
+<span class="n">green_ys</span> <span class="o">=</span> <span class="n">GreenYieldSurface</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+<span class="n">viscoplastic_flow</span> <span class="o">=</span> <span class="n">NortonFlow</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="mf">50.0</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">4.0</span><span class="p">)</span>
+<span class="n">material</span> <span class="o">=</span> <span class="n">GreenViscoPlasticity</span><span class="p">(</span>
+    <span class="n">elasticity</span><span class="o">=</span><span class="n">elasticity</span><span class="p">,</span>
+    <span class="n">yield_stress</span><span class="o">=</span><span class="n">sig0</span><span class="p">,</span>
+    <span class="n">plastic_surface</span><span class="o">=</span><span class="n">green_ys</span><span class="p">,</span>
+    <span class="n">viscoplastic_flow</span><span class="o">=</span><span class="n">viscoplastic_flow</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_741248/2277150591.py:5: UserWarning: Using `field(init=False)` on `equinox.Module` can lead to surprising behaviour when used around `jax.grad`. In the following example, observe how JAX computes gradients with respect to the `.len` attribute (which is a PyTree leaf passed across the `jax.grad` boundary) and that there are no gradients with respect to `.a` or `.b`:
+
+```
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+
+class Foo(eqx.Module):
+    a: jax.Array
+    b: jax.Array
+    len: jax.Array = eqx.field(init=False)
+
+    def __post_init__(self):
+        self.len = jnp.sqrt(self.a**2 + self.b**2)
+
+    def __call__(self, x):
+        return self.len * x
+
+@jax.jit
+@jax.grad
+def call(module, x):
+    return module(x)
+
+grads = call(Foo(jnp.array(3.0), jnp.array(4.0)), 5)
+# Foo(
+#   a=Array(0., dtype=float32, weak_type=True),
+#   b=Array(0., dtype=float32, weak_type=True),
+#   len=Array(5., dtype=float32, weak_type=True)
+# )
+```
+  material = GreenViscoPlasticity(
+</pre></div>
+</div>
+</div>
+</div>
+<p>Below, we evaluate the Green yield surface and its normal in the <span class="math notranslate nohighlight">\((p, q)\)</span> space of hydrostatic and
+deviatoric stresses.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_pq</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">dev</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vdot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_surface_normals</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">p</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">q</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="n">p</span> <span class="o">-</span> <span class="n">q</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="n">p</span> <span class="o">-</span> <span class="n">q</span> <span class="o">/</span> <span class="mi">3</span><span class="p">])))</span>
+    <span class="n">ys</span> <span class="o">=</span> <span class="n">green_ys</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">green_ys</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">p</span> <span class="o">/</span> <span class="n">ys</span><span class="p">,</span> <span class="n">q</span> <span class="o">/</span> <span class="n">ys</span>
+    <span class="n">np</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">nq</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dev</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">norm_</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">nq</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">np</span> <span class="o">/</span> <span class="n">norm_</span><span class="p">,</span> <span class="n">nq</span> <span class="o">/</span> <span class="n">norm_</span>
+
+
+<span class="n">angle</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="p">,</span> <span class="n">nq</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">compute_surface_normals</span><span class="p">)(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;-C3&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">quiver</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">y</span><span class="p">,</span>
+    <span class="n">np</span><span class="p">,</span>
+    <span class="n">nq</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">,</span>
+    <span class="n">scale_units</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">,</span>
+    <span class="n">angles</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">,</span>
+    <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;royalblue&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/cb9b0bb55a4901b78752954a2ce4c826d56cb545702a40a49098f0b4afd6845e.png" src="../../_images/cb9b0bb55a4901b78752954a2ce4c826d56cb545702a40a49098f0b4afd6845e.png" />
+</div>
+</div>
+</section>
+<section id="time-dependent-load-cases">
+<h2>Time-dependent load-cases<a class="headerlink" href="#time-dependent-load-cases" title="Link to this heading">#</a></h2>
+<p>We now consider a set of time-varying load cases.</p>
+<section id="initial-state">
+<h3>Initial state<a class="headerlink" href="#initial-state" title="Link to this heading">#</a></h3>
+<p>We start with an initial hydrostatic stress state <span class="math notranslate nohighlight">\(\bsig_{n=0} = - p_0\bI\)</span> for different values of
+the initial pressure <span class="math notranslate nohighlight">\(p_0\)</span>. All 8 values for the pressure will form a batch of load cases which
+will be evaluated simultaneously. We thus start with a default initial state with
+<code class="docutils literal notranslate"><span class="pre">material.init_state</span></code> with a batch dimension <code class="docutils literal notranslate"><span class="pre">Nbatch=9</span></code>. Then, we modify, in the <code class="docutils literal notranslate"><span class="pre">state</span></code> PyTree,
+the <code class="docutils literal notranslate"><span class="pre">stress</span></code> field with the imposed initial hydrostatic stresses.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Nbatch</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">press_vals</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">sig0</span><span class="p">,</span> <span class="n">sig0</span><span class="p">,</span> <span class="n">Nbatch</span><span class="p">)</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">init_state</span><span class="p">(</span><span class="n">Nbatch</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">set_initial_press</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">press</span><span class="p">):</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">stress</span><span class="o">=</span><span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=-</span><span class="n">press</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">state</span>
+
+
+<span class="n">initial_state</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">filter_vmap</span><span class="p">(</span><span class="n">set_initial_press</span><span class="p">)(</span><span class="n">state</span><span class="p">,</span> <span class="n">press_vals</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">initial_state</span><span class="o">.</span><span class="n">stress</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[ 300.  225.  150.   75.    0.  -75. -150. -225. -300.]
+</pre></div>
+</div>
+</div>
+</div>
+<p>From this initial state, we consider a time-varying imposed strain of a purely deviatoric form
+<span class="math notranslate nohighlight">\(\beps(t) = \epsilon(t)\diag(1,-1/2,-1/2)\)</span> where the loading is first applied linearly with time
+at a strain rate <span class="math notranslate nohighlight">\(\dot\epsilon\)</span> and is then held fixed once reaching the final strain
+<span class="math notranslate nohighlight">\(\epsilon_\text{max} = 2.10^{-3}\)</span>, i.e. <span class="math notranslate nohighlight">\(\epsilon(t) = \min\{\dot\epsilon t ;
+\epsilon_\text{max}\}\)</span>.</p>
+<p>The strain is imposed via the <code class="docutils literal notranslate"><span class="pre">ImposedLoading</span></code> class and the <code class="docutils literal notranslate"><span class="pre">global_solve</span></code> function<a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. We then
+recover the stress state in the <span class="math notranslate nohighlight">\((p, q)\)</span> space.</p>
+<p>Finally, the stress path is plotted for all imposed initial pressures. The reference yield surface
+is shown in black and we can observe the plastic evolution for a stress state larger than the
+elastic yield surface due to the viscous overstress, with a clear effect of the strain rate.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">eps_dot</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">,</span> <span class="mf">1e0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">]:</span>
+    <span class="n">eps_max</span> <span class="o">=</span> <span class="mf">2e-3</span>
+    <span class="n">Nsteps</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">eps_max</span> <span class="o">/</span> <span class="n">eps_dot</span><span class="p">,</span> <span class="n">Nsteps</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">imposed_eps</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">press_vals</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nsteps</span><span class="p">,</span> <span class="n">Nbatch</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="n">state</span> <span class="o">=</span> <span class="n">initial_state</span>
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">compute_pq</span><span class="p">)(</span><span class="n">state</span><span class="o">.</span><span class="n">stress</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">times</span><span class="p">)):</span>
+        <span class="n">t</span> <span class="o">+=</span> <span class="n">dt</span>
+        <span class="n">imposed_eps</span> <span class="o">+=</span> <span class="n">eps_dot</span> <span class="o">*</span> <span class="n">dt</span>
+        <span class="n">imposed_eps</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">imposed_eps</span><span class="p">,</span> <span class="n">eps_max</span><span class="p">)</span>
+
+        <span class="n">loading</span> <span class="o">=</span> <span class="n">ImposedLoading</span><span class="p">(</span><span class="n">epsxx</span><span class="o">=</span><span class="n">imposed_eps</span><span class="p">,</span> <span class="n">epsyy</span><span class="o">=-</span><span class="n">imposed_eps</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">epszz</span><span class="o">=-</span><span class="n">imposed_eps</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">Eps</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">strain</span>
+        <span class="n">Eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">stats</span> <span class="o">=</span> <span class="n">global_solve</span><span class="p">(</span><span class="n">Eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">loading</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+
+        <span class="n">Sig</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">stress</span>
+
+        <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">compute_pq</span><span class="p">)(</span><span class="n">Sig</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;coolwarm&quot;</span><span class="p">)</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Nbatch</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;$\dot\epsilon=10^</span><span class="se">{{</span><span class="si">{</span><span class="n">jnp</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">eps_dot</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="se">}}</span><span class="si">}</span><span class="s2">$&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sig0</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">sig0</span> <span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;-k&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nbatch</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">results</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">results</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">sig0</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">sig0</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.8</span> <span class="o">*</span> <span class="n">sig0</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Hydrostatic stress $p$ [MPa]&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Deviatoric stress $q$ [MPa]&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/d5b04f642a959a16f1f512d7792aeee6ffb22803fde64215d6e4544282a9c44c.png" src="../../_images/d5b04f642a959a16f1f512d7792aeee6ffb22803fde64215d6e4544282a9c44c.png" />
+<img alt="../../_images/ccd14513c53c8b73dfc9b7299f699d1a6dec3ab9252d094b0cc2d890ddd84998.png" src="../../_images/ccd14513c53c8b73dfc9b7299f699d1a6dec3ab9252d094b0cc2d890ddd84998.png" />
+<img alt="../../_images/907996ee63a3c6d9b04fe3088c7c9bedd1b170ca6effee81583e421714b280ff.png" src="../../_images/907996ee63a3c6d9b04fe3088c7c9bedd1b170ca6effee81583e421714b280ff.png" />
+<img alt="../../_images/15cce73a151ac4846c6ac609da40670ff7de885caa535f25c32a44770c5fb723.png" src="../../_images/15cce73a151ac4846c6ac609da40670ff7de885caa535f25c32a44770c5fb723.png" />
+</div>
+</div>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Since we assume no hardening, we do not need to declare the cumulated plastic strain <span class="math notranslate nohighlight">\(p\)</span>.</p>
+</aside>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Note that, here, it would also have been possible to impose the total strain <code class="docutils literal notranslate"><span class="pre">Eps</span></code> since the
+load-case is purely strain-driven.</p>
+</aside>
+</aside>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./demos/phenomenological_models"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../../pheno_models.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Phenomenological models</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cam_clay.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Modified Cam-Clay</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-overview">Model overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-implementation">Model implementation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#internal-state">Internal state</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#green-yield-surface">Green yield surface</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#viscoplastic-flow">Viscoplastic flow</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#implicit-integration">Implicit integration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluating-the-model">Evaluating the model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-dependent-load-cases">Time-dependent load-cases</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#initial-state">Initial state</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Jeremy Bleyer
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -187,13 +187,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -212,7 +213,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +240,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -414,7 +416,8 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="identification-of-a-nonlinear-hardening-model-from-cyclic-data">
 <h1>Identification of a nonlinear hardening model from cyclic data<a class="headerlink" href="#identification-of-a-nonlinear-hardening-model-from-cyclic-data" title="Link to this heading">#</a></h1>
-<p>In this demo, we use shear stress–strain data to identify a mixed nonlinear isotropic and kinematic hardening model with <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>.</p>
+<p>In this demo, we use shear stress-strain data to identify a mixed nonlinear isotropic and
+kinematic hardening model with <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>.</p>
 <div class="important admonition">
 <p class="admonition-title">Objectives</p>
 <p>In particular, this demo shows:</p>
@@ -427,18 +430,19 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
-
-<span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_platform_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">optax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_value</span><span class="p">,</span> <span class="n">partition_by_node_names</span><span class="p">,</span> <span class="n">print_eqx_fields</span>
+
+<span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_platform_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 
 <span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">15071988</span><span class="p">)</span>
 </pre></div>
@@ -449,7 +453,12 @@ document.write(`
 <h2>Defining a mixed hardening elastoplastic model<a class="headerlink" href="#defining-a-mixed-hardening-elastoplastic-model" title="Link to this heading">#</a></h2>
 <section id="general-formulation">
 <h3>General formulation<a class="headerlink" href="#general-formulation" title="Link to this heading">#</a></h3>
-<p>The material model considered here combines linear elasticity with a nonlinear hardening law. The Cauchy stress is given by <span class="math notranslate nohighlight">\(\bsig=\CC:(\beps-\bepsp)\)</span>. Hardening is described by the combination of a kinematic and isotropic mechanism. Both are described via a hardening potential <span class="math notranslate nohighlight">\(\psi_\text{h}(\balpha, p)\)</span>, expressed as function of a kinematic hardening strain <span class="math notranslate nohighlight">\(\balpha\)</span> and the cumulated plastic strain <span class="math notranslate nohighlight">\(p\)</span>. Its derivatives provide the state laws for the corresponding kinematic and isotropic thermodynamic forces, namely:</p>
+<p>The material model considered here combines linear elasticity with a nonlinear hardening law. The
+Cauchy stress is given by <span class="math notranslate nohighlight">\(\bsig=\CC:(\beps-\bepsp)\)</span>. Hardening is described by the combination of
+a kinematic and isotropic mechanism. Both are described via a hardening potential
+<span class="math notranslate nohighlight">\(\psi_\text{h}(\balpha, p)\)</span>, expressed as function of a kinematic hardening strain <span class="math notranslate nohighlight">\(\balpha\)</span> and
+the cumulated plastic strain <span class="math notranslate nohighlight">\(p\)</span>. Its derivatives provide the state laws for the corresponding
+kinematic and isotropic thermodynamic forces, namely:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align*}
 \bX(\balpha, p) &amp;= \dfrac{\partial \psi_\text{h}}{\partial \balpha}(\balpha, p)\\
@@ -462,17 +471,29 @@ R(\balpha, p) &amp;= \dfrac{\partial \psi_\text{h}}{\partial p}(\balpha, p)
 <p>The evolution equations for the internal state variables are thus given by:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align*}
-\dot{\bepsp} &amp;= \dot{\lambda}\dfrac{\partial F}{\partial \bsig} = \dot{\lambda}\dfrac{\partial f}{\partial \bsig} \\
-\dot{\balpha} &amp;= -\dot{\lambda}\dfrac{\partial F}{\partial \bX} = -\dot{\lambda}\dfrac{\partial f}{\partial \bX} \\
+\dot{\bepsp} &amp;= \dot{\lambda}\dfrac{\partial F}{\partial \bsig} = \dot{\lambda}\dfrac{\partial
+f}{\partial \bsig} \\
+\dot{\balpha} &amp;= -\dot{\lambda}\dfrac{\partial F}{\partial \bX} = -\dot{\lambda}\dfrac{\partial
+f}{\partial \bX} \\
 \dot{p} &amp;= -\dot{\lambda}\dfrac{\partial F}{\partial R} = \dot{\lambda}
 \end{align*}\end{split}\]</div>
-<p>which are to be completed by the plastic consistency conditions <span class="math notranslate nohighlight">\(\dot{\lambda} F(\bsig,\bX,R) = 0\)</span>, <span class="math notranslate nohighlight">\(\dot{\lambda} \geq 0\)</span> and <span class="math notranslate nohighlight">\(F(\bsig,\bX, R) \leq 0\)</span>.</p>
-<p>This generic hardening behavior is implemented in the class <code class="docutils literal notranslate"><span class="pre">jaxmat.materials.GeneralHardening</span></code> which relies on an elastic model, a constant yield stress <span class="math notranslate nohighlight">\((\sigma_0)\)</span>, a plastic surface and a combined hardening potential. The plastic surface extends <code class="docutils literal notranslate"><span class="pre">AbstractPlasticSurface</span></code> by implementing <span class="math notranslate nohighlight">\(f(\bsig,\bX)\)</span> and also returning the plastic normal <span class="math notranslate nohighlight">\(\bn = \dfrac{\partial f}{\partial \bsig}\)</span> and the hardening derivative <span class="math notranslate nohighlight">\(\partial_{\bX} f = \dfrac{\partial f}{\partial \bX}\)</span>. The combined hardening potential should provide the two methods <code class="docutils literal notranslate"><span class="pre">dalpha(alpha,</span> <span class="pre">p)</span></code> and <code class="docutils literal notranslate"><span class="pre">dp(alpha,</span> <span class="pre">p)</span></code>, returning respectively the two partial derivatives <span class="math notranslate nohighlight">\(\dfrac{\partial \psi_\text{h}}{\partial \balpha}\)</span> and <span class="math notranslate nohighlight">\(\dfrac{\partial \psi_\text{h}}{\partial p}\)</span>.</p>
-<p>The system of evolution equations is discretized in time using a backward-Euler fully implicit scheme and the resulting system of nonlinear equations is solved using a Newton-Raphson method.</p>
+<p>which are to be completed by the plastic consistency conditions <span class="math notranslate nohighlight">\(\dot{\lambda} F(\bsig,\bX,R) =
+0\)</span>, <span class="math notranslate nohighlight">\(\dot{\lambda} \geq 0\)</span> and <span class="math notranslate nohighlight">\(F(\bsig,\bX, R) \leq 0\)</span>.</p>
+<p>This generic hardening behavior is implemented in the class <code class="docutils literal notranslate"><span class="pre">jaxmat.materials.GeneralHardening</span></code>
+which relies on an elastic model, a constant yield stress <span class="math notranslate nohighlight">\((\sigma_0)\)</span>, a plastic surface and a
+combined hardening potential. The plastic surface extends <code class="docutils literal notranslate"><span class="pre">AbstractPlasticSurface</span></code> by implementing
+<span class="math notranslate nohighlight">\(f(\bsig,\bX)\)</span> and also returning the plastic normal <span class="math notranslate nohighlight">\(\bn = \dfrac{\partial f}{\partial \bsig}\)</span>
+and the hardening derivative <span class="math notranslate nohighlight">\(\partial_{\bX} f = \dfrac{\partial f}{\partial \bX}\)</span>. The combined
+hardening potential should provide the two methods <code class="docutils literal notranslate"><span class="pre">dalpha(alpha,</span> <span class="pre">p)</span></code> and <code class="docutils literal notranslate"><span class="pre">dp(alpha,</span> <span class="pre">p)</span></code>,
+returning respectively the two partial derivatives <span class="math notranslate nohighlight">\(\dfrac{\partial \psi_\text{h}}{\partial
+\balpha}\)</span> and <span class="math notranslate nohighlight">\(\dfrac{\partial \psi_\text{h}}{\partial p}\)</span>.</p>
+<p>The system of evolution equations is discretized in time using a backward-Euler fully implicit
+scheme and the resulting system of nonlinear equations is solved using a Newton-Raphson method.</p>
 </section>
 <section id="decoupled-kinematic-isotropic-hardening">
 <h3>Decoupled kinematic/isotropic hardening<a class="headerlink" href="#decoupled-kinematic-isotropic-hardening" title="Link to this heading">#</a></h3>
-<p>In the following, we particularize the behavior to decoupled hardening, assuming linear kinematic and nonlinear isotropic hardening, i.e.:</p>
+<p>In the following, we particularize the behavior to decoupled hardening, assuming linear kinematic
+and nonlinear isotropic hardening, i.e.:</p>
 <div class="math notranslate nohighlight">
 \[\psi_\text{h}(\balpha, p) = \dfrac{1}{2}H\balpha:\balpha + \psi_\text{iso}(p)\]</div>
 <p>so that:</p>
@@ -484,8 +505,10 @@ R(p) &amp;= \psi_\text{iso}'(p)
 <p>We also assume the plastic criterion to take the following specific form:</p>
 <div class="math notranslate nohighlight">
 \[f(\bsig,\bX) - R - \sigma_0 = \|\bsig - \bX(\balpha)\|_\text{eq} - R(p) - \sigma_0\]</div>
-<p>using the von Mises equivalent norm <span class="math notranslate nohighlight">\(\|\bsig\|_\text{eq} = \sqrt{\dfrac{3}{2}\bs:\bs}\)</span> with <span class="math notranslate nohighlight">\(\bs=\dev(\bsig)\)</span>.</p>
-<p>Introducing the normal <span class="math notranslate nohighlight">\(\bn(\bsig) = \dfrac{\partial f}{\partial \bsig}(\bsig)\)</span> to the plastic surface, the evolution equations are thus simplified to:</p>
+<p>using the von Mises equivalent norm <span class="math notranslate nohighlight">\(\|\bsig\|_\text{eq} = \sqrt{\dfrac{3}{2}\bs:\bs}\)</span> with
+<span class="math notranslate nohighlight">\(\bs=\dev(\bsig)\)</span>.</p>
+<p>Introducing the normal <span class="math notranslate nohighlight">\(\bn(\bsig) = \dfrac{\partial f}{\partial \bsig}(\bsig)\)</span> to the plastic
+surface, the evolution equations are thus simplified to:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align*}
 \dot{\bepsp} &amp;= \dot{p}\bn(\bsig-\bX) \\
@@ -517,16 +540,14 @@ R(p) &amp;= \psi_\text{iso}'(p)
 
     <span class="k">def</span><span class="w"> </span><span class="nf">dalpha</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear kinematic hardening rule&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">*</span> <span class="n">alpha</span>
+        <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">H</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">dp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Nonlinear isotropic hardening rule&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">isotropic</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
 
-<span class="n">hardening</span> <span class="o">=</span> <span class="n">CombinedHardening</span><span class="p">(</span>
-    <span class="n">isotropic</span><span class="o">=</span><span class="n">jm</span><span class="o">.</span><span class="n">VoceHardening</span><span class="p">(</span><span class="n">sig0</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigu</span><span class="o">=</span><span class="mf">200.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">50.0</span><span class="p">),</span> <span class="n">H</span><span class="o">=</span><span class="mf">1e3</span>
-<span class="p">)</span>
+<span class="n">hardening</span> <span class="o">=</span> <span class="n">CombinedHardening</span><span class="p">(</span><span class="n">isotropic</span><span class="o">=</span><span class="n">jm</span><span class="o">.</span><span class="n">VoceHardening</span><span class="p">(</span><span class="n">sig0</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigu</span><span class="o">=</span><span class="mf">200.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">50.0</span><span class="p">),</span> <span class="n">H</span><span class="o">=</span><span class="mf">1e3</span><span class="p">)</span>
 
 <span class="n">material</span> <span class="o">=</span> <span class="n">jm</span><span class="o">.</span><span class="n">GeneralHardening</span><span class="p">(</span>
     <span class="n">elasticity</span><span class="o">=</span><span class="n">elasticity</span><span class="p">,</span>
@@ -537,20 +558,58 @@ R(p) &amp;= \psi_\text{iso}'(p)
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_102194/4047522876.py:30: UserWarning: Using `field(init=False)` on `equinox.Module` can lead to surprising behaviour when used around `jax.grad`. In the following example, observe how JAX computes gradients with respect to the `.len` attribute (which is a PyTree leaf passed across the `jax.grad` boundary) and that there are no gradients with respect to `.a` or `.b`:
+
+```
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+
+class Foo(eqx.Module):
+    a: jax.Array
+    b: jax.Array
+    len: jax.Array = eqx.field(init=False)
+
+    def __post_init__(self):
+        self.len = jnp.sqrt(self.a**2 + self.b**2)
+
+    def __call__(self, x):
+        return self.len * x
+
+@jax.jit
+@jax.grad
+def call(module, x):
+    return module(x)
+
+grads = call(Foo(jnp.array(3.0), jnp.array(4.0)), 5)
+# Foo(
+#   a=Array(0., dtype=float32, weak_type=True),
+#   b=Array(0., dtype=float32, weak_type=True),
+#   len=Array(5., dtype=float32, weak_type=True)
+# )
+```
+  material = jm.GeneralHardening(
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 </section>
 <section id="reference-cyclic-shear-strain-data">
 <h2>Reference cyclic shear strain data<a class="headerlink" href="#reference-cyclic-shear-strain-data" title="Link to this heading">#</a></h2>
-<p>We begin by loading the reference cyclic shear strain data representing repeated loading–unloading cycles of increasing strain amplitude.</p>
+<p>We begin by loading the reference cyclic shear strain data representing repeated loading-unloading
+cycles of increasing strain amplitude.</p>
 <p>The reference data has been generated with the previous behavior using the following values:</p>
 <ul class="simple">
 <li><p>elasticity <span class="math notranslate nohighlight">\(E=200\text{ GPa}\)</span>, <span class="math notranslate nohighlight">\(\nu=0.25\)</span></p></li>
 <li><p>yield stress <span class="math notranslate nohighlight">\(\sigma_0=200\text{ MPa}\)</span></p></li>
-<li><p>Voce isotropic hardening <span class="math notranslate nohighlight">\(R(p) = (\sigma_\text{u}-\sigma_0)(1-\exp(-bp))\)</span> with <span class="math notranslate nohighlight">\(\sigma_\text{u}=600\text{ MPa}\)</span> and <span class="math notranslate nohighlight">\(b=200\)</span>.</p></li>
+<li><p>Voce isotropic hardening <span class="math notranslate nohighlight">\(R(p) = (\sigma_\text{u}-\sigma_0)(1-\exp(-bp))\)</span> with
+<span class="math notranslate nohighlight">\(\sigma_\text{u}=600\text{ MPa}\)</span> and <span class="math notranslate nohighlight">\(b=200\)</span>.</p></li>
 <li><p>kinematic hardening modulus <span class="math notranslate nohighlight">\(H=5\text{ GPa}\)</span></p></li>
 </ul>
-<p>To simulate experimental uncertainty, we add a small Gaussian noise to the measured stresses. This will allow us to test the robustness of the identification procedure.</p>
+<p>To simulate experimental uncertainty, we add a small Gaussian noise to the measured stresses. This
+will allow us to test the robustness of the identification procedure.</p>
 <p>The following figure shows the clean and noisy cyclic data used for training.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -559,17 +618,13 @@ R(p) &amp;= \psi_\text{iso}'(p)
 <span class="n">tau_train</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
 
 <span class="n">noise_level</span> <span class="o">=</span> <span class="mf">5e-2</span>
-<span class="n">tau_noise</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">tau_train</span> <span class="o">+</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">tau_train</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">tau_train</span><span class="p">)</span> <span class="o">*</span> <span class="n">noise_level</span>
-<span class="p">)</span>
+<span class="n">tau_noise</span> <span class="o">=</span> <span class="n">tau_train</span> <span class="o">+</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">tau_train</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">tau_train</span><span class="p">)</span> <span class="o">*</span> <span class="n">noise_level</span>
 
 <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;viridis&quot;</span><span class="p">)</span>
 <span class="n">Ndata</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gamma_train</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
 <span class="n">colors</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Ndata</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ndata</span><span class="p">):</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-        <span class="n">gamma_train</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span> <span class="n">tau_train</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span>
-    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">gamma_train</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span> <span class="n">tau_train</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
         <span class="n">gamma_train</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span>
         <span class="n">tau_noise</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span>
@@ -591,7 +646,10 @@ R(p) &amp;= \psi_\text{iso}'(p)
 <img alt="../../_images/9e8921bf0b0734e067804e51b2b1d96234c40d3c050b17cda7ebbf2668445e5c.png" src="../../_images/9e8921bf0b0734e067804e51b2b1d96234c40d3c050b17cda7ebbf2668445e5c.png" />
 </div>
 </div>
-<p>For a given material model, we define the function <code class="docutils literal notranslate"><span class="pre">compute_evolution</span></code> allowing to compute the cyclic stress response as a function of a given shear strain time series. Starting from a initial state, we use <code class="docutils literal notranslate"><span class="pre">jax.lax.scan</span></code> to replace Python <code class="docutils literal notranslate"><span class="pre">for</span></code> loops and output the computed shear stress in the <span class="math notranslate nohighlight">\(x,y\)</span> direction.</p>
+<p>For a given material model, we define the function <code class="docutils literal notranslate"><span class="pre">compute_evolution</span></code> allowing to compute the
+cyclic stress response as a function of a given shear strain time series. Starting from a initial
+state, we use <code class="docutils literal notranslate"><span class="pre">jax.lax.scan</span></code> to replace Python <code class="docutils literal notranslate"><span class="pre">for</span></code> loops and output the computed shear stress in
+the <span class="math notranslate nohighlight">\(x,y\)</span> direction.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
@@ -625,8 +683,12 @@ R(p) &amp;= \psi_\text{iso}'(p)
 </section>
 <section id="initial-model">
 <h2>Initial model<a class="headerlink" href="#initial-model" title="Link to this heading">#</a></h2>
-<p>We simulate the material response to the prescribed cyclic shear strain history by repeatedly integrating the constitutive equations. The resulting stress signal is compared to the target data.</p>
-<p>The plot below shows the initial model response (before calibration) against the noisy reference data. At this stage, the predicted hysteresis loops do not match with that observed in the target data.</p>
+<p>We simulate the material response to the prescribed cyclic shear strain history by repeatedly
+integrating the constitutive equations. The resulting stress signal is compared to the target
+data.</p>
+<p>The plot below shows the initial model response (before calibration) against the noisy reference
+data. At this stage, the predicted hysteresis loops do not match with that observed in the target
+data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tau</span> <span class="o">=</span> <span class="n">compute_evolution</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">gamma_train</span><span class="p">)</span>
@@ -652,25 +714,74 @@ R(p) &amp;= \psi_\text{iso}'(p)
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/bleyerj/codes/jaxmat/jaxmat/materials/elastoplasticity.py:184: UserWarning: Using `field(init=False)` on `equinox.Module` can lead to surprising behaviour when used around `jax.grad`. In the following example, observe how JAX computes gradients with respect to the `.len` attribute (which is a PyTree leaf passed across the `jax.grad` boundary) and that there are no gradients with respect to `.a` or `.b`:
+
+```
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+
+class Foo(eqx.Module):
+    a: jax.Array
+    b: jax.Array
+    len: jax.Array = eqx.field(init=False)
+
+    def __post_init__(self):
+        self.len = jnp.sqrt(self.a**2 + self.b**2)
+
+    def __call__(self, x):
+        return self.len * x
+
+@jax.jit
+@jax.grad
+def call(module, x):
+    return module(x)
+
+grads = call(Foo(jnp.array(3.0), jnp.array(4.0)), 5)
+# Foo(
+#   a=Array(0., dtype=float32, weak_type=True),
+#   b=Array(0., dtype=float32, weak_type=True),
+#   len=Array(5., dtype=float32, weak_type=True)
+# )
+```
+  return GeneralHardeningInternalState(nvar=self.nvar)
+</pre></div>
+</div>
 <img alt="../../_images/a809e43ac5745decc6e8332a89071fbae17602c31d006c1213bbfa8ad54c8f54.png" src="../../_images/a809e43ac5745decc6e8332a89071fbae17602c31d006c1213bbfa8ad54c8f54.png" />
 </div>
 </div>
 </section>
 <section id="defining-and-minimizing-the-loss-function">
 <h2>Defining and minimizing the loss function<a class="headerlink" href="#defining-and-minimizing-the-loss-function" title="Link to this heading">#</a></h2>
-<p>The identification problem is formulated as the minimization of a loss function measuring the discrepancy between the predicted and observed shear stresses over the full loading history. We use the mean-squared error (MSE) as a standard choice:</p>
+<p>The identification problem is formulated as the minimization of a loss function measuring the
+discrepancy between the predicted and observed shear stresses over the full loading history. We
+use the mean-squared error (MSE) as a standard choice:</p>
 <div class="math notranslate nohighlight">
 \[
 \mathcal{L}(\btheta) = \dfrac{1}{M}\sum_{k=1}^M (\hat\tau^{(k)}(\btheta) - \tau^\text{data,(k)})^2
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(\hat\tau^{(k)}(\btheta)\)</span> denotes the model-predicted shear stress at time step <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\( \tau^\text{data,(k)}\)</span> the corresponding measured value.</p>
+<p>where <span class="math notranslate nohighlight">\(\hat\tau^{(k)}(\btheta)\)</span> denotes the model-predicted shear stress at time step <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(
+\tau^\text{data,(k)}\)</span> the corresponding measured value.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>Importantly, the model-predicted stresses <span class="math notranslate nohighlight">\(\hat\tau^{(k)}(\btheta)\)</span> are not independent for each time step <span class="math notranslate nohighlight">\(k\)</span>. They are obtained sequentially by integrating the constitutive equations along the prescribed strain path, via <code class="docutils literal notranslate"><span class="pre">compute_evolution</span></code>. Each step depends on the current state of internal variables, which in turn evolves according to the entire previous loading history.</p>
+<p>Importantly, the model-predicted stresses <span class="math notranslate nohighlight">\(\hat\tau^{(k)}(\btheta)\)</span> are not independent for each
+time step <span class="math notranslate nohighlight">\(k\)</span>. They are obtained sequentially by integrating the constitutive equations along the
+prescribed strain path, via <code class="docutils literal notranslate"><span class="pre">compute_evolution</span></code>. Each step depends on the current state of
+internal variables, which in turn evolves according to the entire previous loading history.</p>
 </div>
-<p>To provide fine-grained control of the optimization process, we rely on the <code class="docutils literal notranslate"><span class="pre">optimistix.OptaxMinimiser</span></code> interface and employ the Adam optimizer. This setup allows transparent use of differentiable JAX functions within the training loop while leveraging <code class="docutils literal notranslate"><span class="pre">optax</span></code>’s flexible chaining of transformations.</p>
-<p>Because the model involves variables with very different physical units (e.g. stresses in MPa, strains of order <span class="math notranslate nohighlight">\(10^{-3}\)</span>), we include a parameter-block RMS scaling (<code class="docutils literal notranslate"><span class="pre">optax.scale_by_param_block_rms</span></code>) step. This operation automatically normalizes gradient magnitudes across parameter groups, effectively preconditioning the optimization. It enables stable training while keeping all parameters expressed in interpretable physical units.</p>
-<p>The overall optimizer is built using <code class="docutils literal notranslate"><span class="pre">optax.chain</span></code>, where each transformation acts sequentially on the gradient:</p>
+<p>To provide fine-grained control of the optimization process, we rely on the
+<code class="docutils literal notranslate"><span class="pre">optimistix.OptaxMinimiser</span></code> interface and employ the Adam optimizer. This setup allows transparent
+use of differentiable JAX functions within the training loop while leveraging <code class="docutils literal notranslate"><span class="pre">optax</span></code>’s flexible
+chaining of transformations.</p>
+<p>Because the model involves variables with very different physical units (e.g. stresses in MPa,
+strains of order <span class="math notranslate nohighlight">\(10^{-3}\)</span>), we include a parameter-block RMS scaling
+(<code class="docutils literal notranslate"><span class="pre">optax.scale_by_param_block_rms</span></code>) step. This operation automatically normalizes gradient
+magnitudes across parameter groups, effectively preconditioning the optimization. It enables
+stable training while keeping all parameters expressed in interpretable physical units.</p>
+<p>The overall optimizer is built using <code class="docutils literal notranslate"><span class="pre">optax.chain</span></code>, where each transformation acts sequentially on
+the gradient:</p>
+<p>The overall optimizer is built using <code class="docutils literal notranslate"><span class="pre">optax.chain</span></code>, where each transformation acts sequentially
+on the gradient:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
@@ -703,10 +814,20 @@ R(p) &amp;= \psi_\text{iso}'(p)
 </div>
 </div>
 </div>
-<p>Once the optimizer is defined, we partition the material model into <code class="docutils literal notranslate"><span class="pre">trainable</span></code> and <code class="docutils literal notranslate"><span class="pre">static</span></code> components using the <code class="docutils literal notranslate"><span class="pre">jaxmat.utils.partition_by_node_names</span></code> function. The latter allows to split an <code class="docutils literal notranslate"><span class="pre">equinox</span></code> module in two sets by providing a list of field attribute names.  Here, the whole elastic model is fixed as well as the <code class="docutils literal notranslate"><span class="pre">sig0</span></code> field of the Voce isotropic hardening as the initial yield stress is already stored as a separate attribute. The remaining parameters stored in <code class="docutils literal notranslate"><span class="pre">trainable</span></code> are then optimized when training against the cyclic stress data.</p>
-<p>During the minimization, the constitutive model is evaluated sequentially at each loading increment to compute the predicted stresses, and the loss is differentiated with respect to the trainable parameters. The keyword argument <code class="docutils literal notranslate"><span class="pre">options={&quot;jac&quot;:</span> <span class="pre">&quot;bwd&quot;}</span></code> specifies that backward-mode automatic differentiation (reverse-mode AD) is used to compute the Jacobian–vector products required by the optimizer.
-This choice is well suited here because we optimize a scalar-valued loss function.</p>
-<p>After training, the final trained model is reconstructed by combining the trained part with the static part using <code class="docutils literal notranslate"><span class="pre">eqx.combine</span></code>.</p>
+<p>Once the optimizer is defined, we partition the material model into <code class="docutils literal notranslate"><span class="pre">trainable</span></code> and <code class="docutils literal notranslate"><span class="pre">static</span></code>
+components using the <code class="docutils literal notranslate"><span class="pre">jaxmat.utils.partition_by_node_names</span></code> function. The latter allows to split
+an <code class="docutils literal notranslate"><span class="pre">equinox</span></code> module in two sets by providing a list of field attribute names.  Here, the whole
+elastic model is fixed as well as the <code class="docutils literal notranslate"><span class="pre">sig0</span></code> field of the Voce isotropic hardening as the initial
+yield stress is already stored as a separate attribute. The remaining parameters stored in
+<code class="docutils literal notranslate"><span class="pre">trainable</span></code> are then optimized when training against the cyclic stress data.</p>
+<p>During the minimization, the constitutive model is evaluated sequentially at each loading
+increment to compute the predicted stresses, and the loss is differentiated with respect to the
+trainable parameters. The keyword argument <code class="docutils literal notranslate"><span class="pre">options={&quot;jac&quot;:</span> <span class="pre">&quot;bwd&quot;}</span></code> specifies that backward-mode
+automatic differentiation (reverse-mode AD) is used to compute the Jacobian-vector products
+required by the optimizer. This choice is well suited here because we optimize a scalar-valued
+loss function.</p>
+<p>After training, the final trained model is reconstructed by combining the trained part with the
+static part using <code class="docutils literal notranslate"><span class="pre">eqx.combine</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">trainable</span><span class="p">,</span> <span class="n">static</span> <span class="o">=</span> <span class="n">partition_by_node_names</span><span class="p">(</span>
@@ -738,7 +859,9 @@ This choice is well suited here because we optimize a scalar-valued loss functio
 </section>
 <section id="results">
 <h2>Results<a class="headerlink" href="#results" title="Link to this heading">#</a></h2>
-<p>The next figure compares the predicted and experimental stress–strain curves. The trained model captures both the isotropic hardening (loop expansion) and the kinematic hardening (loop translation) effects.</p>
+<p>The next figure compares the predicted and experimental stress-strain curves. The trained model
+captures both the isotropic hardening (loop expansion) and the kinematic hardening (loop
+translation) effects.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -757,12 +880,18 @@ This choice is well suited here because we optimize a scalar-valued loss functio
 <img alt="../../_images/3d200a70d1b34c67d86aa3153db3e77ad093424539a4dd4c5289d00092515e3e.png" src="../../_images/3d200a70d1b34c67d86aa3153db3e77ad093424539a4dd4c5289d00092515e3e.png" />
 </div>
 </div>
-<p>After convergence, we print the calibrated model parameters to verify their physical consistency. First, we can observe that the Young modulus, Poisson ratio and initial Voce yield stress remained the same since they have been considered frozen parameters. Second, we can see that the hardening rate parameter <span class="math notranslate nohighlight">\(b\)</span> and kinematic hardening modulus <span class="math notranslate nohighlight">\(H\)</span> have been correctly identified. Regarding the yield stress, the final yield stress is here <code class="docutils literal notranslate"><span class="pre">sig0+sigu</span></code> which is approximately <span class="math notranslate nohighlight">\(595 \text{ MPa}\)</span>, very close to the ground truth value of <span class="math notranslate nohighlight">\(600 \text{ MPa}\)</span>. There is a small discrepancy for the initial yield stress <span class="math notranslate nohighlight">\(\sigma_0\)</span> which has been identified to be <span class="math notranslate nohighlight">\(172 \text{ MPa}\)</span> instead of <span class="math notranslate nohighlight">\(200 \text{ MPa}\)</span>, probably due to the amount of noise and the lack of enough data in the initial yielding regime.</p>
+<p>After convergence, we print the calibrated model parameters to verify their physical consistency.
+First, we can observe that the Young modulus, Poisson ratio and initial Voce yield stress remained
+the same since they have been considered frozen parameters. Second, we can see that the hardening
+rate parameter <span class="math notranslate nohighlight">\(b\)</span> has been correctly identified. The kinematic hardening modulus <span class="math notranslate nohighlight">\(H\)</span> is less well
+identified, probably because of the lack of data points in the hardening regime and high level of
+noise. Regarding the yield stress, the final yield stress is here <code class="docutils literal notranslate"><span class="pre">sig0+sigu</span></code> which is
+approximately <span class="math notranslate nohighlight">\(667 \text{ MPa}\)</span>, instead of a ground truth value of <span class="math notranslate nohighlight">\(600 \text{ MPa}\)</span>. The
+initial yield stress <span class="math notranslate nohighlight">\(\sigma_0\)</span> which has been identified to be <span class="math notranslate nohighlight">\(192 \text{ MPa}\)</span>, close to <span class="math notranslate nohighlight">\(200
+\text{ MPa}\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">print_eqx_fields</span><span class="p">(</span>
-    <span class="n">trained_material</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="s2">&quot;yield_stress&quot;</span><span class="p">,</span> <span class="s2">&quot;combined_hardening&quot;</span><span class="p">]</span>
-<span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">print_eqx_fields</span><span class="p">(</span><span class="n">trained_material</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="s2">&quot;yield_stress&quot;</span><span class="p">,</span> <span class="s2">&quot;combined_hardening&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -778,15 +907,20 @@ This choice is well suited here because we optimize a scalar-valued loss functio
       isotropic:
         VoceHardening:
           sig0 = 0.0
-          sigu = 421.9090071164026
-          b = 200.256490395121
-      H = 5311.534540795533
+          sigu = 421.9090071164027
+          b = 200.25649039512095
+      H = 5311.534540795534
 </pre></div>
 </div>
 </div>
 </div>
-<p>Overall, this workflow demonstrates how <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, in combination with <code class="docutils literal notranslate"><span class="pre">equinox</span></code>, <code class="docutils literal notranslate"><span class="pre">optax</span></code>, and <code class="docutils literal notranslate"><span class="pre">optimistix</span></code>, provides a fully differentiable framework for constitutive parameter identification from cyclic mechanical tests.</p>
-<p>Thanks to automatic differentiation (AD), all sensitivities — including those passing through the nonlinear implicit return-mapping solver at each time step — are computed exactly and efficiently. This allows gradients to propagate seamlessly through both the material state updates and the time integration loop, without any manual derivation of tangent operators.</p>
+<p>Overall, this workflow demonstrates how <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, in combination with <code class="docutils literal notranslate"><span class="pre">equinox</span></code>, <code class="docutils literal notranslate"><span class="pre">optax</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">optimistix</span></code>, provides a fully differentiable framework for constitutive parameter identification
+from cyclic mechanical tests.</p>
+<p>Thanks to automatic differentiation (AD), all sensitivities — including those passing through the
+nonlinear implicit return-mapping solver at each time step — are computed exactly and efficiently.
+This allows gradients to propagate seamlessly through both the material state updates and the time
+integration loop, without any manual derivation of tangent operators.</p>
 </section>
 </section>
 

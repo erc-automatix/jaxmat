@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -187,14 +187,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -212,7 +210,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +237,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -521,7 +520,8 @@ document.write(`
 </p>
 <div class="seealso admonition">
 <p class="admonition-title">References</p>
-<p>Prager, W. (1956). A new method of analyzing stresses and strains in work-hardening plastic solids.</p>
+<p>Prager, W. (1956). A new method of analyzing stresses and strains in work-hardening
+plastic solids.</p>
 </div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.viscoplastic_flows.LinearKinematicHardening.H">

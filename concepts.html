@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -187,14 +187,12 @@
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -212,7 +210,6 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +237,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -417,8 +416,9 @@ document.write(`
 <h2>Solving nonlinear models at the structure scale<a class="headerlink" href="#solving-nonlinear-models-at-the-structure-scale" title="Link to this heading">#</a></h2>
 <section id="variational-formulation-and-fem-context">
 <h3>Variational formulation and FEM context<a class="headerlink" href="#variational-formulation-and-fem-context" title="Link to this heading">#</a></h3>
-<p>Consider a body occupying a domain <span class="math notranslate nohighlight">\(\Omega \subset \mathbb{R}^d\)</span> with displacement field <span class="math notranslate nohighlight">\(\bu\)</span>.<br />
-For a small-strain setting, equilibrium in weak form reads:</p>
+<p>Consider a body occupying a domain <span class="math notranslate nohighlight">\(\Omega \subset \mathbb{R}^d\)</span> with
+displacement field <span class="math notranslate nohighlight">\(\bu\)</span>.  For a small-strain setting, equilibrium in weak form
+reads:</p>
 <div class="math notranslate nohighlight" id="equation-nonlinear-variational-model">
 <span class="eqno">(1)<a class="headerlink" href="#equation-nonlinear-variational-model" title="Link to this equation">#</a></span>\[\int_{\Omega} \bsig(\beps):\nabla^s \bv \,\mathrm{d}\Omega 
 = \int_\Omega \boldsymbol{f}\cdot\bv \,\mathrm{d}\Omega 
@@ -435,50 +435,99 @@ For a small-strain setting, equilibrium in weak form reads:</p>
 </section>
 <section id="discretization">
 <h3>Discretization<a class="headerlink" href="#discretization" title="Link to this heading">#</a></h3>
-<p>In a finite element (FE) context, the displacement field <span class="math notranslate nohighlight">\(\bu\)</span> is approximated by a discrete finite-dimensional space <span class="math notranslate nohighlight">\(V_h\)</span>, with the domain <span class="math notranslate nohighlight">\(\Omega\)</span> being discretized into elements <span class="math notranslate nohighlight">\(\Omega_e\)</span>. Integrals are then evaluated element-wise using numerical quadrature at integration (Gauss) points.
-This yields a discrete nonlinear system:</p>
+<p>In a finite element (FE) context, the displacement field <span class="math notranslate nohighlight">\(\bu\)</span> is approximated
+by a discrete finite-dimensional space <span class="math notranslate nohighlight">\(V_h\)</span>, with the domain <span class="math notranslate nohighlight">\(\Omega\)</span> being
+discretized into elements <span class="math notranslate nohighlight">\(\Omega_e\)</span>. Integrals are then evaluated element-wise
+using numerical quadrature at integration (Gauss) points. This yields a
+discrete nonlinear system:</p>
 <div class="math notranslate nohighlight">
 \[\bR(\bU) = \sum_{e=1}^{N_\text{el}} \sum_{q=1}^{N_q} w_q \bB_q^T \, \bsig_q(\beps_q, \balpha_q) - \bF_\text{ext} = 0,\]</div>
-<p>where <span class="math notranslate nohighlight">\(\bB_q\)</span> maps nodal displacements to strains at quadrature point <span class="math notranslate nohighlight">\(q\)</span>, <span class="math notranslate nohighlight">\(\bsig_q\)</span> is the stress returned by the constitutive model at that quadrature point for a strain <span class="math notranslate nohighlight">\(\beps_q(\bu)\)</span>,  <span class="math notranslate nohighlight">\(\balpha_q\)</span> are the internal variables at that quadrature point, <span class="math notranslate nohighlight">\(w_q\)</span> are quadrature weights, <span class="math notranslate nohighlight">\(\bF_\text{ext}\)</span> is the external force vector.</p>
-<p>To solve this nonlinear system, the FEM solver needs first to evaluate the residual through the evaluation of <span class="math notranslate nohighlight">\(\bsig_q\)</span>. Besides, it also often relies on a Newton-Raphson method to solve the system iteratively.</p>
-<p>This approach requires the Jacobian of the nonlinear system <span class="math notranslate nohighlight">\(\partial \bR/\partial \bU\)</span>. The continuous version of the Jacobian is given by the following tangent bilinear form:</p>
+<p>where <span class="math notranslate nohighlight">\(\bB_q\)</span> maps nodal displacements to strains at quadrature point <span class="math notranslate nohighlight">\(q\)</span>,
+<span class="math notranslate nohighlight">\(\bsig_q\)</span> is the stress returned by the constitutive model at that quadrature
+point for a strain <span class="math notranslate nohighlight">\(\beps_q(\bu)\)</span>,  <span class="math notranslate nohighlight">\(\balpha_q\)</span> are the internal variables at
+that quadrature point, <span class="math notranslate nohighlight">\(w_q\)</span> are quadrature weights, <span class="math notranslate nohighlight">\(\bF_\text{ext}\)</span> is the
+external force vector.</p>
+<p>To solve this nonlinear system, the FEM solver needs first to evaluate the
+residual through the evaluation of <span class="math notranslate nohighlight">\(\bsig_q\)</span>. Besides, it also often relies on
+a Newton-Raphson method to solve the system iteratively.</p>
+<p>This approach requires the Jacobian of the nonlinear system <span class="math notranslate nohighlight">\(\partial
+\bR/\partial \bU\)</span>. The continuous version of the Jacobian is given by the
+following tangent bilinear form:</p>
 <div class="math notranslate nohighlight" id="equation-tangent-bilinear-form">
 <span class="eqno">(2)<a class="headerlink" href="#equation-tangent-bilinear-form" title="Link to this equation">#</a></span>\[a_\text{tangent}(\bu,\bv) = \int_{\Omega} \nabla^s \bu: \mathbb{C}_\text{tang}(\beps):\nabla^s \bv \dOm\]</div>
-<p>which involves the so-called <em>tangent operator</em> <span class="math notranslate nohighlight">\(\CC_\text{tang} = \partial \bsig/\partial\beps\)</span> at each quadrature point.</p>
-<p>The role of the <strong>material model</strong> is thus to provide these local quantities to the FEM solver for all quadrature points. For complex materials, there is generally no closed form expression of the stress for a given state. The stress and new state must then be computed locally by solving the constitutive update problem.</p>
+<p>which involves the so-called <em>tangent operator</em> <span class="math notranslate nohighlight">\(\CC_\text{tang} = \partial
+\bsig/\partial\beps\)</span> at each quadrature point.</p>
+<p>The role of the <strong>material model</strong> is thus to provide these local quantities to
+the FEM solver for all quadrature points. For complex materials, there is
+generally no closed form expression of the stress for a given state. The stress
+and new state must then be computed locally by solving the constitutive update
+problem.</p>
 </section>
 </section>
 <section id="constitutive-update-problem">
 <h2>Constitutive update problem<a class="headerlink" href="#constitutive-update-problem" title="Link to this heading">#</a></h2>
-<p>In solid mechanics, a nonlinear constitutive behavior may thus be seen as a <strong>black-box mapping</strong> from strains to stresses, possibly also involving a known <strong>state</strong> of internal variables that capture history and irreversible processes. Contrary to most expositions in the literature, we also make explicit the fact that this mapping depends on <strong>material parameters</strong> which describe the chosen constitutive law (e.g. elastic stiffness, yield strength, etc.).</p>
-<p>Focusing in the following on the small strain case, we denote by <span class="math notranslate nohighlight">\(\bsig_n\)</span> and <span class="math notranslate nohighlight">\(\beps_n\)</span> the stress and strain and by <span class="math notranslate nohighlight">\(\balpha_n\)</span> the collection of internal state variables at time <span class="math notranslate nohighlight">\(t_n\)</span>. For a given new value of strain <span class="math notranslate nohighlight">\(\beps_{n+1}\)</span> at time <span class="math notranslate nohighlight">\(t_{n+1}=t_n+\Delta t\)</span>, we aim to evaluate the new stress <span class="math notranslate nohighlight">\(\bsig_{n+1}\)</span> and new state <span class="math notranslate nohighlight">\(\balpha_{n+1}\)</span>. Finally, we also denote by <span class="math notranslate nohighlight">\(\btheta\)</span> the collection of material parameters. For simplicity, we do not consider any time variation of these parameters between <span class="math notranslate nohighlight">\(t_n\)</span> and <span class="math notranslate nohighlight">\(t_{n+1}\)</span>.</p>
+<p>In solid mechanics, a nonlinear constitutive behavior may thus be seen as a
+<strong>black-box mapping</strong> from strains to stresses, possibly also involving a known
+<strong>state</strong> of internal variables that capture history and irreversible
+processes. Contrary to most expositions in the literature, we also make
+explicit the fact that this mapping depends on <strong>material parameters</strong> which
+describe the chosen constitutive law (e.g. elastic stiffness, yield strength,
+etc.).</p>
+<p>Focusing in the following on the small strain case, we denote by <span class="math notranslate nohighlight">\(\bsig_n\)</span> and
+<span class="math notranslate nohighlight">\(\beps_n\)</span> the stress and strain and by <span class="math notranslate nohighlight">\(\balpha_n\)</span> the collection of internal
+state variables at time <span class="math notranslate nohighlight">\(t_n\)</span>. For a given new value of strain <span class="math notranslate nohighlight">\(\beps_{n+1}\)</span> at
+time <span class="math notranslate nohighlight">\(t_{n+1}=t_n+\Delta t\)</span>, we aim to evaluate the new stress <span class="math notranslate nohighlight">\(\bsig_{n+1}\)</span>
+and new state <span class="math notranslate nohighlight">\(\balpha_{n+1}\)</span>. Finally, we also denote by <span class="math notranslate nohighlight">\(\btheta\)</span> the
+collection of material parameters. For simplicity, we do not consider any time
+variation of these parameters between <span class="math notranslate nohighlight">\(t_n\)</span> and <span class="math notranslate nohighlight">\(t_{n+1}\)</span>.</p>
 <p>The black-box constitutive mapping can therefore be seen as follows:</p>
 <div class="math notranslate nohighlight" id="equation-constitutive-black-box">
 <span class="eqno">(3)<a class="headerlink" href="#equation-constitutive-black-box" title="Link to this equation">#</a></span>\[\beps=\beps_n+\Delta\beps, \balpha_n, \btheta \longrightarrow \boxed{\text{CONSTITUTIVE RELATION}}\longrightarrow \bsig_{n+1}, \balpha_{n+1}\]</div>
-<p>The explicit mathematical form of the constitutive relation depends on the chosen material model. Quite frequently, internal state variables evolution is described by a system of evolution equations such that:</p>
+<p>The explicit mathematical form of the constitutive relation depends on the
+chosen material model. Quite frequently, internal state variables evolution is
+described by a system of evolution equations such that:</p>
 <div class="math notranslate nohighlight">
 \[F(\beps,\balpha,\dot{\balpha})=0\]</div>
-<p>Upon choosing a specific time-discretization scheme to solve the resulting differential equations, a system of explicit or implicit discretized evolution equations <span class="math notranslate nohighlight">\(F_n\)</span> can then be formed to find the corresponding mechanical state as follows:</p>
+<p>Upon choosing a specific time-discretization scheme to solve the resulting
+differential equations, a system of explicit or implicit discretized evolution
+equations <span class="math notranslate nohighlight">\(F_n\)</span> can then be formed to find the corresponding mechanical state
+as follows:</p>
 <div class="math notranslate nohighlight">
 \[\bsig_{n+1}=\bsig(\beps_n+\Delta\beps,\balpha_{n+1}) \quad \text{s.t.}\quad F_n(\beps_n+\Delta\beps,\balpha_{n+1};\btheta;\Delta t)=0\]</div>
-<p>For more details on the various discretization strategies and solving schemes, we refer to <span id="id1">[<a class="reference internal" href="#id3" title="Juan C Simo and Thomas JR Hughes. Computational inelasticity. Volume 7. Springer Science &amp; Business Media, 2006.">Simo and Hughes, 2006</a>]</span> and the <a class="reference internal" href="#models"><span class="xref myst">material models gallery</span></a>.</p>
+<p>For more details on the various discretization strategies and solving schemes,
+we refer to <span id="id1">[<a class="reference internal" href="#id3" title="Juan C Simo and Thomas JR Hughes. Computational inelasticity. Volume 7. Springer Science &amp; Business Media, 2006.">Simo and Hughes, 2006</a>]</span> and the <a class="reference internal" href="#models"><span class="xref myst">material models
+gallery</span></a>.</p>
 </section>
 <section id="consistent-tangent-operator">
 <h2>Consistent tangent operator<a class="headerlink" href="#consistent-tangent-operator" title="Link to this heading">#</a></h2>
-<p>Deriving the consistent tangent operator for each material behavior is a tedious and error-prone task. In <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, we use AD to automate the computation of these derivatives in a robust and efficient manner.</p>
-<p>In practice, the constitutive update is a function which takes as inputs a material model, a new strain state, a previous mechanical state and a time step i.e. with the following signature:</p>
+<p>Deriving the consistent tangent operator for each material behavior is a
+tedious and error-prone task. In <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, we use AD to automate the
+computation of these derivatives in a robust and efficient manner.</p>
+<p>In practice, the constitutive update is a function which takes as inputs a
+material model, a new strain state, a previous mechanical state and a time step
+i.e. with the following signature:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span><span class="p">,</span> <span class="n">new_state</span> <span class="o">=</span> <span class="n">constitutive_update</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">strain</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>As a result, the consistent tangent operator can naturally be obtained using AD on the first output (<code class="docutils literal notranslate"><span class="pre">stress</span></code>) of <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code> with respect to the second argument <code class="docutils literal notranslate"><span class="pre">strain</span></code>. In 3D, this operator can be represented as a 6x6 matrix. There is therefore no computational gain in using reverse-mode AD and we thus compute the derivative with <code class="docutils literal notranslate"><span class="pre">jax.jacfwd</span></code>.</p>
+<p>As a result, the consistent tangent operator can naturally be obtained using AD
+on the first output (<code class="docutils literal notranslate"><span class="pre">stress</span></code>) of <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code> with respect to the
+second argument <code class="docutils literal notranslate"><span class="pre">strain</span></code>. In 3D, this operator can be represented as a 6x6
+matrix. There is therefore no computational gain in using reverse-mode AD and
+we thus compute the derivative with <code class="docutils literal notranslate"><span class="pre">jax.jacfwd</span></code>.</p>
 </section>
 <section id="finite-strain-extension">
 <h2>Finite-strain extension<a class="headerlink" href="#finite-strain-extension" title="Link to this heading">#</a></h2>
-<p>The same principles extend to finite strain, where equilibrium is written in the reference configuration (total Lagrangian):</p>
+<p>The same principles extend to finite strain, where equilibrium is written in
+the reference configuration (total Lagrangian):</p>
 <div class="math notranslate nohighlight" id="equation-finite-strain-variational-model">
 <span class="eqno">(4)<a class="headerlink" href="#equation-finite-strain-variational-model" title="Link to this equation">#</a></span>\[\int_{\Omega} \bP(\bF):\nabla^s \bv \dOm = \int_\Omega \boldsymbol{f}\cdot\bv \dOm + \int_{\partial \Omega_\text{N}} \bT\cdot\bv \dS \quad \forall\bv \in V\]</div>
-<p>where we use now the first Piola-Kirchhoff (PK1) stress <span class="math notranslate nohighlight">\(\bP(\bF)\)</span> as an implicit function of the total deformation gradient <span class="math notranslate nohighlight">\(\bF=\bI+\nabla\bu\)</span>. Depending on the chosen material, some constitutive equations are more easily written by changing the stress/strain measure, using for instance the second Piola-Kirchhoff stress and the Green-Lagrange strain.</p>
-<p><code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> typically provides the necessary helper functions to convert from one stress measure to another.</p>
+<p>where we use now the first Piola-Kirchhoff (PK1) stress <span class="math notranslate nohighlight">\(\bP(\bF)\)</span> as an
+implicit function of the total deformation gradient <span class="math notranslate nohighlight">\(\bF=\bI+\nabla\bu\)</span>.
+Depending on the chosen material, some constitutive equations are more easily
+written by changing the stress/strain measure, using for instance the second
+Piola-Kirchhoff stress and the Green-Lagrange strain.</p>
+<p><code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> typically provides the necessary helper functions to convert from one
+stress measure to another.</p>
 </section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>

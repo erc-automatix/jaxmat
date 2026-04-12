@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -187,13 +187,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -212,7 +213,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +240,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -420,8 +422,13 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="neural-generalized-standard-material-for-viscoelasticity">
 <h1>Neural Generalized Standard Material for viscoelasticity<a class="headerlink" href="#neural-generalized-standard-material-for-viscoelasticity" title="Link to this heading">#</a></h1>
-<p>In this demo, we implement a Generalized Standard Material (GSM) model of viscoelasticity, in which part of the model is represented by a neural network. This approach follows the general idea proposed by <span id="id1">[<a class="reference internal" href="#id27" title="Moritz Flaschel, Paul Steinmann, Laura De Lorenzis, and Ellen Kuhl. Convex neural networks learn generalized standard material models. Journal of the Mechanics and Physics of Solids, 200:106103, 2025. doi:10.1016/j.jmps.2025.106103.">Flaschel <em>et al.</em>, 2025</a>]</span>, where neural convex potentials are embedded in thermodynamically consistent constitutive models.</p>
-<p>The goal is to demonstrate how a data-driven, physics-constrained constitutive model can be trained to reproduce a reference viscoelastic response generated by a classical model, while keeping full consistency with the framework of generalized standard materials.</p>
+<p>In this demo, we implement a Generalized Standard Material (GSM) model of viscoelasticity, in
+which part of the model is represented by a neural network. This approach follows the general idea
+proposed by <span id="id1">[<a class="reference internal" href="#id27" title="Moritz Flaschel, Paul Steinmann, Laura De Lorenzis, and Ellen Kuhl. Convex neural networks learn generalized standard material models. Journal of the Mechanics and Physics of Solids, 200:106103, 2025. doi:10.1016/j.jmps.2025.106103.">Flaschel <em>et al.</em>, 2025</a>]</span>, where neural convex potentials are embedded in
+thermodynamically consistent constitutive models.</p>
+<p>The goal is to demonstrate how a data-driven, physics-constrained constitutive model can be
+trained to reproduce a reference viscoelastic response generated by a classical model, while
+keeping full consistency with the framework of generalized standard materials.</p>
 <div class="important admonition">
 <p class="admonition-title">Objectives</p>
 <p>This demo shows:</p>
@@ -429,19 +436,28 @@ document.write(`
 <li><p>How to define a hybrid neural constitutive model following the GSM structure</p></li>
 <li><p>How to generate synthetic viscoelastic data using a Generalized Maxwell model</p></li>
 <li><p>How to train a neural dissipation potential while keeping a known free energy</p></li>
-<li><p>How the number of internal variables affects the model’s ability to reproduce the true relaxation behavior</p></li>
+<li><p>How the number of internal variables affects the model’s ability to reproduce the true
+relaxation behavior</p></li>
 </ul>
 </div>
-<p>To simplify the exposition, we focus exclusively on a viscoelastic material.
-The reference (“ground truth”) data is produced using a Generalized Maxwell model with 6 branches, with randomly generated viscoelastic properties.</p>
-<p>The training objective is to identify a neural GSM model with a reduced number of internal state variables, denoted <span class="math notranslate nohighlight">\(N_\text{var}\)</span>, while retaining the correct stress relaxation behavior. of internal state variables. The long-term elastic response is assumed to be known.</p>
+<p>To simplify the exposition, we focus exclusively on a viscoelastic material. The reference
+(“ground truth”) data is produced using a Generalized Maxwell model with 6 branches, with randomly
+generated viscoelastic properties.</p>
+<p>The training objective is to identify a neural GSM model with a reduced number of internal state
+variables, denoted <span class="math notranslate nohighlight">\(N_\text{var}\)</span>, while retaining the correct stress relaxation behavior. of
+internal state variables. The long-term elastic response is assumed to be known.</p>
 <section id="theoretical-background">
 <h2>Theoretical background<a class="headerlink" href="#theoretical-background" title="Link to this heading">#</a></h2>
 <section id="generalized-standard-materials">
 <h3>Generalized Standard Materials<a class="headerlink" href="#generalized-standard-materials" title="Link to this heading">#</a></h3>
-<p>A generalized standard material <span id="id2">[<a class="reference internal" href="#id28" title="Bernard Halphen and Quoc Son Nguyen. Sur les matériaux standard généralisés. Journal de mécanique, 14(1):39–63, 1975. URL: https://hal.science/hal-03600755v1.">Halphen and Nguyen, 1975</a>]</span> is defined by a free energy potential <span class="math notranslate nohighlight">\(\Psi(\beps,\balpha)\)</span> and a dissipation potential <span class="math notranslate nohighlight">\(\Phi(\dot\balpha)\)</span>, from which all constitutive relations are derived in a thermodynamically consistent way. The internal state variable evolution over a time-step is obtained by minimizing a so-called <em>incremental potential</em> <span id="id3">[<a class="reference internal" href="#id29" title="Michael Ortiz and Laurent Stainier. The variational formulation of viscoplastic constitutive updates. Computer methods in applied mechanics and engineering, 171(3-4):419–444, 1999. doi:10.1016/S0045-7825(98)00219-9.">Ortiz and Stainier, 1999</a>]</span>:</p>
+<p>A generalized standard material <span id="id2">[<a class="reference internal" href="#id28" title="Bernard Halphen and Quoc Son Nguyen. Sur les matériaux standard généralisés. Journal de mécanique, 14(1):39–63, 1975. URL: https://hal.science/hal-03600755v1.">Halphen and Nguyen, 1975</a>]</span> is defined by a free energy
+potential <span class="math notranslate nohighlight">\(\Psi(\beps,\balpha)\)</span> and a dissipation potential <span class="math notranslate nohighlight">\(\Phi(\dot\balpha)\)</span>, from which all
+constitutive relations are derived in a thermodynamically consistent way. The internal state
+variable evolution over a time-step is obtained by minimizing a so-called <em>incremental potential</em>
+<span id="id3">[<a class="reference internal" href="#id29" title="Michael Ortiz and Laurent Stainier. The variational formulation of viscoplastic constitutive updates. Computer methods in applied mechanics and engineering, 171(3-4):419–444, 1999. doi:10.1016/S0045-7825(98)00219-9.">Ortiz and Stainier, 1999</a>]</span>:</p>
 <div class="math notranslate nohighlight">
-\[\min_{\Delta \balpha} J(\Delta\balpha ;\beps_{n+1},\balpha_n) = \min_{\Delta \balpha} \Psi(\beps_{n+1}, \balpha_n + \Delta \balpha)
+\[\min_{\Delta \balpha} J(\Delta\balpha ;\beps_{n+1},\balpha_n) = \min_{\Delta \balpha}
+\Psi(\beps_{n+1}, \balpha_n + \Delta \balpha)
     + \Delta t \Phi\left(\dfrac{\Delta \balpha}{\Delta t}\right)\]</div>
 <p>subject to the current strain <span class="math notranslate nohighlight">\(\beps_{n+1} = \beps_n+\Delta\beps\)</span> and time increment <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p>
 </section>
@@ -451,7 +467,8 @@ The reference (“ground truth”) data is produced using a Generalized Maxwell 
 <ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(N_\text{var}\)</span> represents the number of viscous branches</p></li>
 <li><p>each branch has a linear elastic spring with stiffness <span class="math notranslate nohighlight">\(\CC_i\)</span></p></li>
-<li><p>the viscous effects are governed by a neural dissipation potential represented by an Input Convex Neural Network (ICNN) <span id="id4">[<a class="reference internal" href="#id18" title="Brandon Amos, Lei Xu, and J. Zico Kolter. Input convex neural networks. In Doina Precup and Yee Whye Teh, editors, Proceedings of the 34th International Conference on Machine Learning, volume 70 of Proceedings of Machine Learning Research, 146–155. PMLR, 06–11 Aug 2017. URL: https://proceedings.mlr.press/v70/amos17b.html.">Amos <em>et al.</em>, 2017</a>]</span>.</p></li>
+<li><p>the viscous effects are governed by a neural dissipation potential represented by an Input
+Convex Neural Network (ICNN) <span id="id4">[<a class="reference internal" href="#id18" title="Brandon Amos, Lei Xu, and J. Zico Kolter. Input convex neural networks. In Doina Precup and Yee Whye Teh, editors, Proceedings of the 34th International Conference on Machine Learning, volume 70 of Proceedings of Machine Learning Research, 146–155. PMLR, 06–11 Aug 2017. URL: https://proceedings.mlr.press/v70/amos17b.html.">Amos <em>et al.</em>, 2017</a>]</span>.</p></li>
 </ul>
 <p>The constitutive potentials are written as:</p>
 <ul class="simple">
@@ -459,55 +476,67 @@ The reference (“ground truth”) data is produced using a Generalized Maxwell 
 </ul>
 <div class="math notranslate nohighlight">
 \[
-\Psi(\beps,\balpha_i) = \dfrac{1}{2}\beps:\CC_0:\beps + \sum_{i=1}^{N_\text{var}}\dfrac{1}{2}(\beps-\balpha_i):\CC_i:(\beps-\balpha_i)
+\Psi(\beps,\balpha_i) = \dfrac{1}{2}\beps:\CC_0:\beps +
+\sum_{i=1}^{N_\text{var}}\dfrac{1}{2}(\beps-\balpha_i):\CC_i:(\beps-\balpha_i)
 \]</div>
 <ul class="simple">
 <li><p>dissipation potential:</p></li>
 </ul>
 <div class="math notranslate nohighlight">
 \[
-\Phi(\dot{\balpha}_i) = \mathcal{N}_\text{ICNN}(\dot{\balpha}_1,\ldots,\dot{\balpha}_{N_\textrm{var}})
+\Phi(\dot{\balpha}_i) =
+\mathcal{N}_\text{ICNN}(\dot{\balpha}_1,\ldots,\dot{\balpha}_{N_\textrm{var}})
 \]</div>
-<p>Unlike the classical Maxwell model where each branch dissipates independently, the neural potential couples all internal variables through a single convex function <span class="math notranslate nohighlight">\(\Phi\)</span>. This allows for nonlinear and non-separable viscous interactions while ensuring that the model remains thermodynamically admissible.</p>
+<p>Unlike the classical Maxwell model where each branch dissipates independently, the neural
+potential couples all internal variables through a single convex function <span class="math notranslate nohighlight">\(\Phi\)</span>. This allows for
+nonlinear and non-separable viscous interactions while ensuring that the model remains
+thermodynamically admissible.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The ground truth generalized Maxwell model with <span class="math notranslate nohighlight">\(N\)</span> branches would be represented by the following potentials where the <span class="math notranslate nohighlight">\(\balpha_i\)</span> represent the viscous strains <span class="math notranslate nohighlight">\(\beps^\text{v}_i\)</span> in each branch:</p>
+<p>The ground truth generalized Maxwell model with <span class="math notranslate nohighlight">\(N\)</span> branches would be represented by the following
+potentials where the <span class="math notranslate nohighlight">\(\balpha_i\)</span> represent the viscous strains <span class="math notranslate nohighlight">\(\beps^\text{v}_i\)</span> in each branch:</p>
 <ul class="simple">
 <li><p>free energy:</p></li>
 </ul>
 <div class="math notranslate nohighlight">
 \[
-\Psi(\beps,\beps_i^\text{v}) = \dfrac{1}{2}\beps:\CC_0:\beps + \sum_{i=1}^{N}\dfrac{1}{2}(\beps-\beps_i^\text{v}):\CC_i:(\beps-\beps_i^\text{v})
+\Psi(\beps,\beps_i^\text{v}) = \dfrac{1}{2}\beps:\CC_0:\beps +
+\sum_{i=1}^{N}\dfrac{1}{2}(\beps-\beps_i^\text{v}):\CC_i:(\beps-\beps_i^\text{v})
 \]</div>
 <ul class="simple">
 <li><p>dissipation potential:</p></li>
 </ul>
 <div class="math notranslate nohighlight">
 \[
-\Phi(\dot{\beps}_i^\text{v}) = \sum_{i=1}^N \dfrac{1}{2}\eta_i \dot{\beps}_i^\text{v}:\dot{\beps}_i^\text{v}
+\Phi(\dot{\beps}_i^\text{v}) = \sum_{i=1}^N \dfrac{1}{2}\eta_i
+\dot{\beps}_i^\text{v}:\dot{\beps}_i^\text{v}
 \]</div>
 </div>
 </section>
 </section>
 <section id="ground-truth-data-generation">
 <h2>Ground-truth data generation<a class="headerlink" href="#ground-truth-data-generation" title="Link to this heading">#</a></h2>
-<p>We first define the ground truth data from a generalized Maxwell model with <code class="docutils literal notranslate"><span class="pre">Nmax=6</span></code> branches. The viscous elements are generated so that their relaxation times are spaced within the interval <span class="math notranslate nohighlight">\(0.005\text{ s}\)</span>–<span class="math notranslate nohighlight">\(10\text{ s}\)</span> with random stiffness values. The synthetic stress–strain data obtained from this model will serve as our training target.</p>
+<p>We first define the ground truth data from a generalized Maxwell model with <code class="docutils literal notranslate"><span class="pre">Nmax=6</span></code> branches. The
+viscous elements are generated so that their relaxation times are spaced within the interval
+<span class="math notranslate nohighlight">\(0.005\text{ s}\)</span>–<span class="math notranslate nohighlight">\(10\text{ s}\)</span> with random stiffness values. The synthetic stress-strain data
+obtained from this model will serve as our training target.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">optax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.nn.icnn</span><span class="w"> </span><span class="kn">import</span> <span class="n">ICNN</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractState</span><span class="p">,</span> <span class="n">make_batched</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">main_invariants</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">partition_by_node_names</span>
 
 <span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_platform_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_batched</span><span class="p">,</span> <span class="n">AbstractState</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">partition_by_node_names</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">main_invariants</span><span class="p">,</span> <span class="n">eigenvalues</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.nn.icnn</span><span class="w"> </span><span class="kn">import</span> <span class="n">ICNN</span><span class="p">,</span> <span class="n">ICNNSkip</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">optax</span>
 
 <span class="n">E0</span><span class="p">,</span> <span class="n">nu</span> <span class="o">=</span> <span class="mf">70e3</span><span class="p">,</span> <span class="mf">0.3</span>
 <span class="n">elasticity</span> <span class="o">=</span> <span class="n">jm</span><span class="o">.</span><span class="n">LinearElasticIsotropic</span><span class="p">(</span><span class="n">E0</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
@@ -528,7 +557,10 @@ The reference (“ground truth”) data is produced using a Generalized Maxwell 
 </div>
 </div>
 </div>
-<p>To train the model, we consider a stress relaxation (recovery) test under constant shear strain: <span class="math notranslate nohighlight">\(\epsilon_{xy}=\gamma_r/2\)</span> with <span class="math notranslate nohighlight">\(\gamma_r=10^{-3}\)</span> applied over a time interval  <span class="math notranslate nohighlight">\(10^{-3}--10^2\text{ s}\)</span>. The time discretization is logarithmic to capture both the fast initial relaxation and the slower long-term response.</p>
+<p>To train the model, we consider a stress relaxation (recovery) test under constant shear strain:
+<span class="math notranslate nohighlight">\(\epsilon_{xy}=\gamma_r/2\)</span> with <span class="math notranslate nohighlight">\(\gamma_r=10^{-3}\)</span> applied over a time interval
+<span class="math notranslate nohighlight">\(10^{-3}--10^2\text{ s}\)</span>. The time discretization is logarithmic to capture both the fast initial
+relaxation and the slower long-term response.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Nincr</span> <span class="o">=</span> <span class="mi">50</span>
@@ -539,8 +571,11 @@ The reference (“ground truth”) data is produced using a Generalized Maxwell 
 </div>
 </div>
 </div>
-<p>We define a general-purpose function <code class="docutils literal notranslate"><span class="pre">compute_evolution</span></code> that integrates the constitutive equations over time for a given strain path.
-Starting from the initial state, the model is updated incrementally at each time step using the internal solver provided by <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> and returns the full stress history. By using <code class="docutils literal notranslate"><span class="pre">jax.lax.scan</span></code>, the loop over time increments is efficiently compiled by JAX, ensuring high performance and differentiability.</p>
+<p>We define a general-purpose function <code class="docutils literal notranslate"><span class="pre">compute_evolution</span></code> that integrates the constitutive
+equations over time for a given strain path. Starting from the initial state, the model is updated
+incrementally at each time step using the internal solver provided by <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> and returns the
+full stress history. By using <code class="docutils literal notranslate"><span class="pre">jax.lax.scan</span></code>, the loop over time increments is efficiently
+compiled by JAX, ensuring high performance and differentiability.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_evolution</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">gamma_list</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
@@ -574,11 +609,14 @@ Starting from the initial state, the model is updated incrementally at each time
 <h2>Defining the neural GSM<a class="headerlink" href="#defining-the-neural-gsm" title="Link to this heading">#</a></h2>
 <p>The GSM model is composed of three parts:</p>
 <ul class="simple">
-<li><p>Free energy potential, defines the recoverable elastic energy stored in both the equilibrium and viscous branches.</p></li>
-<li><p>Dissipation potential, modeled by an Input Convex Neural Network (ICNN) to ensure convexity with respect to strain rates.</p></li>
+<li><p>Free energy potential, defines the recoverable elastic energy stored in both the equilibrium and
+viscous branches.</p></li>
+<li><p>Dissipation potential, modeled by an Input Convex Neural Network (ICNN) to ensure convexity with
+respect to strain rates.</p></li>
 <li><p>Internal state variables, representing the viscous strain tensors <span class="math notranslate nohighlight">\(\balpha_i\)</span>.</p></li>
 </ul>
-<p>We first define the internal state PyTree as a batch of symmetric strain tensors <span class="math notranslate nohighlight">\(\balpha_i\)</span> representing the <span class="math notranslate nohighlight">\(N_\text{var}\)</span> viscous strains in each Maxwell-like branch.</p>
+<p>We first define the internal state PyTree as a batch of symmetric strain tensors <span class="math notranslate nohighlight">\(\balpha_i\)</span>
+representing the <span class="math notranslate nohighlight">\(N_\text{var}\)</span> viscous strains in each Maxwell-like branch.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">InternalState</span><span class="p">(</span><span class="n">AbstractState</span><span class="p">):</span>
@@ -593,7 +631,9 @@ Starting from the initial state, the model is updated incrementally at each time
 </div>
 </div>
 </div>
-<p>The free energy is implemented as a sum of quadratic elastic contributions in the form of an <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code>. The free energy <code class="docutils literal notranslate"><span class="pre">__call__</span></code> function takes as arguments the total strain <span class="math notranslate nohighlight">\(\beps\)</span> (<code class="docutils literal notranslate"><span class="pre">eps</span></code>) and the PyTree (<code class="docutils literal notranslate"><span class="pre">isv</span></code>) of internal state variables <span class="math notranslate nohighlight">\((\balpha_i)\)</span>.</p>
+<p>The free energy is implemented as a sum of quadratic elastic contributions in the form of an
+<code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code>. The free energy <code class="docutils literal notranslate"><span class="pre">__call__</span></code> function takes as arguments the total strain <span class="math notranslate nohighlight">\(\beps\)</span>
+(<code class="docutils literal notranslate"><span class="pre">eps</span></code>) and the PyTree (<code class="docutils literal notranslate"><span class="pre">isv</span></code>) of internal state variables <span class="math notranslate nohighlight">\((\balpha_i)\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">FreeEnergy</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -615,37 +655,45 @@ Starting from the initial state, the model is updated incrementally at each time
 </div>
 </div>
 </div>
-<p>The dissipation potential is represented by an Input-Convex Neural Network (ICNN) which guarantees convexity through positive weights and nonnegative increasing activation functions.</p>
-<p>Inspired by the Physics-Augmented Neural networks (PANN) approach for elasticity, we choose here as inputs of the network the second invariants <span class="math notranslate nohighlight">\(I_2(\balpha_i)\)</span> of the state variables. We also add a normalization term so that the thermodynamic force is zero for <span class="math notranslate nohighlight">\(\balpha_i=0\)</span>, modifying the potential as follows:</p>
+<p>The dissipation potential is represented by an Input-Convex Neural Network (ICNN) which guarantees
+convexity through positive weights and nonnegative increasing activation functions.</p>
+<p>Inspired by the Physics-Augmented Neural networks (PANN) approach for elasticity, we choose here
+as inputs of the network the second invariants <span class="math notranslate nohighlight">\(I_2(\balpha_i)\)</span> of the state variables. We also
+add a normalization term so that the thermodynamic force is zero for <span class="math notranslate nohighlight">\(\balpha_i=0\)</span>, modifying the
+potential as follows:</p>
 <div class="math notranslate nohighlight">
 \[
-\Phi(\balpha_i) = \Nn_\text{ICNN}(\balpha_i) - \dfrac{\partial \Nn_\text{ICNN}}{\partial\balpha_i}(\balpha_i=0):\balpha_i
+\Phi(\balpha_i) = \Nn_\text{ICNN}(\balpha_i) - \dfrac{\partial
+\Nn_\text{ICNN}}{\partial\balpha_i}(\balpha_i=0):\balpha_i
 \]</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ICNNDissipationPotential</span><span class="p">(</span><span class="n">ICNN</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">icnn_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha_dot</span><span class="p">):</span>
-        <span class="n">I1</span><span class="p">,</span> <span class="n">I2</span><span class="p">,</span> <span class="n">I3</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">main_invariants</span><span class="p">)(</span><span class="n">alpha_dot</span><span class="p">)</span>
+        <span class="n">_I1</span><span class="p">,</span> <span class="n">I2</span><span class="p">,</span> <span class="n">_I3</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">main_invariants</span><span class="p">)(</span><span class="n">alpha_dot</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="mf">1e3</span> <span class="o">*</span> <span class="n">I2</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isv_dot</span><span class="p">):</span>
         <span class="n">alpha_dot</span> <span class="o">=</span> <span class="n">isv_dot</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">tensor</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">icnn_potential</span><span class="p">(</span><span class="n">alpha_dot</span><span class="p">)</span>
-            <span class="o">-</span> <span class="n">jax</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">icnn_potential</span><span class="p">,</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">alpha_dot</span><span class="p">),),</span> <span class="p">(</span><span class="n">alpha_dot</span><span class="p">,))[</span>
-                <span class="mi">1</span>
-            <span class="p">]</span>
+            <span class="o">-</span> <span class="n">jax</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">icnn_potential</span><span class="p">,</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">alpha_dot</span><span class="p">),),</span> <span class="p">(</span><span class="n">alpha_dot</span><span class="p">,))[</span><span class="mi">1</span><span class="p">]</span>
         <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>We build a list of candidate neural GSM models for  <span class="math notranslate nohighlight">\(N_\text{var}=1,2,3\)</span>. Each model shares the same known long-term stiffness, while the viscous stiffness values and neural potential parameters are initialized randomly. We select here only 8 neurons in a single hidden layer.</p>
+<p>We build a list of candidate neural GSM models for  <span class="math notranslate nohighlight">\(N_\text{var}=1,2,3\)</span>. Each model shares the
+same known long-term stiffness, while the viscous stiffness values and neural potential parameters
+are initialized randomly. We select here only 8 neurons in a single hidden layer.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>Since the structure of internal state variables is not known in advance, <code class="docutils literal notranslate"><span class="pre">jaxmat.materials.GeneralizedStandardMaterial</span></code> is an abstract class which must implement a concrete <code class="docutils literal notranslate"><span class="pre">make_internal_state</span></code> method.</p>
+<p>Since the structure of internal state variables is not known in advance,
+<code class="docutils literal notranslate"><span class="pre">jaxmat.materials.GeneralizedStandardMaterial</span></code> is an abstract class which must implement a
+concrete <code class="docutils literal notranslate"><span class="pre">make_internal_state</span></code> method.</p>
 </div>
-<p>The idea is to assess how the complexity of the internal structure (i.e., the number of internal variables) affects the ability of the neural GSM to reproduce the reference relaxation behavior.</p>
+<p>The idea is to assess how the complexity of the internal structure (i.e., the number of internal
+variables) affects the ability of the neural GSM to reproduce the reference relaxation behavior.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Nvar_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
@@ -676,8 +724,13 @@ Starting from the initial state, the model is updated incrementally at each time
 <h2>Training procedure<a class="headerlink" href="#training-procedure" title="Link to this heading">#</a></h2>
 <section id="initialization">
 <h3>Initialization<a class="headerlink" href="#initialization" title="Link to this heading">#</a></h3>
-<p>Before training, we compute the ground truth response under the prescribed strain history obtained from the 6-branch Generalized Maxwell model. We generate synthetic white noise to this data. Finally, we compute the predicted stress response of the randomly initialized neural GSM (for <span class="math notranslate nohighlight">\(N_\text{var}=3\)</span>) and compare it with the ground truth and noisy data.</p>
-<p>At this stage, the predicted stress does not match the target relaxation curve — the neural model’s dissipation potential is untrained and cannot yet capture the correct time-dependent decay.</p>
+<p>Before training, we compute the ground truth response under the prescribed strain history obtained
+from the 6-branch Generalized Maxwell model. We generate synthetic white noise to this data.
+Finally, we compute the predicted stress response of the randomly initialized neural GSM (for
+<span class="math notranslate nohighlight">\(N_\text{var}=3\)</span>) and compare it with the ground truth and noisy data.</p>
+<p>At this stage, the predicted stress does not match the target relaxation curve — the neural
+model’s dissipation potential is untrained and cannot yet capture the correct time-dependent
+decay.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sig_train</span> <span class="o">=</span> <span class="n">compute_evolution</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
@@ -710,15 +763,19 @@ Starting from the initial state, the model is updated incrementally at each time
 </section>
 <section id="loss-function">
 <h3>Loss function<a class="headerlink" href="#loss-function" title="Link to this heading">#</a></h3>
-<p>The training process aims to minimize the discrepancy between the predicted and target stress histories.
-We use the mean-squared error (MSE) loss function on the whole stress tensors:</p>
+<p>The training process aims to minimize the discrepancy between the predicted and target stress
+histories. We use the mean-squared error (MSE) loss function on the whole stress tensors:</p>
 <div class="math notranslate nohighlight">
 \[
-\mathcal{L}(\btheta) = \dfrac{1}{M}\sum_{k=1}^M \|\hat\bsig^{(k)}(\btheta) - \bsig^\text{data,(k)}\|^2
+\mathcal{L}(\btheta) = \dfrac{1}{M}\sum_{k=1}^M \|\hat\bsig^{(k)}(\btheta) -
+\bsig^\text{data,(k)}\|^2
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(\hat\bsig^{(k)}(\btheta)\)</span> denotes the predicted stress tensor by the neural GSM at time step <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\( \bsig^\text{data,(k)}\)</span> the corresponding target value.
-As the stress evolution depends recursively on the internal variables, the loss is history-dependent.
-Gradients are automatically computed by JAX through the full time integration and solver iterations.</p>
+<p>where <span class="math notranslate nohighlight">\(\hat\bsig^{(k)}(\btheta)\)</span> denotes the predicted stress tensor by the neural GSM at time
+step <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\( \bsig^\text{data,(k)}\)</span> the corresponding target value.
+As the stress evolution depends recursively on the internal variables, the loss is
+history-dependent.
+Gradients are automatically computed by JAX through the full time integration and solver
+iterations.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
@@ -741,9 +798,11 @@ Gradients are automatically computed by JAX through the full time integration an
 </section>
 <section id="optimization-strategy">
 <h3>Optimization strategy<a class="headerlink" href="#optimization-strategy" title="Link to this heading">#</a></h3>
-<p>We employ an <code class="docutils literal notranslate"><span class="pre">optax</span></code> optimizer based on Adam with parameter-block RMS normalization, which rescales gradients according to their variance across model parameters.
-This helps stabilize training in the presence of quantities with different physical magnitudes.</p>
-<p>The optimization is wrapped in an <code class="docutils literal notranslate"><span class="pre">optimistix.OptaxMinimiser</span></code>, which provides a clean interface for running the differentiable solver loop.</p>
+<p>We employ an <code class="docutils literal notranslate"><span class="pre">optax</span></code> optimizer based on Adam with parameter-block RMS normalization, which
+rescales gradients according to their variance across model parameters. This helps stabilize
+training in the presence of quantities with different physical magnitudes.</p>
+<p>The optimization is wrapped in an <code class="docutils literal notranslate"><span class="pre">optimistix.OptaxMinimiser</span></code>, which provides a clean interface
+for running the differentiable solver loop.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">5e-2</span>
@@ -768,17 +827,24 @@ This helps stabilize training in the presence of quantities with different physi
 <section id="results">
 <h3>Results<a class="headerlink" href="#results" title="Link to this heading">#</a></h3>
 <p>Each neural GSM is trained independently against the same noisy reference data.</p>
-<p>During training, the equilibrium elastic model is kept frozen (not trainable), the viscous stiffness values and ICNN parameters are updated to minimize the loss.</p>
-<p>The backward-mode automatic differentiation (<code class="docutils literal notranslate"><span class="pre">jac=&quot;bwd&quot;</span></code>) option is used for efficiency, as we are minimizing a scalar loss function.
-At the end of training, the trained parameters are combined with the static part to reconstruct the full model.</p>
-<p>For each value of <span class="math notranslate nohighlight">\(N_\text{var}\)</span>, we plot the predicted relaxation curve against the ground truth data.</p>
-<p>The model with a single viscoelastic strain fails in reproducing the whole relaxation curve, despite being able to represent more than a single relaxation term since the viscosity dissipation potentially is not necessarily quadratic.
-Increasing <span class="math notranslate nohighlight">\(N_\text{var}\)</span> to 2 and 3 clearly improves the results. The trained neural GSM reproduces the full multi-timescale relaxation curve almost perfectly.</p>
-<p>This demonstrates that the neural GSM can efficiently compress the complex 6-branch Maxwell response into a reduced number of internal variables, while maintaining full thermodynamic consistency.</p>
+<p>During training, the equilibrium elastic model is kept frozen (not trainable), the viscous
+stiffness values and ICNN parameters are updated to minimize the loss.</p>
+<p>The backward-mode automatic differentiation (<code class="docutils literal notranslate"><span class="pre">jac=&quot;bwd&quot;</span></code>) option is used for efficiency, as we are
+minimizing a scalar loss function. At the end of training, the trained parameters are combined
+with the static part to reconstruct the full model.</p>
+<p>For each value of <span class="math notranslate nohighlight">\(N_\text{var}\)</span>, we plot the predicted relaxation curve against the ground truth
+data.</p>
+<p>The model with a single viscoelastic strain fails in reproducing the whole relaxation curve,
+despite being able to represent more than a single relaxation term since the viscosity dissipation
+potentially is not necessarily quadratic. Increasing <span class="math notranslate nohighlight">\(N_\text{var}\)</span> to 2 and 3 clearly improves
+the results. The trained neural GSM reproduces the full multi-timescale relaxation curve almost
+perfectly.</p>
+<p>This demonstrates that the neural GSM can efficiently compress the complex 6-branch Maxwell
+response into a reduced number of internal variables, while maintaining full thermodynamic
+consistency.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">gsm</span><span class="p">,</span> <span class="n">Nvar</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gsm_list</span><span class="p">,</span> <span class="n">Nvar_list</span><span class="p">):</span>
-
     <span class="n">trainable</span><span class="p">,</span> <span class="n">static</span> <span class="o">=</span> <span class="n">partition_by_node_names</span><span class="p">(</span><span class="n">gsm</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;free_energy.elasticity&quot;</span><span class="p">])</span>
 
     <span class="n">sol</span> <span class="o">=</span> <span class="n">optx</span><span class="o">.</span><span class="n">minimise</span><span class="p">(</span>
@@ -825,7 +891,9 @@ Increasing <span class="math notranslate nohighlight">\(N_\text{var}\)</span> to
 </section>
 <section id="comparison-with-a-reduced-generalized-maxwell-model">
 <h2>Comparison with a reduced generalized Maxwell model<a class="headerlink" href="#comparison-with-a-reduced-generalized-maxwell-model" title="Link to this heading">#</a></h2>
-<p>Finally, we can train in a very similar fashion a generalized Maxwell model with a reduced number of branches. Below, we show how to do it by fixing the values for the relaxation times and learning only the viscous branches stiffness values.</p>
+<p>Finally, we can train in a very similar fashion a generalized Maxwell model with a reduced number
+of branches. Below, we show how to do it by fixing the values for the relaxation times and
+learning only the viscous branches stiffness values.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">maxwell_list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -841,10 +909,7 @@ Increasing <span class="math notranslate nohighlight">\(N_\text{var}\)</span> to
     <span class="p">)</span>
 
 <span class="k">for</span> <span class="n">maxwell</span><span class="p">,</span> <span class="n">Nmax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">maxwell_list</span><span class="p">,</span> <span class="n">Nmax_list</span><span class="p">):</span>
-
-    <span class="n">trainable</span><span class="p">,</span> <span class="n">static</span> <span class="o">=</span> <span class="n">partition_by_node_names</span><span class="p">(</span>
-        <span class="n">maxwell</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="s2">&quot;relaxation_times&quot;</span><span class="p">]</span>
-    <span class="p">)</span>
+    <span class="n">trainable</span><span class="p">,</span> <span class="n">static</span> <span class="o">=</span> <span class="n">partition_by_node_names</span><span class="p">(</span><span class="n">maxwell</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;elasticity&quot;</span><span class="p">,</span> <span class="s2">&quot;relaxation_times&quot;</span><span class="p">])</span>
 
     <span class="n">sol</span> <span class="o">=</span> <span class="n">optx</span><span class="o">.</span><span class="n">minimise</span><span class="p">(</span>
         <span class="n">loss</span><span class="p">,</span>

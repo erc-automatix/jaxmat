@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -184,13 +184,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -209,7 +210,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +237,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -364,43 +366,59 @@ document.write(`
 
 
 <div class="viewcode-block" id="safe_fun">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.utils.safe_fun">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.safe_fun">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">safe_fun</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Safely applies a function to an input, avoiding numerical issues near zero.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a function safely, avoiding evaluation at or near zero.</span>
 
-<span class="sd">    This function applies ``fun(x)`` only when the norm of ``x`` exceeds a small</span>
-<span class="sd">    tolerance ``eps``. Otherwise, it returns zero. This is useful for ensuring</span>
-<span class="sd">    numerical stability in cases where evaluating ``fun`` at or near zero could</span>
-<span class="sd">    result in undefined or unstable behavior (e.g., division by zero).</span>
+<span class="sd">    The input ``x`` is replaced by a small positive sentinel ``eps`` whenever</span>
+<span class="sd">    ``norm(x) &lt;= eps`` before calling ``fun``.  The final result is then</span>
+<span class="sd">    masked to return zero in that case.  This sentinel strategy ensures that</span>
+<span class="sd">    ``fun`` is always evaluated at a numerically safe point, so that gradients</span>
+<span class="sd">    through ``fun`` remain finite under automatic differentiation.</span>
+
+<span class="sd">    This is consistent with :func:`safe_sqrt`:</span>
+<span class="sd">    ``safe_fun(jnp.sqrt, x)`` produces the same values and gradients as</span>
+<span class="sd">    ``safe_sqrt(x)``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    fun : Callable</span>
-<span class="sd">        The function to apply safely.</span>
-<span class="sd">    x : array-like</span>
-<span class="sd">        Input array or tensor.</span>
-<span class="sd">    norm : Callable, optional</span>
-<span class="sd">        A norm or magnitude function used to test whether ``x`` is sufficiently</span>
-<span class="sd">        large. Defaults to the identity function.</span>
+<span class="sd">    fun : callable</span>
+<span class="sd">        Scalar or array function to apply safely.</span>
+<span class="sd">    x : array_like</span>
+<span class="sd">        Input value.</span>
+<span class="sd">    norm : callable, optional</span>
+<span class="sd">        Scalar-valued function of ``x`` used to test proximity to zero.</span>
+<span class="sd">        Defaults to the identity (i.e. ``x`` itself is the magnitude).</span>
 <span class="sd">    eps : float, optional</span>
-<span class="sd">        Small threshold to determine whether ``x`` is treated as nonzero.</span>
-<span class="sd">        Defaults to 1e-16.</span>
+<span class="sd">        Threshold below which ``x`` is considered zero.  Defaults to ``1e-16``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    array-like</span>
-<span class="sd">        ``fun(x)`` if ``norm(x) &gt; eps``, otherwise ``0`` (of the same shape as ``x``).</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        ``fun(x)`` where ``norm(x) &gt; eps``, otherwise ``0``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The key property is that the *sentinel-substituted* input ``eps`` (not</span>
+<span class="sd">    ``0``) is passed to ``fun`` in the masked branch.  This prevents</span>
+<span class="sd">    ``jax.grad`` from encountering undefined derivatives (e.g.</span>
+<span class="sd">    ``1 / (2 sqrt(0))`` for ``fun = jnp.sqrt``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">norm</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
-    <span class="n">nonzero_x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">,</span> <span class="n">fun</span><span class="p">(</span><span class="n">nonzero_x</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span></div>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">norm</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span>
+
+    <span class="n">is_nonzero</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span>
+    <span class="c1"># Use eps as sentinel (not 0) so fun is always evaluated at a safe point.</span>
+    <span class="n">safe_x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_nonzero</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_nonzero</span><span class="p">,</span> <span class="n">fun</span><span class="p">(</span><span class="n">safe_x</span><span class="p">),</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">fun</span><span class="p">(</span><span class="n">safe_x</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="safe_sqrt">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.utils.safe_sqrt">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.safe_sqrt">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes a numerically safe square root.</span>
@@ -419,15 +437,15 @@ document.write(`
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    array-like</span>
-<span class="sd">        The square root of `x` for `x &gt; eps`, otherwise 0.</span>
+<span class="sd">        The square root of `x` for `x &gt; eps`, otherwise `eps`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">nonzero_x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">nonzero_x</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span></div>
+    <span class="n">nonzero_x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">nonzero_x</span><span class="p">),</span> <span class="n">eps</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="safe_norm">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.utils.safe_norm">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.safe_norm">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">safe_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Wrapper around ``optax.safe_norm`` that computes a numerically stable norm.</span>
@@ -454,7 +472,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="FischerBurmeister">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.utils.FischerBurmeister">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.FischerBurmeister">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">FischerBurmeister</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the scalar Fischer-Burmeister function.</span>
@@ -467,51 +485,6 @@ document.write(`
 <span class="sd">    $$x \geq 0, y \geq 0, xy = 0$$.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">-</span> <span class="n">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="rotation_matrix_direct">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.utils.rotation_matrix_direct">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">rotation_matrix_direct</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculate the rotation matrix for rotating around an arbitrary axis by angle theta.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-
-    <span class="n">c</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-    <span class="n">C</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">c</span>
-
-    <span class="c1"># Compute the matrix elements directly</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="p">[</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">C</span> <span class="o">+</span> <span class="n">c</span><span class="p">,</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">C</span> <span class="o">-</span> <span class="n">z</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span> <span class="n">x</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="n">C</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">s</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">y</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">C</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">C</span> <span class="o">+</span> <span class="n">c</span><span class="p">,</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="n">C</span> <span class="o">-</span> <span class="n">x</span> <span class="o">*</span> <span class="n">s</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">z</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">C</span> <span class="o">-</span> <span class="n">y</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span> <span class="n">z</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">C</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span> <span class="n">z</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="n">C</span> <span class="o">+</span> <span class="n">c</span><span class="p">],</span>
-        <span class="p">]</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">R</span></div>
-
-
-
-<div class="viewcode-block" id="euler_to_rotation">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.utils.html#jaxmat.tensors.utils.euler_to_rotation">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">euler_to_rotation</span><span class="p">(</span><span class="n">phi1</span><span class="p">,</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">phi2</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Euler&#39;s angle → rotation matrix (Bunge convention  ZXZ)&quot;&quot;&quot;</span>
-    <span class="n">c1</span><span class="p">,</span> <span class="n">s1</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi1</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi1</span><span class="p">)</span>
-    <span class="n">cP</span><span class="p">,</span> <span class="n">sP</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">Phi</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">Phi</span><span class="p">)</span>
-    <span class="n">c2</span><span class="p">,</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi2</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi2</span><span class="p">)</span>
-
-    <span class="n">R</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="p">[</span><span class="n">c1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">-</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">*</span> <span class="n">cP</span><span class="p">,</span> <span class="o">-</span><span class="n">c1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">-</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">cP</span><span class="p">,</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">sP</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">s1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">*</span> <span class="n">cP</span><span class="p">,</span> <span class="o">-</span><span class="n">s1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">cP</span><span class="p">,</span> <span class="o">-</span><span class="n">c1</span> <span class="o">*</span> <span class="n">sP</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">s2</span> <span class="o">*</span> <span class="n">sP</span><span class="p">,</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">sP</span><span class="p">,</span> <span class="n">cP</span><span class="p">],</span>
-        <span class="p">]</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">R</span></div>
 
 </pre></div>
 

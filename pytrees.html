@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -63,7 +63,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Phenomenological models" href="pheno_models.html" />
-    <link rel="prev" title="Performance of CPU and GPU material integration" href="demos/quickstart/performance.html" />
+    <link rel="prev" title="Working with tensors" href="demos/quickstart/tensors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -187,14 +187,12 @@
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -212,7 +210,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +237,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -407,22 +406,29 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="composable-and-differentiable-material-models">
 <h1>Composable and differentiable material models<a class="headerlink" href="#composable-and-differentiable-material-models" title="Link to this heading">#</a></h1>
-<p>Every material model in <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> inherits from <a class="reference external" href="https://docs.kidger.site/equinox/"><code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code></a>.<br />
-An <code class="docutils literal notranslate"><span class="pre">eqx.Module</span></code> is a convenient extension of standard JAX <strong>PyTrees</strong>—nested data structures composed of tuples, lists, dictionaries, arrays, and other PyTrees—with the added benefit of behaving like lightweight Python classes.</p>
+<p>Every material model in <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> inherits from
+<a class="reference external" href="https://docs.kidger.site/equinox/"><code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code></a>.  An <code class="docutils literal notranslate"><span class="pre">eqx.Module</span></code> is a
+convenient extension of standard JAX <strong>PyTrees</strong>—nested data structures
+composed of tuples, lists, dictionaries, arrays, and other PyTrees—with the
+added benefit of behaving like lightweight Python classes.</p>
 <p>Equinox modules are:</p>
 <ul class="simple">
 <li><p><strong>JAX-compatible</strong> (registered as PyTree nodes),</p></li>
 <li><p><strong>immutable</strong> (frozen dataclasses), and</p></li>
 <li><p><strong>composable and differentiable</strong> (supporting nesting of submodules).</p></li>
 </ul>
-<p>In effect, each material model is a structured container of differentiable parameters.</p>
+<p>In effect, each material model is a structured container of differentiable
+parameters.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>State variables are also represented as <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code>. Other JAX-based packages like <code class="docutils literal notranslate"><span class="pre">diffrax</span></code> or <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> also use them for representing solvers for instance.</p>
 </div>
 <section id="hierarchical-model-composition">
 <h2>Hierarchical model composition<a class="headerlink" href="#hierarchical-model-composition" title="Link to this heading">#</a></h2>
-<p>While internal state variables (<span class="math notranslate nohighlight">\(\boldsymbol{\alpha}\)</span>) and material parameters (<span class="math notranslate nohighlight">\(\boldsymbol{\theta}\)</span>) could in principle be flattened into a single large vector, in practice they are organized hierarchically into modules and submodules.</p>
+<p>While internal state variables (<span class="math notranslate nohighlight">\(\boldsymbol{\alpha}\)</span>) and material parameters
+(<span class="math notranslate nohighlight">\(\boldsymbol{\theta}\)</span>) could in principle be flattened into a single large
+vector, in practice they are organized hierarchically into modules and
+submodules.</p>
 <p>For example:</p>
 <ul class="simple">
 <li><p>An <em>elastoplastic</em> model may be represented by a parent module containing:</p>
@@ -431,16 +437,22 @@ An <code class="docutils literal notranslate"><span class="pre">eqx.Module</span
 <li><p>a <strong>plastic</strong> submodule.</p></li>
 </ul>
 </li>
-<li><p>The plastic submodule may itself include submodules for the <strong>yield surface</strong>, <strong>hardening law</strong>, and <strong>flow rule</strong>.</p></li>
+<li><p>The plastic submodule may itself include submodules for the <strong>yield
+surface</strong>, <strong>hardening law</strong>, and <strong>flow rule</strong>.</p></li>
 </ul>
-<p>This modular structure promotes both clarity and reusability—complex constitutive models can be built from simple, well-defined components.</p>
+<p>This modular structure promotes both clarity and reusability—complex
+constitutive models can be built from simple, well-defined components.</p>
 </section>
 <section id="benefits-of-using-equinox-pytrees">
 <h2>Benefits of using Equinox PyTrees<a class="headerlink" href="#benefits-of-using-equinox-pytrees" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code> instances remain valid <strong>PyTrees</strong>, so they can be batched, mapped, or differentiated seamlessly using JAX transformations.</p></li>
-<li><p>Functions such as <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> or <code class="docutils literal notranslate"><span class="pre">jax.grad</span></code> can operate over the entire module hierarchy without special handling.</p></li>
-<li><p>When fine-grained edits are needed (e.g. replacing a single subcomponent), standard PyTree utilities (like <code class="docutils literal notranslate"><span class="pre">jax.tree_map</span></code> or <code class="docutils literal notranslate"><span class="pre">optax.tree_utils</span></code>) can be used for selective modification.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code> instances remain valid <strong>PyTrees</strong>, so they can be batched,
+mapped, or differentiated seamlessly using JAX transformations.</p></li>
+<li><p>Functions such as <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> or <code class="docutils literal notranslate"><span class="pre">jax.grad</span></code> can operate over the entire module
+hierarchy without special handling.</p></li>
+<li><p>When fine-grained edits are needed (e.g. replacing a single subcomponent),
+standard PyTree utilities (like <code class="docutils literal notranslate"><span class="pre">jax.tree_map</span></code> or <code class="docutils literal notranslate"><span class="pre">optax.tree_utils</span></code>) can be
+used for selective modification.</p></li>
 </ul>
 <p>For advanced manipulation, see the <a class="reference external" href="https://docs.kidger.site/equinox/all-of-equinox/">Equinox documentation</a>.</p>
 </section>
@@ -448,15 +460,19 @@ An <code class="docutils literal notranslate"><span class="pre">eqx.Module</span
 <h2>Common Equinox patterns in <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code><a class="headerlink" href="#common-equinox-patterns-in-jaxmat" title="Link to this heading">#</a></h2>
 <ol class="arabic">
 <li><p><strong>Automatic conversion to JAX arrays</strong><br />
-Many model attributes represent scalar or tensor-valued material parameters. These must be stored as <code class="docutils literal notranslate"><span class="pre">jax.Array</span></code> objects; plain Python floats or <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> will not participate in JAX transformations or device placement.<br />
-To enforce this automatically, we use:</p>
+Many model attributes represent scalar or tensor-valued material parameters.
+These must be stored as <code class="docutils literal notranslate"><span class="pre">jax.Array</span></code> objects; plain Python floats or
+<code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> will not participate in JAX transformations or device
+placement.  To enforce this automatically, we use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">converter</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This ensures the input (float, list, or NumPy array) is converted to a JAX-compatible array.</p>
+<p>This ensures the input (float, list, or NumPy array) is converted to a
+JAX-compatible array.</p>
 <div class="admonition attention">
 <p class="admonition-title">Attention</p>
-<p>Beware of the differences between weakly and strongly typed objects in JAX i.e. <code class="docutils literal notranslate"><span class="pre">jnp.asarray(0.0)</span></code> is a <code class="docutils literal notranslate"><span class="pre">weak_f64</span></code> whereas <code class="docutils literal notranslate"><span class="pre">jnp.asarray(0.0,</span> <span class="pre">dtype=jnp.float64)</span></code> is a <code class="docutils literal notranslate"><span class="pre">f64</span></code>.</p>
+<p>Beware of the differences between weakly and strongly typed objects in JAX
+i.e. <code class="docutils literal notranslate"><span class="pre">jnp.asarray(0.0)</span></code> is a <code class="docutils literal notranslate"><span class="pre">weak_f64</span></code> whereas <code class="docutils literal notranslate"><span class="pre">jnp.asarray(0.0,</span> <span class="pre">dtype=jnp.float64)</span></code> is a <code class="docutils literal notranslate"><span class="pre">f64</span></code>.</p>
 </div>
 </li>
 <li><p><strong>Declarative defaults</strong></p>
@@ -471,19 +487,24 @@ To enforce this automatically, we use:</p>
 <p>This avoids writing explicit <code class="docutils literal notranslate"><span class="pre">__init__</span></code> methods while keeping the model declarative.</p>
 <div class="admonition attention">
 <p class="admonition-title">Attention</p>
-<p>The use of <code class="docutils literal notranslate"><span class="pre">default</span></code> results in immutable default arguments stored as class attributed. As a result, the object is shared among different instances. Use <code class="docutils literal notranslate"><span class="pre">default_factory</span></code> instead to have mutable default arguments, e.g.:</p>
+<p>The use of <code class="docutils literal notranslate"><span class="pre">default</span></code> results in immutable default arguments stored as class
+attributed. As a result, the object is shared among different instances. Use
+<code class="docutils literal notranslate"><span class="pre">default_factory</span></code> instead to have mutable default arguments, e.g.:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">F</span><span class="p">:</span> <span class="n">Tensor2</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Tensor2</span><span class="o">.</span><span class="n">identity</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
 </li>
-<li><p><strong>Safe JIT compilation with <code class="docutils literal notranslate"><span class="pre">eqx.filter_jit</span></code></strong><br />
-We frequently wrap key methods (e.g. constitutive updates) with:</p>
+<li><p><strong>Safe JIT compilation with <code class="docutils literal notranslate"><span class="pre">eqx.filter_jit</span></code></strong></p>
+<p>We frequently wrap key methods (e.g. constitutive updates) with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
 </pre></div>
 </div>
-<p>This decorator automatically filters out non-JAX types (such as solvers, configuration objects, or static metadata) from the JIT trace.<br />
-As a result, entire <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code> instances—potentially containing both static and dynamic fields—can be passed directly into JAX-compiled functions without causing tracing errors.</p>
+<p>This decorator automatically filters out non-JAX types (such as solvers,
+configuration objects, or static metadata) from the JIT trace.  As a result,
+entire <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code> instances—potentially containing both static and
+dynamic fields—can be passed directly into JAX-compiled functions without
+causing tracing errors.</p>
 </li>
 </ol>
 </section>
@@ -520,12 +541,12 @@ As a result, entire <code class="docutils literal notranslate"><span class="pre"
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="demos/quickstart/performance.html"
+       href="demos/quickstart/tensors.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Performance of CPU and GPU material integration</p>
+        <p class="prev-next-title">Working with tensors</p>
       </div>
     </a>
     <a class="right-next"

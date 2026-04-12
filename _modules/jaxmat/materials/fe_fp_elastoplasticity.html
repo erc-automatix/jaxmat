@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -184,14 +184,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -209,7 +207,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +234,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -359,21 +358,22 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for jaxmat.materials.fe_fp_elastoplasticity</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_value</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractState</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">Tensor2</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">safe_fun</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">Tensor2</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">safe_fun</span><span class="p">,</span> <span class="n">tr</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.linear_algebra</span><span class="w"> </span><span class="kn">import</span> <span class="n">det33</span> <span class="k">as</span> <span class="n">det</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">FischerBurmeister</span> <span class="k">as</span> <span class="n">FB</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_value</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">.behavior</span><span class="w"> </span><span class="kn">import</span> <span class="n">FiniteStrainBehavior</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.elasticity</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearElasticIsotropic</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plastic_surfaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractPlasticSurface</span><span class="p">,</span> <span class="n">vonMises</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">FischerBurmeister</span> <span class="k">as</span> <span class="n">FB</span>
 
 
 <div class="viewcode-block" id="InternalState">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.fe_fp_elastoplasticity.InternalState">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.InternalState">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">InternalState</span><span class="p">(</span><span class="n">AbstractState</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal state for :class:`FeFpJ2Plasticity`.&quot;&quot;&quot;</span>
 
@@ -385,7 +385,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="FeFpJ2Plasticity">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.fe_fp_elastoplasticity.FeFpJ2Plasticity">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.FeFpJ2Plasticity">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FeFpJ2Plasticity</span><span class="p">(</span><span class="n">FiniteStrainBehavior</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Material model based on https://onlinelibrary.wiley.com/doi/epdf/10.1002/nme.6843&quot;&quot;&quot;</span>
 
@@ -398,7 +398,7 @@ document.write(`
     <span class="n">internal_type</span> <span class="o">=</span> <span class="n">InternalState</span>
 
 <div class="viewcode-block" id="FeFpJ2Plasticity.constitutive_update">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.fe_fp_elastoplasticity.FeFpJ2Plasticity.constitutive_update">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.FeFpJ2Plasticity.constitutive_update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="n">F_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">F</span>
         <span class="n">isv_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">internal</span>
@@ -410,33 +410,37 @@ document.write(`
             <span class="c1"># relative strain and elastic predictor</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">F</span> <span class="o">@</span> <span class="n">F_old</span><span class="o">.</span><span class="n">inv</span>
             <span class="n">f_bar</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="n">safe_fun</span><span class="p">(</span><span class="k">lambda</span> <span class="n">J</span><span class="p">:</span> <span class="n">J</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">),</span> <span class="n">det</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
-            <span class="n">be_bar_trial</span> <span class="o">=</span> <span class="n">f_bar</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">be_bar_old</span> <span class="o">@</span> <span class="n">f_bar</span>
+            <span class="n">be_bar_trial</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_bar</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">be_bar_old</span> <span class="o">@</span> <span class="n">f_bar</span><span class="p">)</span><span class="o">.</span><span class="n">sym</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">residual</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-                <span class="c1"># FIXME: currently we don&#39;t account for symmetry of be_bar</span>
-                <span class="n">dp</span><span class="p">,</span> <span class="n">be_bar</span> <span class="o">=</span> <span class="n">dy</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">dy</span><span class="o">.</span><span class="n">be_bar</span>
+                <span class="n">dp</span><span class="p">,</span> <span class="n">be_bar</span> <span class="o">=</span> <span class="n">dy</span>  <span class="c1"># .p, dy.be_bar</span>
                 <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">mu</span> <span class="o">*</span> <span class="n">dev</span><span class="p">(</span><span class="n">be_bar</span><span class="p">)</span>
-                <span class="n">yield_criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surface</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_stress</span><span class="p">(</span>
-                    <span class="n">p_old</span> <span class="o">+</span> <span class="n">dp</span>
-                <span class="p">)</span>
+                <span class="n">yield_criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surface</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_stress</span><span class="p">(</span><span class="n">p_old</span> <span class="o">+</span> <span class="n">dp</span><span class="p">)</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surface</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
                 <span class="n">res</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">FB</span><span class="p">(</span><span class="o">-</span><span class="n">yield_criterion</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">dp</span><span class="p">),</span>
-                    <span class="n">dev</span><span class="p">(</span><span class="n">be_bar</span> <span class="o">-</span> <span class="n">be_bar_trial</span><span class="p">)</span>
-                    <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dp</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">be_bar</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n</span>
-                    <span class="o">+</span> <span class="n">Id</span> <span class="o">*</span> <span class="p">(</span><span class="n">det</span><span class="p">(</span><span class="n">be_bar</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+                    <span class="p">(</span>
+                        <span class="n">dev</span><span class="p">(</span><span class="n">be_bar</span> <span class="o">-</span> <span class="n">be_bar_trial</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dp</span> <span class="o">*</span> <span class="n">tr</span><span class="p">(</span><span class="n">be_bar</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n</span>
+                        <span class="o">+</span> <span class="n">Id</span> <span class="o">*</span> <span class="p">(</span><span class="n">det</span><span class="p">(</span><span class="n">be_bar</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">sym</span><span class="p">,</span>
                 <span class="p">)</span>
+                <span class="c1"># import jax</span>
+
+                <span class="c1"># jax.debug.print(&quot;Residual = {}&quot;, res)</span>
                 <span class="k">return</span> <span class="n">res</span>
 
-            <span class="n">dy0</span> <span class="o">=</span> <span class="n">isv_old</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">be_bar</span><span class="o">=</span><span class="n">be_bar_trial</span><span class="p">)</span>
+            <span class="c1"># dy0 = isv_old.update(p=0, be_bar=be_bar_trial)</span>
+            <span class="n">dy0</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">be_bar_trial</span>
             <span class="n">sol</span> <span class="o">=</span> <span class="n">optx</span><span class="o">.</span><span class="n">root_find</span><span class="p">(</span>
                 <span class="n">residual</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">dy0</span><span class="p">,</span> <span class="n">adjoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adjoint</span><span class="p">,</span> <span class="n">throw</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="n">sol</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">be_bar_trial</span>
 
         <span class="n">dy</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">solve_state</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
-        <span class="n">be_bar</span> <span class="o">=</span> <span class="n">dy</span><span class="o">.</span><span class="n">be_bar</span><span class="o">.</span><span class="n">sym</span>  <span class="c1"># enforce symmetry</span>
-        <span class="n">dp</span> <span class="o">=</span> <span class="n">dy</span><span class="o">.</span><span class="n">p</span>
+        <span class="n">dp</span><span class="p">,</span> <span class="n">be_bar</span> <span class="o">=</span> <span class="n">dy</span>
+        <span class="c1"># be_bar = dy.be_bar.sym  # enforce symmetry</span>
+        <span class="c1"># dp = dy.p</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">isv_old</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="n">isv_old</span><span class="o">.</span><span class="n">p</span> <span class="o">+</span> <span class="n">dp</span><span class="p">,</span> <span class="n">be_bar</span><span class="o">=</span><span class="n">be_bar</span><span class="p">)</span>
 
         <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">mu</span> <span class="o">*</span> <span class="n">dev</span><span class="p">(</span><span class="n">be_bar</span><span class="p">)</span>

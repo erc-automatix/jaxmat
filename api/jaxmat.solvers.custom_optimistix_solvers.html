@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -185,14 +185,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -210,7 +208,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -238,6 +235,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -418,7 +417,8 @@ document.write(`
 <dt class="sig sig-object py" id="jaxmat.solvers.custom_optimistix_solvers.GaussNewtonTrustRegion">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GaussNewtonTrustRegion</span></span><a class="reference internal" href="../_modules/jaxmat/solvers/custom_optimistix_solvers.html#GaussNewtonTrustRegion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.solvers.custom_optimistix_solvers.GaussNewtonTrustRegion" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GaussNewton</span></code></p>
-<p>Gauss-Newton algorithm, for solving nonlinear least-squares problems with a trust region search.</p>
+<p>Gauss-Newton Trust Region method.</p>
+<p>For solving nonlinear least-squares problems with a trust region search.</p>
 <p><strong>Arguments:</strong></p>
 <ul class="simple">
 <li><p><cite>rtol</cite>: Relative tolerance for terminating the solve.</p></li>
@@ -445,11 +445,12 @@ entries are <cite>step</cite>, <cite>loss</cite>, <cite>accepted</cite>, <cite>s
 <dt class="sig sig-object py" id="jaxmat.solvers.custom_optimistix_solvers.NewtonTrustRegion">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NewtonTrustRegion</span></span><a class="reference internal" href="../_modules/jaxmat/solvers/custom_optimistix_solvers.html#NewtonTrustRegion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.solvers.custom_optimistix_solvers.NewtonTrustRegion" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LevenbergMarquardt</span></code></p>
-<p>Newton method for solving nonlinear problems with a trust region search.</p>
+<p>Newton Trust Region method.</p>
+<p>For solving nonlinear least-squares problems with a trust region search.</p>
 <div class="admonition-notes admonition">
 <p class="admonition-title">Notes</p>
-<p>This algorithm is derived from LevenbergMarquardt using a full Newton descent
-instead of a damped one.</p>
+<p>This algorithm is derived from <cite>optx.LevenbergMarquardt</cite> using a full
+Newton descent instead of a damped one.</p>
 </div>
 <p><strong>Arguments:</strong></p>
 <ul class="simple">
@@ -481,7 +482,8 @@ entries are <cite>step</cite>, <cite>loss</cite>, <cite>accepted</cite>, <cite>s
 <dt class="sig sig-object py" id="jaxmat.solvers.custom_optimistix_solvers.BFGSLinearTrustRegion">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BFGSLinearTrustRegion</span></span><a class="reference internal" href="../_modules/jaxmat/solvers/custom_optimistix_solvers.html#BFGSLinearTrustRegion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.solvers.custom_optimistix_solvers.BFGSLinearTrustRegion" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractBFGS</span></code></p>
-<p>Standard BFGS algorithm, for solving minimisation problems with a linear trust region search.</p>
+<p>BFGS algorithm with trust region.</p>
+<p>For solving minimisation problems with a linear trust region search.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.solvers.custom_optimistix_solvers.BFGSLinearTrustRegion.rtol">
 <span class="sig-name descname"><span class="pre">rtol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.solvers.custom_optimistix_solvers.BFGSLinearTrustRegion.rtol" title="Link to this definition">#</a></dt>

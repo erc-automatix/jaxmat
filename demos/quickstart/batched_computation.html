@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -187,13 +187,14 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -212,7 +213,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +240,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -395,8 +397,13 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="batching-across-material-points">
 <h1>Batching across material points<a class="headerlink" href="#batching-across-material-points" title="Link to this heading">#</a></h1>
-<p>In this section, we extend the previous setup to evaluate the constitutive law for a set of <span class="math notranslate nohighlight">\(N\)</span> material points, which we will refer to as a <em>batch</em> of size <span class="math notranslate nohighlight">\(N\)</span>. To achieve this efficiently, we leverage <code class="docutils literal notranslate"><span class="pre">jax</span></code>’s automatic vectorization via the <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> function.</p>
-<p>As an illustrative example, we consider perfect plasticity and perform a single evaluation of the constitutive update for strains that would lead the elastic predictor outside the yield surface. The constitutive update then projects these points back onto the yield surface. We focus on purely deviatoric strains of the form:</p>
+<p>In this section, we extend the previous setup to evaluate the constitutive law for a set of <span class="math notranslate nohighlight">\(N\)</span>
+material points, which we will refer to as a <em>batch</em> of size <span class="math notranslate nohighlight">\(N\)</span>. To achieve this efficiently, we
+leverage <code class="docutils literal notranslate"><span class="pre">jax</span></code>’s automatic vectorization via the <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> function.</p>
+<p>As an illustrative example, we consider perfect plasticity and perform a single evaluation of the
+constitutive update for strains that would lead the elastic predictor outside the yield surface.
+The constitutive update then projects these points back onto the yield surface. We focus on purely
+deviatoric strains of the form:</p>
 <div class="math notranslate nohighlight">
 \[
 \boldsymbol{\varepsilon} = \text{diag}(e_I, e_{II}, -(e_I + e_{II}))
@@ -404,20 +411,22 @@ document.write(`
 <p>The batch consists of <span class="math notranslate nohighlight">\(N\)</span> points defined by:</p>
 <div class="math notranslate nohighlight">
 \[
-e_I = \epsilon \cos(\theta_k), \quad e_{II} = \epsilon \sin(\theta_k), \quad \theta_k \in [0, 2\pi], \quad k = 1,\dots,N
+e_I = \epsilon \cos(\theta_k), \quad e_{II} = \epsilon \sin(\theta_k), \quad \theta_k \in [0,
+2\pi], \quad k = 1,\dots,N
 \]</div>
 <p>where the amplitude <span class="math notranslate nohighlight">\(\epsilon\)</span> is chosen sufficiently large to exceed the plastic yield surface.</p>
 <p>We first represent <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}\)</span> as a batched <code class="docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code> with shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">3,</span> <span class="pre">3)</span></code>. By convention, the batch dimension is always the first axis.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
-
-<span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_platform_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span>
+
+<span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_platform_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 
 <span class="n">N</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">theta</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
@@ -432,7 +441,9 @@ e_I = \epsilon \cos(\theta_k), \quad e_{II} = \epsilon \sin(\theta_k), \quad \th
 </div>
 </div>
 </div>
-<p>Next, we define an elastoplastic material based on <code class="docutils literal notranslate"><span class="pre">GeneralIsotropicHardening</span></code>, which allows us to consider different yield surfaces. Here, we choose a Hosford surface and will vary its shape parameter <span class="math notranslate nohighlight">\(a\)</span>. The yield stress is nearly constant to mimic perfect plasticity.</p>
+<p>Next, we define an elastoplastic material based on <code class="docutils literal notranslate"><span class="pre">GeneralIsotropicHardening</span></code>, which allows us to
+consider different yield surfaces. Here, we choose a Hosford surface and will vary its shape
+parameter <span class="math notranslate nohighlight">\(a\)</span>. The yield stress is nearly constant to mimic perfect plasticity.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sig0</span> <span class="o">=</span> <span class="mf">300.0</span>
@@ -463,7 +474,10 @@ e_I = \epsilon \cos(\theta_k), \quad e_{II} = \epsilon \sin(\theta_k), \quad \th
 </div>
 </div>
 </div>
-<p>To evaluate the constitutive behavior over the entire batch, we vectorize the constitutive update using the <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> transform. The method signature is <code class="docutils literal notranslate"><span class="pre">(material,</span> <span class="pre">strain,</span> <span class="pre">state,</span> <span class="pre">dt)</span></code>, so <code class="docutils literal notranslate"><span class="pre">in_axes=(None,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">None)</span></code> specifies that only the first axes of <code class="docutils literal notranslate"><span class="pre">strain</span></code> and <code class="docutils literal notranslate"><span class="pre">state</span></code> are vectorized, while <code class="docutils literal notranslate"><span class="pre">material</span></code> and the time step <code class="docutils literal notranslate"><span class="pre">dt</span></code> are shared across the batch.</p>
+<p>To evaluate the constitutive behavior over the entire batch, we vectorize the constitutive update
+using the <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> transform. The method signature is <code class="docutils literal notranslate"><span class="pre">(material,</span> <span class="pre">strain,</span> <span class="pre">state,</span> <span class="pre">dt)</span></code>, so
+<code class="docutils literal notranslate"><span class="pre">in_axes=(None,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">None)</span></code> specifies that only the first axes of <code class="docutils literal notranslate"><span class="pre">strain</span></code> and <code class="docutils literal notranslate"><span class="pre">state</span></code> are
+vectorized, while <code class="docutils literal notranslate"><span class="pre">material</span></code> and the time step <code class="docutils literal notranslate"><span class="pre">dt</span></code> are shared across the batch.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batched_constitutive_update</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span>
@@ -475,9 +489,15 @@ e_I = \epsilon \cos(\theta_k), \quad e_{II} = \epsilon \sin(\theta_k), \quad \th
 </div>
 <div class="admonition attention">
 <p class="admonition-title">Attention</p>
-<p>We vectorize the <strong>unbound class method</strong> <code class="docutils literal notranslate"><span class="pre">GeneralIsotropicHardening.constitutive_update</span></code> rather than the bound method <code class="docutils literal notranslate"><span class="pre">material.constitutive_update</span></code>. This approach is more general, allowing different instances of the same material to be used without redefining the batched constitutive update.</p>
+<p>We vectorize the <strong>unbound class method</strong> <code class="docutils literal notranslate"><span class="pre">GeneralIsotropicHardening.constitutive_update</span></code> rather
+than the bound method <code class="docutils literal notranslate"><span class="pre">material.constitutive_update</span></code>. This approach is more general, allowing
+different instances of the same material to be used without redefining the batched constitutive
+update.</p>
 </div>
-<p>Next, we iterate over different values of the Hosford parameter <span class="math notranslate nohighlight">\(a\)</span>. Using equinox.tree_at, we update the material PyTree to define a new material instance, then evaluate the batched constitutive update for the batch of strains and states. The resulting batched stress tensors are then plotted on the deviatoric <span class="math notranslate nohighlight">\(\pi\)</span>-plane.</p>
+<p>Next, we iterate over different values of the Hosford parameter <span class="math notranslate nohighlight">\(a\)</span>. Using equinox.tree_at, we
+update the material PyTree to define a new material instance, then evaluate the batched
+constitutive update for the batch of strains and states. The resulting batched stress tensors are
+then plotted on the deviatoric <span class="math notranslate nohighlight">\(\pi\)</span>-plane.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="admonition hide above-input">
 <summary aria-label="Toggle hidden content">

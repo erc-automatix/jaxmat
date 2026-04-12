@@ -13,5 +13,7 @@
 ## References
 
 ```{seealso}
-This project builds upon implementations of `jax`-based material models for FEniCSx in the [`dolfinx_materials`](https://github.com/bleyerj/dolfinx_materials) package.
+This project builds upon implementations of `jax`-based material models for
+FEniCSx in the
+[`dolfinx_materials`](https://github.com/bleyerj/dolfinx_materials) package.
 ```

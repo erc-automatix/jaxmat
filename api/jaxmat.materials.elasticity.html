@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -187,13 +187,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -212,7 +213,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +240,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -411,6 +413,16 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticIsotropic.lmbda"><code class="docutils literal notranslate"><span class="pre">LinearElasticIsotropic.lmbda</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.axis"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.axis</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.EL"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.EL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.ET"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.ET</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.nuL"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.nuL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.nuT"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.nuT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.muL"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.muL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.C"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.C</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic"><code class="docutils literal notranslate"><span class="pre">LinearElasticOrthotropic</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic.EL"><code class="docutils literal notranslate"><span class="pre">LinearElasticOrthotropic.EL</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic.ET"><code class="docutils literal notranslate"><span class="pre">LinearElasticOrthotropic.ET</span></code></a></li>
@@ -470,7 +482,7 @@ document.write(`
 </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>eps</strong> (<a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2" title="jaxmat.tensors.generic_tensors.SymmetricTensor2"><em>SymmetricTensor2</em></a>) – Strain tensor</p>
+<dd class="field-odd"><p><strong>eps</strong> (<a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2" title="jaxmat.tensors.SymmetricTensor2"><em>SymmetricTensor2</em></a>) – Strain tensor</p>
 </dd>
 </dl>
 </dd></dl>
@@ -484,13 +496,13 @@ document.write(`
 <p>A generic linear elastic model with custom stiffness tensor.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElastic.stiffness">
-<span class="sig-name descname"><span class="pre">stiffness</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor4" title="jaxmat.tensors.generic_tensors.SymmetricTensor4"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor4</span></code></a></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElastic.stiffness" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">stiffness</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor4" title="jaxmat.tensors.SymmetricTensor4"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor4</span></code></a></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElastic.stiffness" title="Link to this definition">#</a></dt>
 <dd><p>4th-rank generic stiffness tensor</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElastic.C">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">C</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor4" title="jaxmat.tensors.generic_tensors.SymmetricTensor4"><span class="pre">SymmetricTensor4</span></a></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElastic.C" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">C</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor4" title="jaxmat.tensors.SymmetricTensor4"><span class="pre">SymmetricTensor4</span></a></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElastic.C" title="Link to this definition">#</a></dt>
 <dd><p>Return the stiffness tensor.</p>
 </dd></dl>
 
@@ -553,6 +565,54 @@ document.write(`
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticTransverseIsotropic">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LinearElasticTransverseIsotropic</span></span><a class="reference internal" href="../_modules/jaxmat/materials/elasticity.html#LinearElasticTransverseIsotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxmat.materials.elasticity.AbstractLinearElastic" title="jaxmat.materials.elasticity.AbstractLinearElastic"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractLinearElastic</span></code></a></p>
+<p>A transversely isotropic linear elastic model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.axis">
+<span class="sig-name descname"><span class="pre">axis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.axis" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.EL">
+<span class="sig-name descname"><span class="pre">EL</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.EL" title="Link to this definition">#</a></dt>
+<dd><p>Longitudinal Young modulus <span class="math notranslate nohighlight">\(E_{L}\)</span></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.ET">
+<span class="sig-name descname"><span class="pre">ET</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.ET" title="Link to this definition">#</a></dt>
+<dd><p>Transverse Young modulus <span class="math notranslate nohighlight">\(E_{T}\)</span></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.nuL">
+<span class="sig-name descname"><span class="pre">nuL</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.nuL" title="Link to this definition">#</a></dt>
+<dd><p>Longitudinal Poisson ratio <span class="math notranslate nohighlight">\(\nu_{L}\)</span></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.nuT">
+<span class="sig-name descname"><span class="pre">nuT</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.nuT" title="Link to this definition">#</a></dt>
+<dd><p>Transverse Poisson ratio <span class="math notranslate nohighlight">\(\nu_{T}\)</span></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.muL">
+<span class="sig-name descname"><span class="pre">muL</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.muL" title="Link to this definition">#</a></dt>
+<dd><p>Longitudinal shear modulus <span class="math notranslate nohighlight">\(\mu_{L}\)</span></p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.C">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">C</span></span><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.C" title="Link to this definition">#</a></dt>
+<dd><p>4th-rank transversely isotropic stiffness tensor</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticOrthotropic">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LinearElasticOrthotropic</span></span><a class="reference internal" href="../_modules/jaxmat/materials/elasticity.html#LinearElasticOrthotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#jaxmat.materials.elasticity.AbstractLinearElastic" title="jaxmat.materials.elasticity.AbstractLinearElastic"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractLinearElastic</span></code></a></p>
@@ -566,31 +626,31 @@ document.write(`
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticOrthotropic.ET">
 <span class="sig-name descname"><span class="pre">ET</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic.ET" title="Link to this definition">#</a></dt>
-<dd><p>Longitudinal Young modulus <span class="math notranslate nohighlight">\(E_{T}\)</span></p>
+<dd><p>Transverse Young modulus <span class="math notranslate nohighlight">\(E_{T}\)</span></p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticOrthotropic.EN">
 <span class="sig-name descname"><span class="pre">EN</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic.EN" title="Link to this definition">#</a></dt>
-<dd><p>Longitudinal Young modulus <span class="math notranslate nohighlight">\(E_{N}\)</span></p>
+<dd><p>Normal Young modulus <span class="math notranslate nohighlight">\(E_{N}\)</span></p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticOrthotropic.nuLT">
 <span class="sig-name descname"><span class="pre">nuLT</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic.nuLT" title="Link to this definition">#</a></dt>
-<dd><p>Longitudinal-transverse Poisson coefficient <span class="math notranslate nohighlight">\(\nu_{LT}\)</span></p>
+<dd><p>Longitudinal-transverse Poisson ratio <span class="math notranslate nohighlight">\(\nu_{LT}\)</span></p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticOrthotropic.nuLN">
 <span class="sig-name descname"><span class="pre">nuLN</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic.nuLN" title="Link to this definition">#</a></dt>
-<dd><p>Longitudinal-normal Poisson coefficient <span class="math notranslate nohighlight">\(\nu_{LN}\)</span></p>
+<dd><p>Longitudinal-normal Poisson ratio <span class="math notranslate nohighlight">\(\nu_{LN}\)</span></p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elasticity.LinearElasticOrthotropic.nuTN">
 <span class="sig-name descname"><span class="pre">nuTN</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic.nuTN" title="Link to this definition">#</a></dt>
-<dd><p>Transverse-normal Poisson coefficient <span class="math notranslate nohighlight">\(\nu_{TN}\)</span></p>
+<dd><p>Transverse-normal Poisson ratio <span class="math notranslate nohighlight">\(\nu_{TN}\)</span></p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -751,6 +811,16 @@ constitutive behaviors (elastic, plastic, viscoplastic, etc.).</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticIsotropic.kappa"><code class="docutils literal notranslate"><span class="pre">LinearElasticIsotropic.kappa</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticIsotropic.mu"><code class="docutils literal notranslate"><span class="pre">LinearElasticIsotropic.mu</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticIsotropic.lmbda"><code class="docutils literal notranslate"><span class="pre">LinearElasticIsotropic.lmbda</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.axis"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.axis</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.EL"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.EL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.ET"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.ET</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.nuL"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.nuL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.nuT"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.nuT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.muL"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.muL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.C"><code class="docutils literal notranslate"><span class="pre">LinearElasticTransverseIsotropic.C</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.materials.elasticity.LinearElasticOrthotropic"><code class="docutils literal notranslate"><span class="pre">LinearElasticOrthotropic</span></code></a><ul class="visible nav section-nav flex-column">

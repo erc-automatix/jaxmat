@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -184,14 +184,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -209,7 +207,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +234,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -359,17 +358,18 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for jaxmat.materials.viscoelasticity</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">enforce_dtype</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractState</span><span class="p">,</span> <span class="n">make_batched</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">enforce_dtype</span>
 
 
 <div class="viewcode-block" id="SLSState">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.SLSState">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.SLSState">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SLSState</span><span class="p">(</span><span class="n">AbstractState</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal state for the :class:`StandardLinearSolid` behavior.&quot;&quot;&quot;</span>
 
@@ -379,7 +379,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="StandardLinearSolid">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.StandardLinearSolid">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.StandardLinearSolid">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StandardLinearSolid</span><span class="p">(</span><span class="n">jm</span><span class="o">.</span><span class="n">SmallStrainBehavior</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Standard Linear Solid (Zener) viscoelastic model in Maxwell representation.</span>
 
@@ -410,7 +410,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal state containing the viscous strain.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="StandardLinearSolid.constitutive_update">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.StandardLinearSolid.constitutive_update">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.StandardLinearSolid.constitutive_update">[docs]</a>
     <span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="n">eps_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">strain</span>
@@ -419,9 +419,7 @@ document.write(`
 
         <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwell_viscosity</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwell_stiffness</span><span class="o">.</span><span class="n">E</span>
         <span class="n">epsv_new</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">eps</span>
-            <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dt</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">epsv_old</span> <span class="o">-</span> <span class="n">eps_old</span><span class="p">)</span>
-            <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dt</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="n">deps</span>
+            <span class="n">eps</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dt</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">epsv_old</span> <span class="o">-</span> <span class="n">eps_old</span><span class="p">)</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dt</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="n">deps</span>
         <span class="p">)</span><span class="o">.</span><span class="n">sym</span>
 
         <span class="n">sig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="n">eps</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwell_stiffness</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="p">(</span><span class="n">eps</span> <span class="o">-</span> <span class="n">epsv_new</span><span class="p">)</span>
@@ -433,7 +431,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="GeneralizedMaxwellState">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwellState">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.GeneralizedMaxwellState">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GeneralizedMaxwellState</span><span class="p">(</span><span class="n">AbstractState</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal state for the :class:`GeneralizedMaxwell` viscoelastic model.</span>
 
@@ -454,7 +452,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="GeneralizedMaxwell">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwell">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.GeneralizedMaxwell">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GeneralizedMaxwell</span><span class="p">(</span><span class="n">jm</span><span class="o">.</span><span class="n">SmallStrainBehavior</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generalized Maxwell viscoelastic model (N-branch).</span>
 
@@ -462,12 +460,13 @@ document.write(`
 <span class="sd">    using a series of Maxwell elements (spring + dashpot), each with its own</span>
 <span class="sd">    relaxation time $\tau_i$.</span>
 
-<span class="sd">    The model can be seen as a Prony series representation of stress relaxation.</span>
+<span class="sd">    The model can be seen as a Prony series representation of stress relaxation</span>
+<span class="sd">    function.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    The total stress is computed as:</span>
-<span class="sd">    </span>
+
 <span class="sd">    $$\bsig = \bsig_\infty + \sum_{i=1}^N \bsig^\text{v}_i$$</span>
 
 <span class="sd">    where in each viscous branch evolves as:</span>
@@ -487,13 +486,13 @@ document.write(`
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Array of relaxation times $(\tau_i)$ for the Maxwell branches.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="GeneralizedMaxwell.make_internal_state">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwell.make_internal_state">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.GeneralizedMaxwell.make_internal_state">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">make_internal_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">GeneralizedMaxwellState</span><span class="p">(</span><span class="n">Nbranch</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relaxation_times</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="GeneralizedMaxwell.constitutive_update">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwell.constitutive_update">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.GeneralizedMaxwell.constitutive_update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="n">sigv_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">sigv</span>
         <span class="n">eps_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">strain</span>

@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -187,13 +187,14 @@
 <li class="toctree-l1"><a class="reference internal" href="batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -212,7 +213,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +240,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -406,29 +408,42 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="getting-started-with-jaxmat">
 <h1>Getting started with <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code><a class="headerlink" href="#getting-started-with-jaxmat" title="Link to this heading">#</a></h1>
-<p>In this tutorial, we show how to define and evaluate a simple elastoplastic behavior with nonlinear isotropic hardening.</p>
-<p>We first import <code class="docutils literal notranslate"><span class="pre">jax</span></code> and may specify whether we want to run on the CPU or the GPU. We will also need the <code class="docutils literal notranslate"><span class="pre">equinox</span></code> package from which we use <code class="docutils literal notranslate"><span class="pre">Module</span></code>s to define the different behavior bricks, see <a class="reference internal" href="#./../../docs/pytrees.md"><span class="xref myst">more details on the use of <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code>.</span></a>.</p>
+<p>In this tutorial, we show how to define and evaluate a simple elastoplastic behavior with
+nonlinear isotropic hardening.</p>
+<p>We first import <code class="docutils literal notranslate"><span class="pre">jax</span></code> and may specify whether we want to run on the CPU or the GPU. We will also
+need the <code class="docutils literal notranslate"><span class="pre">equinox</span></code> package from which we use <code class="docutils literal notranslate"><span class="pre">Module</span></code>s to define the different behavior bricks,
+see <a class="reference internal" href="../../pytrees.html"><span class="std std-doc">more details on the use of <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code>.</span></a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span>
 
 <span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_platform_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
 </pre></div>
 </div>
 </div>
 </div>
 <section id="defining-a-behavior">
 <h2>Defining a behavior<a class="headerlink" href="#defining-a-behavior" title="Link to this heading">#</a></h2>
-<p>In the <code class="docutils literal notranslate"><span class="pre">jaxmat.materials</span></code> module, various material models such as elasticity or von Mises plasticity are already available. We will use <code class="docutils literal notranslate"><span class="pre">LinearElasticIsotropic</span></code> for the elastic part and <code class="docutils literal notranslate"><span class="pre">vonMisesIsotropicHardening</span></code> for the elastoplastic model. The latter expects a yield stress module representing the isotropic hardening. In the following, we use a Voce-type exponential hardening:</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">jaxmat.materials</span></code> module, various material models such as elasticity or von Mises
+plasticity are already available. We will use <code class="docutils literal notranslate"><span class="pre">LinearElasticIsotropic</span></code> for the elastic part and
+<code class="docutils literal notranslate"><span class="pre">vonMisesIsotropicHardening</span></code> for the elastoplastic model. The latter expects a yield stress module
+representing the isotropic hardening. In the following, we use a Voce-type exponential hardening:</p>
 <div class="math notranslate nohighlight">
 \[
 \sigma_\text{Y}(p) = \sigma_0 + (\sigma_\text{u}-\sigma_0)\exp(-bp)
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(\sigma_0\)</span> (resp. <span class="math notranslate nohighlight">\(\sigma_u\)</span>) is the initial (resp. final) yield stress and <span class="math notranslate nohighlight">\(b\)</span> is a hardening parameter controlling the rate of convergence from <span class="math notranslate nohighlight">\(\sigma_0\)</span> to <span class="math notranslate nohighlight">\(\sigma_u\)</span> as a function of the cumulated plastic strain <span class="math notranslate nohighlight">\(p\)</span>.</p>
-<p>For this purpose, we simply define an <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code> with the material parameter attributes <span class="math notranslate nohighlight">\((\sigma_0,\sigma_u, b)\)</span> and a <code class="docutils literal notranslate"><span class="pre">__call__</span></code> function which evaluates the current yield stress as a function of the cumulated plastic strain <span class="math notranslate nohighlight">\(p\)</span>.</p>
+<p>where <span class="math notranslate nohighlight">\(\sigma_0\)</span> (resp. <span class="math notranslate nohighlight">\(\sigma_u\)</span>) is the initial (resp. final) yield stress and <span class="math notranslate nohighlight">\(b\)</span> is a
+hardening parameter controlling the rate of convergence from <span class="math notranslate nohighlight">\(\sigma_0\)</span> to <span class="math notranslate nohighlight">\(\sigma_u\)</span> as a
+function of the cumulated plastic strain <span class="math notranslate nohighlight">\(p\)</span>.</p>
+<p>For this purpose, we simply define an <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code> with the material parameter attributes
+<span class="math notranslate nohighlight">\((\sigma_0,\sigma_u, b)\)</span> and a <code class="docutils literal notranslate"><span class="pre">__call__</span></code> function which evaluates the current yield stress as a
+function of the cumulated plastic strain <span class="math notranslate nohighlight">\(p\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">elasticity</span> <span class="o">=</span> <span class="n">jm</span><span class="o">.</span><span class="n">LinearElasticIsotropic</span><span class="p">(</span><span class="n">E</span><span class="o">=</span><span class="mf">200e3</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
@@ -448,7 +463,10 @@ document.write(`
 </div>
 </div>
 </div>
-<p>We now define the final material behavior of type <code class="docutils literal notranslate"><span class="pre">vonMisesIsotropicHardening</span></code>. We can check that it is a module containing an <code class="docutils literal notranslate"><span class="pre">elasticity</span></code> submodule and a <code class="docutils literal notranslate"><span class="pre">yield_stress</span></code> submodule. Each of these submodule holds its own material properties. The elastic submodule also allows to access the material elastic shear modulus for instance, which is 80 GPa here.</p>
+<p>We now define the final material behavior of type <code class="docutils literal notranslate"><span class="pre">vonMisesIsotropicHardening</span></code>. We can check that
+it is a module containing an <code class="docutils literal notranslate"><span class="pre">elasticity</span></code> submodule and a <code class="docutils literal notranslate"><span class="pre">yield_stress</span></code> submodule. Each of these
+submodule holds its own material properties. The elastic submodule also allows to access the
+material elastic shear modulus for instance, which is 80 GPa here.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span> <span class="o">=</span> <span class="n">jm</span><span class="o">.</span><span class="n">vonMisesIsotropicHardening</span><span class="p">(</span><span class="n">elasticity</span><span class="o">=</span><span class="n">elasticity</span><span class="p">,</span> <span class="n">yield_stress</span><span class="o">=</span><span class="n">hardening</span><span class="p">)</span>
@@ -457,7 +475,7 @@ document.write(`
 <span class="nb">print</span><span class="p">(</span><span class="n">material</span><span class="o">.</span><span class="n">yield_stress</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
 
 <span class="n">mu</span> <span class="o">=</span> <span class="n">elasticity</span><span class="o">.</span><span class="n">mu</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Shear modulus = </span><span class="si">{</span><span class="mf">1e-3</span><span class="o">*</span><span class="n">mu</span><span class="si">}</span><span class="s2"> GPa&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Shear modulus = </span><span class="si">{</span><span class="mf">1e-3</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">mu</span><span class="si">}</span><span class="s2"> GPa&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -475,7 +493,9 @@ Shear modulus = 80.0 GPa
 </div>
 </div>
 </div>
-<p>Since <code class="docutils literal notranslate"><span class="pre">hardening</span></code> is a JAX function, we can also compute its derivative using <code class="docutils literal notranslate"><span class="pre">jax.grad</span></code> to obtain the corresponding hardening modulus. Below, we evaluate this modulus on an array of values of cumulated plastic strain and plot the result.</p>
+<p>Since <code class="docutils literal notranslate"><span class="pre">hardening</span></code> is a JAX function, we can also compute its derivative using <code class="docutils literal notranslate"><span class="pre">jax.grad</span></code> to obtain
+the corresponding hardening modulus. Below, we evaluate this modulus on an array of values of
+cumulated plastic strain and plot the result.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hardening_modulus</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">hardening</span><span class="p">)</span>
@@ -484,19 +504,17 @@ Shear modulus = 80.0 GPa
 <span class="n">H</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">hardening_modulus</span><span class="p">)</span>
 
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">hardening</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="s2">&quot;-C0&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Equivalent plastic strain $p$&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Yield stress $\sigma_Y(p)$ [MPa]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Yield stress $\sigma_Y(p)$ [MPa]&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">H</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="s2">&quot;-C3&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Equivalent plastic strain $p$&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Hardening modulus $H(p)=\sigma_Y&#39;(p)$ [GPa]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Hardening modulus $H(p)=\sigma_Y&#39;(p)$ [GPa]&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -508,7 +526,13 @@ Shear modulus = 80.0 GPa
 </section>
 <section id="mechanical-states">
 <h2>Mechanical states<a class="headerlink" href="#mechanical-states" title="Link to this heading">#</a></h2>
-<p>In order to evaluate the response of a mechanical behavior, we need a mechanical state. Each material provides an <code class="docutils literal notranslate"><span class="pre">init_state</span></code> method to initialize its corresponding mechanical state with default initial values (usually 0). Below, we see that the present state contains a <code class="docutils literal notranslate"><span class="pre">strain</span></code> and a <code class="docutils literal notranslate"><span class="pre">stress</span></code>, each of them being a symmetric 2nd-rank tensor. In addition, it also contains an <code class="docutils literal notranslate"><span class="pre">internal</span></code> field, which is itself a state consisting of many internal state variables. In the present case, both the cumulated plastic strain <span class="math notranslate nohighlight">\(p\)</span> and the total plastic strain <span class="math notranslate nohighlight">\(\bepsp\)</span> are declared as internal state variables.</p>
+<p>In order to evaluate the response of a mechanical behavior, we need a mechanical state. Each
+material provides an <code class="docutils literal notranslate"><span class="pre">init_state</span></code> method to initialize its corresponding mechanical state with
+default initial values (usually 0). Below, we see that the present state contains a <code class="docutils literal notranslate"><span class="pre">strain</span></code> and a
+<code class="docutils literal notranslate"><span class="pre">stress</span></code>, each of them being a symmetric 2nd-rank tensor, see <a class="reference internal" href="tensors.html"><span class="std std-doc">here for more details on tensors in
+<code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>.</span></a>. In addition, it also contains an <code class="docutils literal notranslate"><span class="pre">internal</span></code> field, which is itself a
+state consisting of many internal state variables. In the present case, both the cumulated plastic
+strain <span class="math notranslate nohighlight">\(p\)</span> and the total plastic strain <span class="math notranslate nohighlight">\(\bepsp\)</span> are declared as internal state variables.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">state</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">init_state</span><span class="p">()</span>
@@ -519,15 +543,32 @@ Shear modulus = 80.0 GPa
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;internal&#39;: InternalState(p=f64[], epsp=SymmetricTensor2(dim=3, rank=2, _tensor=f64[3,3])), &#39;strain&#39;: SymmetricTensor2(dim=3, rank=2, _tensor=f64[3,3]), &#39;stress&#39;: SymmetricTensor2(dim=3, rank=2, _tensor=f64[3,3])}
-{&#39;p&#39;: Array(0., dtype=float64), &#39;epsp&#39;: SymmetricTensor2(dim=3, rank=2, _tensor=f64[3,3])}
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;internal&#39;: InternalState(
+  p=f64[],
+  epsp=SymmetricTensor2(
+    dim=3,
+    rank=2,
+    base_tensor_shape=(3, 3),
+    base_array_shape=(6,),
+    _tensor_indices=(i64[6], i64[6]),
+    _weights=f64[6],
+    _array=f64[6]
+  )
+), &#39;strain&#39;: [[0. 0. 0.]
+ [0. 0. 0.]
+ [0. 0. 0.]], &#39;stress&#39;: [[0. 0. 0.]
+ [0. 0. 0.]
+ [0. 0. 0.]]}
+{&#39;p&#39;: Array(0., dtype=float64), &#39;epsp&#39;: [[0. 0. 0.]
+ [0. 0. 0.]
+ [0. 0. 0.]]}
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor4</span>  <span class="c1"># noqa: E402</span>
 
 <span class="n">gamma</span> <span class="o">=</span> <span class="mf">1e-3</span>
 <span class="n">new_eps</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">gamma</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
@@ -540,8 +581,25 @@ Shear modulus = 80.0 GPa
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>SymmetricTensor2(dim=3, rank=2, _tensor=f64[3,3])
-{&#39;internal&#39;: InternalState(p=f64[], epsp=SymmetricTensor2(dim=3, rank=2, _tensor=f64[3,3])), &#39;strain&#39;: SymmetricTensor2(dim=3, rank=2, _tensor=f64[3,3]), &#39;stress&#39;: SymmetricTensor2(dim=3, rank=2, _tensor=f64[3,3])}
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[ 0. 80.  0.]
+ [80.  0.  0.]
+ [ 0.  0.  0.]]
+{&#39;internal&#39;: InternalState(
+  p=f64[],
+  epsp=SymmetricTensor2(
+    dim=3,
+    rank=2,
+    base_tensor_shape=(3, 3),
+    base_array_shape=(6,),
+    _tensor_indices=(i64[6], i64[6]),
+    _weights=f64[6],
+    _array=f64[6]
+  )
+), &#39;strain&#39;: [[0.     0.0005 0.    ]
+ [0.0005 0.     0.    ]
+ [0.     0.     0.    ]], &#39;stress&#39;: [[ 0. 80.  0.]
+ [80.  0.  0.]
+ [ 0.  0.  0.]]}
 </pre></div>
 </div>
 </div>
@@ -582,7 +640,11 @@ Shear modulus = 80.0 GPa
 </div>
 </div>
 </div>
-<p>Let us now do the exact same calculation as before except that we call <code class="docutils literal notranslate"><span class="pre">tangent_operator</span></code> which now returns a tuple <code class="docutils literal notranslate"><span class="pre">(Ctang,</span> <span class="pre">new_state)</span></code> containing the tangent operator <span class="math notranslate nohighlight">\(\mathbb{C}_\text{tang}\)</span> and the new material state. We have formally replaced the first output of <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code> with its Jacobian with respect to the applied strain. As a result, the stress is not directly returned as before. We can however retrieve it from the new state as <code class="docutils literal notranslate"><span class="pre">new_state.stress</span></code>.</p>
+<p>Let us now do the exact same calculation as before except that we call <code class="docutils literal notranslate"><span class="pre">tangent_operator</span></code> which
+now returns a tuple <code class="docutils literal notranslate"><span class="pre">(Ctang,</span> <span class="pre">new_state)</span></code> containing the tangent operator <span class="math notranslate nohighlight">\(\mathbb{C}_\text{tang}\)</span>
+and the new material state. We have formally replaced the first output of <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code>
+with its Jacobian with respect to the applied strain. As a result, the stress is not directly
+returned as before. We can however retrieve it from the new state as <code class="docutils literal notranslate"><span class="pre">new_state.stress</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gamma_list</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
@@ -594,7 +656,8 @@ Shear modulus = 80.0 GPa
     <span class="n">new_eps</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">gamma</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
     <span class="n">new_eps</span> <span class="o">=</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">new_eps</span><span class="p">)</span>
     <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="n">Ctang</span><span class="p">,</span> <span class="n">new_state</span> <span class="o">=</span> <span class="n">tangent_operator</span><span class="p">(</span><span class="n">new_eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+    <span class="n">Ctang_arr</span><span class="p">,</span> <span class="n">new_state</span> <span class="o">=</span> <span class="n">tangent_operator</span><span class="p">(</span><span class="n">new_eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+    <span class="n">Ctang</span> <span class="o">=</span> <span class="n">SymmetricTensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">Ctang_arr</span><span class="p">)</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">new_state</span>
     <span class="n">new_stress</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">stress</span>
     <span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
@@ -604,13 +667,24 @@ Shear modulus = 80.0 GPa
 </div>
 </div>
 </div>
-<p>Note that the tangent operator is the derivative of a <code class="docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code> with respect to a <code class="docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code> which is formally equivalent to a 4th-rank tensor. Its component can thus be accessed as <code class="docutils literal notranslate"><span class="pre">Ctang[i,</span> <span class="pre">j,</span> <span class="pre">k,</span> <span class="pre">l]</span></code>. Collecting the value of the tangent shear modulus from <code class="docutils literal notranslate"><span class="pre">Ctang[0,</span> <span class="pre">1,</span> <span class="pre">0,</span> <span class="pre">1]</span></code>, its evolution clearly shows a first constant phase in the elastic regime where <span class="math notranslate nohighlight">\(\mu_\text{tang}=\mu=80\text{ GPa}\)</span>. We see the sudden drop at the onset of plasticity which is due to the finite initial hardening slope <span class="math notranslate nohighlight">\(R'(0)\)</span>. We know that the material (elastoplastic) tangent operator is given by:</p>
+<p>Note that the tangent operator is the derivative of a <code class="docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code> with respect to a
+<code class="docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code>. As a result, its array representation is a <span class="math notranslate nohighlight">\(6\times 6\)</span> matrix. To represent
+it explicitly as a 4th-rank tensor, we need to wrap it as a <code class="docutils literal notranslate"><span class="pre">SymmetricTensor4</span></code> object. Its
+component can thus be accessed as <code class="docutils literal notranslate"><span class="pre">Ctang[i,</span> <span class="pre">j,</span> <span class="pre">k,</span> <span class="pre">l]</span></code>. Collecting the value of the tangent shear
+modulus from <code class="docutils literal notranslate"><span class="pre">Ctang[0,</span> <span class="pre">1,</span> <span class="pre">0,</span> <span class="pre">1]</span></code>, its evolution clearly shows a first constant phase in the
+elastic regime where <span class="math notranslate nohighlight">\(\mu_\text{tang}=\mu=80\text{ GPa}\)</span>. We see the sudden drop at the onset of
+plasticity which is due to the finite initial hardening slope <span class="math notranslate nohighlight">\(R'(0)\)</span>. We know that the material
+(elastoplastic) tangent operator is given by:</p>
 <div class="math notranslate nohighlight">
-\[\mathbb{C}^\text{ep} = 3\kappa\mathbb{J} + 2\mu\left(\mathbb{K}-\dfrac{3\mu}{3\mu+R'(p)}\boldsymbol{n}\otimes\boldsymbol{n}\right)\]</div>
-<p>where <span class="math notranslate nohighlight">\(\boldsymbol{n}\)</span> is the unit normal vector in the direction of the plastic flow. For pure shear conditions, this gives the elastoplastic tangent shear modulus:
-$<span class="math notranslate nohighlight">\(
+\[\mathbb{C}^\text{ep} = 3\kappa\mathbb{J} +
+2\mu\left(\mathbb{K}-\dfrac{3\mu}{3\mu+R'(p)}\boldsymbol{n}\otimes\boldsymbol{n}\right)\]</div>
+<p>where
+<span class="math notranslate nohighlight">\(\boldsymbol{n}\)</span> is the unit normal vector in the direction of the plastic flow. For pure shear
+conditions, this gives the elastoplastic tangent shear modulus:</p>
+<div class="math notranslate nohighlight">
+\[
 \mu^\text{ep} = \mu\left(1-\dfrac{3\mu}{3\mu+R'(p)}\right) = \mu\dfrac{R'(p)}{3\mu+R'(p)}
-\)</span>$</p>
+\]</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">gamma_list</span><span class="p">,</span> <span class="n">mu_tang</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="s2">&quot;-k&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Consistent&quot;</span><span class="p">)</span>

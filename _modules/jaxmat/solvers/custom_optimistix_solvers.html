@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -184,14 +184,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -209,7 +207,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +234,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -360,16 +359,20 @@ document.write(`
                   
   <h1>Source code for jaxmat.solvers.custom_optimistix_solvers</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyTree</span><span class="p">,</span> <span class="n">Scalar</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">lineax</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">lx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyTree</span><span class="p">,</span> <span class="n">Scalar</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="kn">import</span> <span class="n">max_norm</span>
 
 
 <div class="viewcode-block" id="GaussNewtonTrustRegion">
-<a class="viewcode-back" href="../../../api/jaxmat.solvers.custom_optimistix_solvers.html#jaxmat.solvers.custom_optimistix_solvers.GaussNewtonTrustRegion">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.solvers.custom_optimistix_solvers.html#jaxmat.solvers.GaussNewtonTrustRegion">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GaussNewtonTrustRegion</span><span class="p">(</span><span class="n">optx</span><span class="o">.</span><span class="n">GaussNewton</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gauss-Newton algorithm, for solving nonlinear least-squares problems with a trust region search.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gauss-Newton Trust Region method.</span>
+
+<span class="sd">    For solving nonlinear least-squares problems with a trust region search.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -389,14 +392,16 @@ document.write(`
 
 
 <div class="viewcode-block" id="NewtonTrustRegion">
-<a class="viewcode-back" href="../../../api/jaxmat.solvers.custom_optimistix_solvers.html#jaxmat.solvers.custom_optimistix_solvers.NewtonTrustRegion">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.solvers.custom_optimistix_solvers.html#jaxmat.solvers.NewtonTrustRegion">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NewtonTrustRegion</span><span class="p">(</span><span class="n">optx</span><span class="o">.</span><span class="n">LevenbergMarquardt</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Newton method for solving nonlinear problems with a trust region search.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Newton Trust Region method.</span>
+
+<span class="sd">    For solving nonlinear least-squares problems with a trust region search.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    This algorithm is derived from LevenbergMarquardt using a full Newton descent</span>
-<span class="sd">    instead of a damped one.</span>
+<span class="sd">    This algorithm is derived from `optx.LevenbergMarquardt` using a full</span>
+<span class="sd">    Newton descent instead of a damped one.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -417,9 +422,12 @@ document.write(`
 
 
 <div class="viewcode-block" id="BFGSLinearTrustRegion">
-<a class="viewcode-back" href="../../../api/jaxmat.solvers.custom_optimistix_solvers.html#jaxmat.solvers.custom_optimistix_solvers.BFGSLinearTrustRegion">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.solvers.custom_optimistix_solvers.html#jaxmat.solvers.BFGSLinearTrustRegion">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BFGSLinearTrustRegion</span><span class="p">(</span><span class="n">optx</span><span class="o">.</span><span class="n">AbstractBFGS</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Standard BFGS algorithm, for solving minimisation problems with a linear trust region search.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;BFGS algorithm with trust region.</span>
+
+<span class="sd">    For solving minimisation problems with a linear trust region search.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span>

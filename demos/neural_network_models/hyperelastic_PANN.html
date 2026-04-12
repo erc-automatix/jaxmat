@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -187,13 +187,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -212,7 +213,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +240,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -410,37 +412,54 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="physics-augmented-neural-networks-for-data-driven-hyperelasticity">
 <h1>Physics-Augmented Neural Networks for data-driven hyperelasticity<a class="headerlink" href="#physics-augmented-neural-networks-for-data-driven-hyperelasticity" title="Link to this heading">#</a></h1>
-<p>In this demo, we show how to formulate a <em>Physics-Augmented Neural Network</em> (PANN) model to learn the hyperelastic potential of a rubber material directly from experimental data.</p>
-<p>The PANN framework <span id="id1">[<a class="reference internal" href="#id23" title="Lennart Linden, Dominik K. Klein, Karl A. Kalina, Jörg Brummund, Oliver Weeger, and Markus Kästner. Neural networks meet hyperelasticity: A guide to enforcing physics. Journal of the Mechanics and Physics of Solids, 179:105363, October 2023. URL: https://www.sciencedirect.com/science/article/pii/S0022509623001679 (visited on 2025-10-03), doi:10.1016/j.jmps.2023.105363.">Linden <em>et al.</em>, 2023</a>, <a class="reference internal" href="#id22" title="Lukas Maurer, Sascha Eisenträger, Karl Kalina, and Daniel Juhre. Utilizing physics-augmented neural networks to predict the material behavior according to Yeoh's law. PAMM, 24(4):e202400213, 2024. _eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1002/pamm.202400213. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/pamm.202400213 (visited on 2025-10-03), doi:10.1002/pamm.202400213.">Maurer <em>et al.</em>, 2024</a>]</span> embeds physical principles, such as frame invariance and polyconvexity, into the neural network architecture, ensuring that the learned strain energy function remains physically consistent while retaining the expressive power of machine learning. In particular, polyconvexity will be ensured by representing <span class="math notranslate nohighlight">\(\psi\)</span> with a convex function of some invariants (see #REF). Representing a convex function using a neural network is possible using Input Convex Neural Networks (ICNN) <span id="id2">[<a class="reference internal" href="neural_GSM.html#id18" title="Brandon Amos, Lei Xu, and J. Zico Kolter. Input convex neural networks. In Doina Precup and Yee Whye Teh, editors, Proceedings of the 34th International Conference on Machine Learning, volume 70 of Proceedings of Machine Learning Research, 146–155. PMLR, 06–11 Aug 2017. URL: https://proceedings.mlr.press/v70/amos17b.html.">Amos <em>et al.</em>, 2017</a>]</span> which have been implemented in <code class="docutils literal notranslate"><span class="pre">jaxmat.nn.incc</span></code>.</p>
+<p>In this demo, we show how to formulate a <em>Physics-Augmented Neural Network</em> (PANN) model to learn
+the hyperelastic potential of a rubber material directly from experimental data.</p>
+<p>The PANN framework <span id="id1">[<a class="reference internal" href="#id23" title="Lennart Linden, Dominik K. Klein, Karl A. Kalina, Jörg Brummund, Oliver Weeger, and Markus Kästner. Neural networks meet hyperelasticity: A guide to enforcing physics. Journal of the Mechanics and Physics of Solids, 179:105363, October 2023. URL: https://www.sciencedirect.com/science/article/pii/S0022509623001679 (visited on 2025-10-03), doi:10.1016/j.jmps.2023.105363.">Linden <em>et al.</em>, 2023</a>, <a class="reference internal" href="#id22" title="Lukas Maurer, Sascha Eisenträger, Karl Kalina, and Daniel Juhre. Utilizing physics-augmented neural networks to predict the material behavior according to Yeoh's law. PAMM, 24(4):e202400213, 2024. _eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1002/pamm.202400213. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/pamm.202400213 (visited on 2025-10-03), doi:10.1002/pamm.202400213.">Maurer <em>et al.</em>, 2024</a>]</span> embeds physical principles,
+such as frame invariance and polyconvexity, into the neural network architecture, ensuring that
+the learned strain energy function remains physically consistent while retaining the expressive
+power of machine learning. In particular, polyconvexity will be ensured by representing <span class="math notranslate nohighlight">\(\psi\)</span>
+with a convex function of some invariants (see #REF). Representing a convex function using a
+neural network is possible using Input Convex Neural Networks (ICNN) <span id="id2">[<a class="reference internal" href="neural_GSM.html#id18" title="Brandon Amos, Lei Xu, and J. Zico Kolter. Input convex neural networks. In Doina Precup and Yee Whye Teh, editors, Proceedings of the 34th International Conference on Machine Learning, volume 70 of Proceedings of Machine Learning Research, 146–155. PMLR, 06–11 Aug 2017. URL: https://proceedings.mlr.press/v70/amos17b.html.">Amos <em>et al.</em>, 2017</a>]</span> which
+have been implemented in <code class="docutils literal notranslate"><span class="pre">jaxmat.nn.incc</span></code>.</p>
 <section id="reference-data">
 <h2>Reference data<a class="headerlink" href="#reference-data" title="Link to this heading">#</a></h2>
-<p>We demonstrate the approach using the classical <strong>Treloar rubber data</strong> <span id="id3">[<a class="reference internal" href="#id24" title="Leslie RG Treloar. Stress-strain data for vulcanized rubber under various types of deformation. Rubber Chemistry and Technology, 17(4):813–825, 1944.">Treloar, 1944</a>]</span>, a widely used experimental dataset for uniaxial, biaxial, and pure shear tests on natural rubber. This dataset has become a benchmark for constitutive model calibration and for validating machine-learning-based material models.</p>
-<p>We first load the dataset <a class="reference external" href="https://www.kaggle.com/datasets/swordfisho/treolar-dataset">obtained from here</a>. To prepare it for training, we filter invalid entries and resample the stress–stretch curves by linear interpolation, obtaining <span class="math notranslate nohighlight">\(N_\text{sample}\)</span> data points per loading case.</p>
-<p>In the following, we work with vectors of principal stretches <span class="math notranslate nohighlight">\(\blambda=(\lambda_1,\lambda_2,\lambda_3)\)</span>. The dataset reports only the stretch in direction 1 for the three different load cases. For all load cases, we define the two other stretches, assuming isotropy and material incompressibility (<span class="math notranslate nohighlight">\(J=\lambda_1\lambda_2\lambda_3=1\)</span>), namely:</p>
+<p>We demonstrate the approach using the classical <strong>Treloar rubber data</strong>
+<span id="id3">[<a class="reference internal" href="#id24" title="Leslie RG Treloar. Stress-strain data for vulcanized rubber under various types of deformation. Rubber Chemistry and Technology, 17(4):813–825, 1944.">Treloar, 1944</a>]</span>, a widely used experimental dataset for uniaxial, biaxial, and pure
+shear tests on natural rubber. This dataset has become a benchmark for constitutive model
+calibration and for validating machine-learning-based material models.</p>
+<p>We first load the dataset <a class="reference external" href="https://www.kaggle.com/datasets/swordfisho/treolar-dataset">obtained from
+here</a>. To prepare it for training, we
+filter invalid entries and resample the stress-stretch curves by linear interpolation, obtaining
+<span class="math notranslate nohighlight">\(N_\text{sample}\)</span> data points per loading case.</p>
+<p>In the following, we work with vectors of principal stretches
+<span class="math notranslate nohighlight">\(\blambda=(\lambda_1,\lambda_2,\lambda_3)\)</span>. The dataset reports only the stretch in direction 1
+for the three different load cases. For all load cases, we define the two other stretches,
+assuming isotropy and material incompressibility (<span class="math notranslate nohighlight">\(J=\lambda_1\lambda_2\lambda_3=1\)</span>), namely:</p>
 <ul class="simple">
 <li><p>for Uniaxial Tension (UT): <span class="math notranslate nohighlight">\(\blambda=(\lambda_1,1/\sqrt{\lambda_1},1/\sqrt{\lambda_1})\)</span></p></li>
 <li><p>for Biaxial Tension (BT): <span class="math notranslate nohighlight">\(\blambda=(\lambda_1,\lambda_1,1/\lambda_1^2)\)</span></p></li>
 <li><p>for Plane Tension (PT): <span class="math notranslate nohighlight">\(\blambda=(\lambda_1,1,1/\lambda_1)\)</span></p></li>
 </ul>
-<p>Moreover, the dataset also reports the nominal stress in direction 1 <span class="math notranslate nohighlight">\(P_1\)</span> for all three cases. To improve the training procedure, it is best to also learn the model against the other known stress components. As Treloar’s data is obtained from stretching thin sheets, we assume <span class="math notranslate nohighlight">\(P_3=0\)</span>. <span class="math notranslate nohighlight">\(P_2\)</span> is only known for UT (<span class="math notranslate nohighlight">\(P_2=0\)</span>) and BT (<span class="math notranslate nohighlight">\(P_2=P_1\)</span>) but not for PT. Thus, we will use both UT and BT for the training using <span class="math notranslate nohighlight">\(\bP=(P_1,P_2,P_3)\)</span> as known output data and will use PT for validation.</p>
-<p>We load below the data set and define the corresponding training input and output dataset as well as the PT test dataset.</p>
+<p>Moreover, the dataset also reports the nominal stress in direction 1 <span class="math notranslate nohighlight">\(P_1\)</span> for all three cases. To
+improve the training procedure, it is best to also learn the model against the other known stress
+components. As Treloar’s data is obtained from stretching thin sheets, we assume <span class="math notranslate nohighlight">\(P_3=0\)</span>. <span class="math notranslate nohighlight">\(P_2\)</span> is
+only known for UT (<span class="math notranslate nohighlight">\(P_2=0\)</span>) and BT (<span class="math notranslate nohighlight">\(P_2=P_1\)</span>) but not for PT. Thus, we will use both UT and BT
+for the training using <span class="math notranslate nohighlight">\(\bP=(P_1,P_2,P_3)\)</span> as known output data and will use PT for validation.</p>
+<p>We load below the data set and define the corresponding training input and output dataset as well
+as the PT test dataset.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.nn.icnn</span><span class="w"> </span><span class="kn">import</span> <span class="n">ICNN</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
 
 <span class="n">current_path</span> <span class="o">=</span> <span class="n">get_path</span><span class="p">()</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span>
-    <span class="n">current_path</span> <span class="o">/</span> <span class="s2">&quot;../demos/_data/Treloar_rubber.csv&quot;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span>
-<span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">current_path</span> <span class="o">/</span> <span class="s2">&quot;../demos/_data/Treloar_rubber.csv&quot;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
 <span class="n">stress_data</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">load_data</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -452,9 +471,7 @@ document.write(`
     <span class="k">if</span> <span class="n">N</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">xr</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-            <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">downsample_ratio</span><span class="p">)</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">downsample_ratio</span><span class="p">)</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">N</span>
-        <span class="p">)</span>
+        <span class="n">xr</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">downsample_ratio</span><span class="p">)</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">downsample_ratio</span><span class="p">)</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">N</span><span class="p">)</span>
         <span class="n">yr</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">xr</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">xr</span><span class="p">,</span> <span class="n">yr</span>
 
@@ -471,9 +488,7 @@ document.write(`
     <span class="k">match</span> <span class="n">label</span><span class="p">:</span>
         <span class="k">case</span> <span class="s2">&quot;simple_tension&quot;</span><span class="p">:</span>
             <span class="n">stretches</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">lamb</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lamb</span><span class="p">),</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lamb</span><span class="p">)))</span><span class="o">.</span><span class="n">T</span>
-            <span class="n">stresses</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">stress</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">stress</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">stress</span><span class="p">))</span>
-            <span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">stresses</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">stress</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">stress</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">stress</span><span class="p">)))</span><span class="o">.</span><span class="n">T</span>
         <span class="k">case</span> <span class="s2">&quot;biaxial_tension&quot;</span><span class="p">:</span>
             <span class="n">stretches</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">lamb</span><span class="p">,</span> <span class="n">lamb</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">lamb</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
             <span class="n">stresses</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">stress</span><span class="p">,</span> <span class="n">stress</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">stress</span><span class="p">)))</span><span class="o">.</span><span class="n">T</span>
@@ -496,25 +511,40 @@ document.write(`
 </section>
 <section id="theory-of-panns">
 <h2>Theory of PANNs<a class="headerlink" href="#theory-of-panns" title="Link to this heading">#</a></h2>
-<p>PANNs enforce physical constraints on the free-energy potential learned by the network. In particular, they guarantee:</p>
+<p>PANNs enforce physical constraints on the free-energy potential learned by the network. In
+particular, they guarantee:</p>
 <ul class="simple">
 <li><p>isotropy (or more general material symmetry classes)</p></li>
 <li><p>positivity of the free energy</p></li>
 <li><p>zero stress in the reference configuration</p></li>
 <li><p>polyconvexity of the free energy</p></li>
 </ul>
-<p>Isotropy is obtained by working with the invariants <span class="math notranslate nohighlight">\(I_1,I_2,I_3\)</span> of the right Cauchy-Green tensor <span class="math notranslate nohighlight">\(\bC=\bF\T\bF\)</span>, with  <span class="math notranslate nohighlight">\(I_1=\tr(\bC)\)</span>, <span class="math notranslate nohighlight">\(I_2=\tr(\cof(\bC))\)</span> and <span class="math notranslate nohighlight">\(I_3=\det(\bC)=J^2\)</span>.</p>
-<p>Polyconvexity of the free energy is an important property which ensures material stability of the structural response. It is a desirable property which is verified by most of the classical phenomenological hyperelastic models. It corresponds to the fact that the free energy hyperelastic potential <span class="math notranslate nohighlight">\(\psi(\bF)\)</span> is a convex function of <span class="math notranslate nohighlight">\((\bF,\cof(\bF),\det(\bF))\)</span>. This condition can be satisfied by finding a convex function of the (polyconvex-preserving) invariants of <span class="math notranslate nohighlight">\(\bC\)</span>, namely:</p>
+<p>Isotropy is obtained by working with the invariants <span class="math notranslate nohighlight">\(I_1,I_2,I_3\)</span> of the right Cauchy-Green tensor
+<span class="math notranslate nohighlight">\(\bC=\bF\T\bF\)</span>, with  <span class="math notranslate nohighlight">\(I_1=\tr(\bC)\)</span>, <span class="math notranslate nohighlight">\(I_2=\tr(\cof(\bC))\)</span> and <span class="math notranslate nohighlight">\(I_3=\det(\bC)=J^2\)</span>.</p>
+<p>Polyconvexity of the free energy is an important property which ensures material stability of the
+structural response. It is a desirable property which is verified by most of the classical
+phenomenological hyperelastic models. It corresponds to the fact that the free energy hyperelastic
+potential <span class="math notranslate nohighlight">\(\psi(\bF)\)</span> is a convex function of <span class="math notranslate nohighlight">\((\bF,\cof(\bF),\det(\bF))\)</span>. This condition can be
+satisfied by finding a convex function of the (polyconvex-preserving) invariants of <span class="math notranslate nohighlight">\(\bC\)</span>, namely:</p>
 <div class="math notranslate nohighlight">
 \[\psi(\bF) = \Psi(I_1,I_2,I_3)\]</div>
-<p>where <span class="math notranslate nohighlight">\(\Psi\)</span> is convex in its arguments. As mentioned above, we use an ICNN to obtain a parametrized version of the convex <span class="math notranslate nohighlight">\(\Psi\)</span> potential. However, when limiting to <span class="math notranslate nohighlight">\(I_1,I_2,I_3\)</span>, the model is not able to reproduce compressive stresses. It is thus suggested to add <span class="math notranslate nohighlight">\(-2J\)</span> as an additional argument of the convex function <span class="math notranslate nohighlight">\(\Psi\)</span>. Thus, our parametrized free energy will be:</p>
+<p>where <span class="math notranslate nohighlight">\(\Psi\)</span> is convex in its arguments. As mentioned above, we use an ICNN to obtain a
+parametrized version of the convex <span class="math notranslate nohighlight">\(\Psi\)</span> potential. However, when limiting to <span class="math notranslate nohighlight">\(I_1,I_2,I_3\)</span>, the
+model is not able to reproduce compressive stresses. It is thus suggested to add <span class="math notranslate nohighlight">\(-2J\)</span> as an
+additional argument of the convex function <span class="math notranslate nohighlight">\(\Psi\)</span>. Thus, our parametrized free energy will be:</p>
 <div class="math notranslate nohighlight">
 \[\psi_{\btheta}(\bF) = \Psi_{\btheta}(I_1,I_2,I_3,-2J)\]</div>
-<p>where <span class="math notranslate nohighlight">\(\Psi_{\btheta}\)</span> is an ICNN of input size 4. The final layer is also constrained to enforce a positive energy. In practice, we use <span class="math notranslate nohighlight">\(\mathcal{I}=(I_1-3, I_2-3, I_3-1, -2(J-1))\)</span> as inputs.</p>
-<p>The second Piola-Kirchhoff (PK2) stress <span class="math notranslate nohighlight">\(\bS\)</span> is then obtained by taking the derivative of the network with respect to <span class="math notranslate nohighlight">\(\bC\)</span>.</p>
-<p>One issue is that the resulting stress does not necessarily vanish in the reference stress-configuration <span class="math notranslate nohighlight">\(\bC=\bI\)</span>. To achieve this the free energy is modified by adding a term so that the stress vanishes for <span class="math notranslate nohighlight">\(\bC=\bI\)</span>, see <span id="id4">[<a class="reference internal" href="#id23" title="Lennart Linden, Dominik K. Klein, Karl A. Kalina, Jörg Brummund, Oliver Weeger, and Markus Kästner. Neural networks meet hyperelasticity: A guide to enforcing physics. Journal of the Mechanics and Physics of Solids, 179:105363, October 2023. URL: https://www.sciencedirect.com/science/article/pii/S0022509623001679 (visited on 2025-10-03), doi:10.1016/j.jmps.2023.105363.">Linden <em>et al.</em>, 2023</a>]</span> for more details. In the case of isotropic hyperelasticity, this amounts to considering:</p>
+<p>where <span class="math notranslate nohighlight">\(\Psi_{\btheta}\)</span> is an ICNN of input size 4. The final layer is also constrained to enforce
+a positive energy. In practice, we use <span class="math notranslate nohighlight">\(\mathcal{I}=(I_1-3, I_2-3, I_3-1, -2(J-1))\)</span> as inputs.</p>
+<p>The second Piola-Kirchhoff (PK2) stress <span class="math notranslate nohighlight">\(\bS\)</span> is then obtained by taking the derivative of the
+network with respect to <span class="math notranslate nohighlight">\(\bC\)</span>.</p>
+<p>One issue is that the resulting stress does not necessarily vanish in the reference
+stress-configuration <span class="math notranslate nohighlight">\(\bC=\bI\)</span>. To achieve this the free energy is modified by adding a term so
+that the stress vanishes for <span class="math notranslate nohighlight">\(\bC=\bI\)</span>, see <span id="id4">[<a class="reference internal" href="#id23" title="Lennart Linden, Dominik K. Klein, Karl A. Kalina, Jörg Brummund, Oliver Weeger, and Markus Kästner. Neural networks meet hyperelasticity: A guide to enforcing physics. Journal of the Mechanics and Physics of Solids, 179:105363, October 2023. URL: https://www.sciencedirect.com/science/article/pii/S0022509623001679 (visited on 2025-10-03), doi:10.1016/j.jmps.2023.105363.">Linden <em>et al.</em>, 2023</a>]</span> for more details. In the
+case of isotropic hyperelasticity, this amounts to considering:</p>
 <div class="math notranslate nohighlight">
-\[\Psi^\text{PANN}_\btheta(\bC) = \Psi_{\btheta}(\mathcal{I}) - \left.\dfrac{\partial \Psi_{\btheta}}{\partial \mathcal{I}}\right|_{\bC= \bI}2(J-1)\]</div>
+\[\Psi^\text{PANN}_\btheta(\bC) = \Psi_{\btheta}(\mathcal{I}) - \left.\dfrac{\partial
+\Psi_{\btheta}}{\partial \mathcal{I}}\right|_{\bC= \bI}2(J-1)\]</div>
 <p>The resulting PK2 stress is then:</p>
 <div class="math notranslate nohighlight">
 \[\bS_{\btheta} =  2\dfrac{\partial \Psi_{\btheta}^\text{PANN}}{\partial \bC}\]</div>
@@ -522,8 +552,13 @@ document.write(`
 </section>
 <section id="defining-the-pann-model">
 <h2>Defining the PANN model<a class="headerlink" href="#defining-the-pann-model" title="Link to this heading">#</a></h2>
-<p>Below, we define a <code class="docutils literal notranslate"><span class="pre">PANN</span></code> module which inherits from the <code class="docutils literal notranslate"><span class="pre">ICNN</span></code> architecture. <code class="docutils literal notranslate"><span class="pre">nn_energy</span></code> implements the NN term <span class="math notranslate nohighlight">\(\Psi_{\btheta}(\mathcal{I})\)</span> while <code class="docutils literal notranslate"><span class="pre">pann_energy</span></code> returns <span class="math notranslate nohighlight">\(\Psi_{\btheta}^\text{PANN}\)</span>. The PK2 and PK1 stresses are then easily obtaing using AD.</p>
-<p>Finally, we use <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> to define a batched version of the PK1 stress computation for a given PANN material model.</p>
+<p>Below, we define a <code class="docutils literal notranslate"><span class="pre">PANN</span></code> module which inherits from the <code class="docutils literal notranslate"><span class="pre">ICNN</span></code> architecture. <code class="docutils literal notranslate"><span class="pre">nn_energy</span></code>
+implements the NN term <span class="math notranslate nohighlight">\(\Psi_{\btheta}(\mathcal{I})\)</span> while <code class="docutils literal notranslate"><span class="pre">pann_energy</span></code> returns
+<span class="math notranslate nohighlight">\(\Psi_{\btheta}^\text{PANN}\)</span>. The PK2 and PK1 stresses are then easily obtaing using AD.</p>
+<p>Finally, we use <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> to define a batched version of the PK1 stress computation for a given
+PANN material model.</p>
+<p>Finally, we use <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> to define a batched version of the PK1 stress computation for a given
+PANN material model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PANN</span><span class="p">(</span><span class="n">ICNN</span><span class="p">):</span>
@@ -556,7 +591,9 @@ document.write(`
 </div>
 </div>
 </div>
-<p>A PANN material with 10 neurons in one hidden layer is defined below and randomly initialized. The figure reports the stress-stretch curve for uniaxial tension obtained with this initialization. As expected, the stress is zero in the reference configuration.</p>
+<p>A PANN material with 10 neurons in one hidden layer is defined below and randomly initialized. The
+figure reports the stress-stretch curve for uniaxial tension obtained with this initialization. As
+expected, the stress is zero in the reference configuration.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_dim</span> <span class="o">=</span> <span class="mi">4</span>
@@ -588,7 +625,11 @@ document.write(`
 </section>
 <section id="training-the-pann-model">
 <h2>Training the PANN model<a class="headerlink" href="#training-the-pann-model" title="Link to this heading">#</a></h2>
-<p>We are now ready to set up the training. Here, we simply define the error between the predicted and the stress data and use <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> least-square solvers. First, the total error is defined by mapping the <code class="docutils literal notranslate"><span class="pre">error</span></code> function over the training load cases defined as a PyTree. The <code class="docutils literal notranslate"><span class="pre">total_error</span></code> takes as a first argument the PANN model PyTree <code class="docutils literal notranslate"><span class="pre">material</span></code> while training data are stored in the second <code class="docutils literal notranslate"><span class="pre">args</span></code> argument.</p>
+<p>We are now ready to set up the training. Here, we simply define the error between the predicted
+and the stress data and use <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> least-square solvers. First, the total error is defined
+by mapping the <code class="docutils literal notranslate"><span class="pre">error</span></code> function over the training load cases defined as a PyTree. The
+<code class="docutils literal notranslate"><span class="pre">total_error</span></code> takes as a first argument the PANN model PyTree <code class="docutils literal notranslate"><span class="pre">material</span></code> while training data are
+stored in the second <code class="docutils literal notranslate"><span class="pre">args</span></code> argument.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">total_error</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
@@ -603,7 +644,8 @@ document.write(`
 </div>
 </div>
 </div>
-<p>We use a BFGS solver to solve the least-square problem and we do not throw an error in case we reach the maximum number of steps. We retrieve the final trained PANN model from <code class="docutils literal notranslate"><span class="pre">sol.value</span></code>.</p>
+<p>We use a BFGS solver to solve the least-square problem and we do not throw an error in case we
+reach the maximum number of steps. We retrieve the final trained PANN model from <code class="docutils literal notranslate"><span class="pre">sol.value</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">solver</span> <span class="o">=</span> <span class="n">optx</span><span class="o">.</span><span class="n">BFGS</span><span class="p">(</span>
@@ -628,7 +670,11 @@ document.write(`
 </section>
 <section id="results">
 <h2>Results<a class="headerlink" href="#results" title="Link to this heading">#</a></h2>
-<p>We plot the resulting predicted stresses for the two training load cases (Simple and Biaxial Tension) and also evaluate the performance on the unseen Plane Tension load case. The PANN architecture succeeds in learning a good representation of the data, while ensuring almost zero out-of-plane stress in general. The prediction is still very good even on the unseen Plane Tension case.</p>
+<p>We plot the resulting predicted stresses for the two training load cases (Simple and Biaxial
+Tension) and also evaluate the performance on the unseen Plane Tension load case. The PANN
+architecture succeeds in learning a good representation of the data, while ensuring almost zero
+out-of-plane stress in general. The prediction is still very good even on the unseen Plane Tension
+case.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>

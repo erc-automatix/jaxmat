@@ -1,19 +1,19 @@
 # %%
-import numpy as np
 from time import time
 
-import matplotlib.pyplot as plt
+import equinox as eqx
 import jax
+import jax.numpy as jnp
+import numpy as np
+
+import jaxmat.materials as jm
+from jaxmat.state import make_batched
+from jaxmat.tensors import Tensor2
 
 platform = "gpu"
 with_jac = True
 
 jax.config.update("jax_platform_name", platform)
-import equinox as eqx
-import jax.numpy as jnp
-from jaxmat.tensors import Tensor2
-from jaxmat.state import make_batched
-import jaxmat.materials as jm
 
 
 def test_FeFp_elastoplasticity(material, with_jac=False, Nbatch=1, Nsteps=20):
@@ -43,13 +43,11 @@ def test_FeFp_elastoplasticity(material, with_jac=False, Nbatch=1, Nsteps=20):
         t += dt
         lamb = 1 + eps_dot * t
 
-        F_ = Tensor2(
-            tensor=jnp.diag(jnp.asarray([lamb, 1 / jnp.sqrt(lamb), 1 / jnp.sqrt(lamb)]))
-        )
+        F_ = Tensor2(tensor=jnp.diag(jnp.asarray([lamb, 1 / jnp.sqrt(lamb), 1 / jnp.sqrt(lamb)])))
         F = make_batched(F_, Nbatch)
 
         tic = time()
-        Sig, state = integrator(F, state, dt)
+        _, state = integrator(F, state, dt)
         times[i] = time() - tic
     return times
 
@@ -67,14 +65,12 @@ sig0 = 500.0
 sigu = 750.0
 b = 1000.0
 
-material = jm.FeFpJ2Plasticity(
-    elastic_model, jm.VoceHardening(sig0=sig0, sigu=sigu, b=b)
-)
+material = jm.FeFpJ2Plasticity(elastic_model, jm.VoceHardening(sig0=sig0, sigu=sigu, b=b))
 data[:, 0] = Nbatch_list
 for i, Nbatch in enumerate(Nbatch_list):
     data[i, 1:] = test_FeFp_elastoplasticity(
         material, with_jac=with_jac, Nbatch=int(Nbatch), Nsteps=Nsteps
     )
-    print(f"Batch size {i+1}/{len(Nbatch_list)} : avg time = {np.mean(data[i,1:])}")
+    print(f"Batch size {i + 1}/{len(Nbatch_list)} : avg time = {np.mean(data[i, 1:])}")
 jac_suffix = "_jac" if with_jac else "_no_jac"
 np.savetxt(f"performance{jac_suffix}_{platform}.csv", data, delimiter=",")

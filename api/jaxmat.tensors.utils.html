@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -186,13 +186,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -211,7 +212,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -239,6 +239,8 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="jaxmat.tensors.html">jaxmat.tensors package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -394,8 +396,6 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.safe_sqrt"><code class="docutils literal notranslate"><span class="pre">safe_sqrt()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.safe_norm"><code class="docutils literal notranslate"><span class="pre">safe_norm()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.FischerBurmeister"><code class="docutils literal notranslate"><span class="pre">FischerBurmeister()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.rotation_matrix_direct"><code class="docutils literal notranslate"><span class="pre">rotation_matrix_direct()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.euler_to_rotation"><code class="docutils literal notranslate"><span class="pre">euler_to_rotation()</span></code></a></li>
 </ul>
             </nav>
         </div>
@@ -412,29 +412,39 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="jaxmat.tensors.utils.safe_fun">
 <span class="sig-name descname"><span class="pre">safe_fun</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-16</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/tensors/utils.html#safe_fun"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.tensors.utils.safe_fun" title="Link to this definition">#</a></dt>
-<dd><p>Safely applies a function to an input, avoiding numerical issues near zero.</p>
-<p>This function applies <code class="docutils literal notranslate"><span class="pre">fun(x)</span></code> only when the norm of <code class="docutils literal notranslate"><span class="pre">x</span></code> exceeds a small
-tolerance <code class="docutils literal notranslate"><span class="pre">eps</span></code>. Otherwise, it returns zero. This is useful for ensuring
-numerical stability in cases where evaluating <code class="docutils literal notranslate"><span class="pre">fun</span></code> at or near zero could
-result in undefined or unstable behavior (e.g., division by zero).</p>
+<dd><p>Apply a function safely, avoiding evaluation at or near zero.</p>
+<p>The input <code class="docutils literal notranslate"><span class="pre">x</span></code> is replaced by a small positive sentinel <code class="docutils literal notranslate"><span class="pre">eps</span></code> whenever
+<code class="docutils literal notranslate"><span class="pre">norm(x)</span> <span class="pre">&lt;=</span> <span class="pre">eps</span></code> before calling <code class="docutils literal notranslate"><span class="pre">fun</span></code>.  The final result is then
+masked to return zero in that case.  This sentinel strategy ensures that
+<code class="docutils literal notranslate"><span class="pre">fun</span></code> is always evaluated at a numerically safe point, so that gradients
+through <code class="docutils literal notranslate"><span class="pre">fun</span></code> remain finite under automatic differentiation.</p>
+<p>This is consistent with <a class="reference internal" href="#jaxmat.tensors.utils.safe_sqrt" title="jaxmat.tensors.utils.safe_sqrt"><code class="xref py py-func docutils literal notranslate"><span class="pre">safe_sqrt()</span></code></a>:
+<code class="docutils literal notranslate"><span class="pre">safe_fun(jnp.sqrt,</span> <span class="pre">x)</span></code> produces the same values and gradients as
+<code class="docutils literal notranslate"><span class="pre">safe_sqrt(x)</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fun</strong> (<em>Callable</em>) – The function to apply safely.</p></li>
-<li><p><strong>x</strong> (<em>array-like</em>) – Input array or tensor.</p></li>
-<li><p><strong>norm</strong> (<em>Callable</em><em>, </em><em>optional</em>) – A norm or magnitude function used to test whether <code class="docutils literal notranslate"><span class="pre">x</span></code> is sufficiently
-large. Defaults to the identity function.</p></li>
-<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – Small threshold to determine whether <code class="docutils literal notranslate"><span class="pre">x</span></code> is treated as nonzero.
-Defaults to 1e-16.</p></li>
+<li><p><strong>fun</strong> (<em>callable</em>) – Scalar or array function to apply safely.</p></li>
+<li><p><strong>x</strong> (<em>array_like</em>) – Input value.</p></li>
+<li><p><strong>norm</strong> (<em>callable</em><em>, </em><em>optional</em>) – Scalar-valued function of <code class="docutils literal notranslate"><span class="pre">x</span></code> used to test proximity to zero.
+Defaults to the identity (i.e. <code class="docutils literal notranslate"><span class="pre">x</span></code> itself is the magnitude).</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – Threshold below which <code class="docutils literal notranslate"><span class="pre">x</span></code> is considered zero.  Defaults to <code class="docutils literal notranslate"><span class="pre">1e-16</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">fun(x)</span></code> if <code class="docutils literal notranslate"><span class="pre">norm(x)</span> <span class="pre">&gt;</span> <span class="pre">eps</span></code>, otherwise <code class="docutils literal notranslate"><span class="pre">0</span></code> (of the same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>).</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">fun(x)</span></code> where <code class="docutils literal notranslate"><span class="pre">norm(x)</span> <span class="pre">&gt;</span> <span class="pre">eps</span></code>, otherwise <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>array-like</p>
+<dd class="field-odd"><p>jax.Array</p>
 </dd>
 </dl>
+<div class="admonition-notes admonition">
+<p class="admonition-title">Notes</p>
+<p>The key property is that the <em>sentinel-substituted</em> input <code class="docutils literal notranslate"><span class="pre">eps</span></code> (not
+<code class="docutils literal notranslate"><span class="pre">0</span></code>) is passed to <code class="docutils literal notranslate"><span class="pre">fun</span></code> in the masked branch.  This prevents
+<code class="docutils literal notranslate"><span class="pre">jax.grad</span></code> from encountering undefined derivatives (e.g.
+<code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">/</span> <span class="pre">(2</span> <span class="pre">sqrt(0))</span></code> for <code class="docutils literal notranslate"><span class="pre">fun</span> <span class="pre">=</span> <span class="pre">jnp.sqrt</span></code>).</p>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -452,7 +462,7 @@ which could cause instability or NaNs.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The square root of <cite>x</cite> for <cite>x &gt; eps</cite>, otherwise 0.</p>
+<dd class="field-even"><p>The square root of <cite>x</cite> for <cite>x &gt; eps</cite>, otherwise <cite>eps</cite>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>array-like</p>
@@ -496,18 +506,6 @@ a semi-smooth reformulation of the complementarity conditions
 <div class="math notranslate nohighlight">
 \[x \geq 0, y \geq 0, xy = 0\]</div>
 .</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="jaxmat.tensors.utils.rotation_matrix_direct">
-<span class="sig-name descname"><span class="pre">rotation_matrix_direct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/tensors/utils.html#rotation_matrix_direct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.tensors.utils.rotation_matrix_direct" title="Link to this definition">#</a></dt>
-<dd><p>Calculate the rotation matrix for rotating around an arbitrary axis by angle theta.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="jaxmat.tensors.utils.euler_to_rotation">
-<span class="sig-name descname"><span class="pre">euler_to_rotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/tensors/utils.html#euler_to_rotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.tensors.utils.euler_to_rotation" title="Link to this definition">#</a></dt>
-<dd><p>Euler’s angle → rotation matrix (Bunge convention  ZXZ)</p>
 </dd></dl>
 
 </section>
@@ -571,8 +569,6 @@ a semi-smooth reformulation of the complementarity conditions
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.safe_sqrt"><code class="docutils literal notranslate"><span class="pre">safe_sqrt()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.safe_norm"><code class="docutils literal notranslate"><span class="pre">safe_norm()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.FischerBurmeister"><code class="docutils literal notranslate"><span class="pre">FischerBurmeister()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.rotation_matrix_direct"><code class="docutils literal notranslate"><span class="pre">rotation_matrix_direct()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.utils.euler_to_rotation"><code class="docutils literal notranslate"><span class="pre">euler_to_rotation()</span></code></a></li>
 </ul>
   </nav></div>
 

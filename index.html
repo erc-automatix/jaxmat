@@ -188,13 +188,14 @@
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -213,7 +214,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -241,6 +241,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -412,26 +414,52 @@ document.write(`
 <h1>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h1>
 <a class="reference internal image-reference" href="_images/jax_framework.png"><img alt="_images/jax_framework.png" class="align-center" src="_images/jax_framework.png" style="width: 400px;" />
 </a>
-<p><code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> is an open-source library for implementing material constitutive models in a way that integrates seamlessly with modern machine learning frameworks and existing finite element software.</p>
+<p><code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> is an open-source library for implementing material constitutive
+models in a way that integrates seamlessly with modern machine learning
+frameworks and existing finite element software.</p>
 <section id="aim-and-scope">
 <h2>Aim and scope<a class="headerlink" href="#aim-and-scope" title="Link to this heading">#</a></h2>
-<p>The library is implemented in <a class="reference external" href="https://github.com/google/jax">JAX</a> and heavily relies on additional features provided by the JAX ecosystem, in particular the <a class="reference external" href="https://docs.kidger.site/equinox/"><code class="docutils literal notranslate"><span class="pre">equinox</span></code></a>, <a class="reference external" href="https://docs.kidger.site/diffrax/"><code class="docutils literal notranslate"><span class="pre">diffrax</span></code></a>, and <a class="reference external" href="https://docs.kidger.site/optimistix/"><code class="docutils literal notranslate"><span class="pre">optimistix</span></code></a> libraries. The design choices are based on the following premises:</p>
+<p>The library is implemented in <a class="reference external" href="https://github.com/google/jax">JAX</a> and heavily
+relies on additional features provided by the JAX ecosystem, in particular the
+<a class="reference external" href="https://docs.kidger.site/equinox/"><code class="docutils literal notranslate"><span class="pre">equinox</span></code></a>,
+<a class="reference external" href="https://docs.kidger.site/diffrax/"><code class="docutils literal notranslate"><span class="pre">diffrax</span></code></a>, and
+<a class="reference external" href="https://docs.kidger.site/optimistix/"><code class="docutils literal notranslate"><span class="pre">optimistix</span></code></a> libraries. The design
+choices are based on the following premises:</p>
 <ol class="arabic simple">
-<li><p><strong>User-friendliness</strong>: <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> provides domain-specific abstractions that simplify the definition of complex material models. It is not a database of hard-coded material behaviors with fixed parameters. Instead, it offers a generic and extensible framework for users to define, compose, and calibrate their own constitutive models with minimal boilerplate.</p></li>
-<li><p><strong>Differentiability</strong>: We fully exploit JAX’s <em>Automatic Differentiation</em> (AD) capabilities to eliminate the need for manually deriving consistent tangent operators, Jacobians of implicit systems, normal vectors to plastic surfaces, hyperelastic stress expressions, and more.
-In <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, every input and parameter of a constitutive model is differentiable, making it easy to compute sensitivities with respect to material or even algorithmic parameters! These features are essential for tasks such as material parameter identification, solving inverse problems, and performing uncertainty quantification.</p></li>
-<li><p><strong>Modularity</strong>: The library is designed to be highly modular, allowing users to easily mix and match modeling components. For example, in a generic elastoviscoplastic model, you can independently swap out the plastic yield surface, the hardening laws or the viscous flow, independently. Each component can also be replaced with a data-driven alternative, such as a neural network, without disrupting the overall structure.</p></li>
-<li><p><strong>Efficiency</strong>: <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> makes full use of JAX features such as <em>Just-In-Time compilation</em> (<code class="docutils literal notranslate"><span class="pre">jax.jit</span></code>), <em>automatic vectorization</em> (<code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code>) and hardware acceleration (CPU or GPU through the XLA compiler). Constitutive models can be evaluated extremely efficiently and in parallel across batches of material points. Additionally, we have designed and selected algorithms specifically suited to the needs of computational mechanics for maximum performance, robustness, and generality, see the <a class="reference internal" href="sharp_bits.html"><span class="std std-doc">Sharp bits</span></a> section.</p></li>
+<li><p><strong>User-friendliness</strong>: <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> provides domain-specific abstractions that
+simplify the definition of complex material models. It is not a database of
+hard-coded material behaviors with fixed parameters. Instead, it offers a
+generic and extensible framework for users to define, compose, and calibrate
+their own constitutive models with minimal boilerplate.</p></li>
+<li><p><strong>Differentiability</strong>: We fully exploit JAX’s <em>Automatic Differentiation</em>
+(AD) capabilities to eliminate the need for manually deriving consistent
+tangent operators, Jacobians of implicit systems, normal vectors to plastic
+surfaces, hyperelastic stress expressions, and more.
+In <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, every input and parameter of a constitutive model is
+differentiable, making it easy to compute sensitivities with respect to
+material or even algorithmic parameters! These features are essential for tasks
+such as material parameter identification, solving inverse problems, and
+performing uncertainty quantification.</p></li>
+<li><p><strong>Modularity</strong>: The library is designed to be highly modular, allowing users
+to easily mix and match modeling components. For example, in a generic
+elastoviscoplastic model, you can independently swap out the plastic yield
+surface, the hardening laws or the viscous flow, independently. Each
+component can also be replaced with a data-driven alternative, such as a
+neural network, without disrupting the overall structure.</p></li>
+<li><p><strong>Efficiency</strong>: <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> makes full use of JAX features such as
+<em>Just-In-Time compilation</em> (<code class="docutils literal notranslate"><span class="pre">jax.jit</span></code>), <em>automatic vectorization</em>
+(<code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code>) and hardware acceleration (CPU or GPU through the XLA
+compiler). Constitutive models can be evaluated extremely efficiently and in
+parallel across batches of material points. Additionally, we have designed
+and selected algorithms specifically suited to the needs of computational
+mechanics for maximum performance, robustness, and generality, see the
+<a class="reference internal" href="sharp_bits.html"><span class="std std-doc">Sharp bits</span></a> section.</p></li>
 </ol>
 </section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
-<p>Simply run a <code class="docutils literal notranslate"><span class="pre">pip</span></code> install. Use <code class="docutils literal notranslate"><span class="pre">jaxmat[gpu]</span></code> for GPU support.</p>
+<p>Simply run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>. Use <code class="docutils literal notranslate"><span class="pre">jaxmat[gpu]</span></code> for GPU support.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>jaxmat
-</pre></div>
-</div>
-<p>You may need to update <code class="docutils literal notranslate"><span class="pre">nvidia-cublas-cu12</span></code> as there are some issues with the version shipped with <code class="docutils literal notranslate"><span class="pre">jax-0.6.1</span></code>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>nvidia-cublas-cu12
 </pre></div>
 </div>
 </section>
@@ -443,13 +471,19 @@ In <code class="docutils literal notranslate"><span class="pre">jaxmat</span></c
 <section id="acknowledgements">
 <h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Link to this heading">#</a></h2>
 <p><img alt="ERC banner" src="_images/banner_erc.png" /></p>
-<p><em>Funded by the European Union (ERC, Automatix, CoG project no 101229452). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council. Neither the European Union nor the granting authority can be held responsible for them.</em></p>
+<p><em>Funded by the European Union (ERC, Automatix, CoG project no 101229452). Views
+and opinions expressed are however those of the author(s) only and do not
+necessarily reflect those of the European Union or the European Research
+Council. Neither the European Union nor the granting authority can be held
+responsible for them.</em></p>
 </section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p>This project builds upon implementations of <code class="docutils literal notranslate"><span class="pre">jax</span></code>-based material models for FEniCSx in the <a class="reference external" href="https://github.com/bleyerj/dolfinx_materials"><code class="docutils literal notranslate"><span class="pre">dolfinx_materials</span></code></a> package.</p>
+<p>This project builds upon implementations of <code class="docutils literal notranslate"><span class="pre">jax</span></code>-based material models for
+FEniCSx in the
+<a class="reference external" href="https://github.com/bleyerj/dolfinx_materials"><code class="docutils literal notranslate"><span class="pre">dolfinx_materials</span></code></a> package.</p>
 </div>
 </section>
 <div class="toctree-wrapper compound">

@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -184,13 +184,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -209,7 +210,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +237,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -359,405 +361,949 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for jaxmat.tensors.generic_tensors</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">jaxmat/tensors/generic_tensors.py</span>
+
+<span class="sd">Second- and fourth-rank tensor classes for solid mechanics computations in JAX.</span>
+
+<span class="sd">Design principles</span>
+<span class="sd">-----------------</span>
+<span class="sd">* The Kelvin-Mandel array is the unique JAX leaf stored per object.</span>
+<span class="sd">  All other representations are derived properties.</span>
+<span class="sd">* All index maps and weight arrays are module-level constants computed once</span>
+<span class="sd">  at import time and shared across all instances.</span>
+<span class="sd">* ``tensor`` properties use gather operations (no scatter, no intermediate</span>
+<span class="sd">  zero allocation) for rank-2 classes.</span>
+<span class="sd">* Each concrete class exposes exactly one equinox field: ``_array``.</span>
+<span class="sd">* Operator ``@`` semantics:</span>
+
+<span class="sd">  - :class:`Tensor2` ``@`` :class:`Tensor2` → dense composition → :class:`Tensor2`.</span>
+<span class="sd">  - :class:`SymmetricTensor4` ``@`` :class:`SymmetricTensor2` → Kelvin matvec → :class:`SymmetricTensor2`.</span>
+<span class="sd">  - :class:`SymmetricTensor4` ``@`` :class:`SymmetricTensor4` → Kelvin matmul → :class:`SymmetricTensor4`.</span>
+
+<span class="sd">* Named methods for algebraically unambiguous operations:</span>
+<span class="sd">  :meth:`~Tensor2.double_contract`, :meth:`~Tensor2.matvec`,</span>
+<span class="sd">  :meth:`~_AbstractTensor4.fourth_contract`.</span>
+<span class="sd">* :class:`_AbstractTensor4` centralizes all code shared between</span>
+<span class="sd">  :class:`Tensor4` and :class:`SymmetricTensor4`; subclasses supply only</span>
+<span class="sd">  ``__init__``, ``tensor``, ``__matmul__``, ``base_array_shape``, and</span>
+<span class="sd">  ``identity``.</span>
+<span class="sd">&quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">linear_algebra</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.mappings</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">full_rank2_map</span><span class="p">,</span>
+    <span class="n">full_rank4_map</span><span class="p">,</span>
+    <span class="n">kelvin_rank2_map</span><span class="p">,</span>
+    <span class="n">kelvin_rank4_map</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Module-level index maps — computed once at import, shared by all instances</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+
+<span class="p">(</span><span class="n">_T2_I</span><span class="p">,</span> <span class="n">_T2_J</span><span class="p">),</span> <span class="n">_</span> <span class="o">=</span> <span class="n">full_rank2_map</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="p">(</span><span class="n">_S2_I</span><span class="p">,</span> <span class="n">_S2_J</span><span class="p">),</span> <span class="n">_S2_W</span> <span class="o">=</span> <span class="n">kelvin_rank2_map</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="p">(</span><span class="n">_T4_I</span><span class="p">,</span> <span class="n">_T4_J</span><span class="p">,</span> <span class="n">_T4_K</span><span class="p">,</span> <span class="n">_T4_L</span><span class="p">),</span> <span class="n">_</span> <span class="o">=</span> <span class="n">full_rank4_map</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="p">(</span><span class="n">_S4_I</span><span class="p">,</span> <span class="n">_S4_J</span><span class="p">,</span> <span class="n">_S4_K</span><span class="p">,</span> <span class="n">_S4_L</span><span class="p">),</span> <span class="n">_S4_W</span> <span class="o">=</span> <span class="n">kelvin_rank4_map</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Gather table for Tensor2.tensor: T[i,j] = _array[_T2_RECON33[i,j]]</span>
+<span class="n">_T2_RECON33</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+
+<span class="c1"># Permutation for Tensor2.T: _T2_TRANSPOSE[k] = position of the (j,i) element</span>
+<span class="c1"># given that the (i,j) element occupies position k in the Kelvin array.</span>
+<span class="n">_T2_TRANSPOSE</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
+
+<span class="c1"># Gather table for SymmetricTensor2.tensor: T[i,j] = (_array/_S2_W)[_S2_RECON33[i,j]]</span>
+<span class="n">_S2_RECON33</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+
+<span class="c1"># Precomputed gather for _sym2_to_full9: Kelvin-array indices and weights</span>
+<span class="n">_S2_TO_FULL9_IDX</span> <span class="o">=</span> <span class="n">_S2_RECON33</span><span class="p">[</span><span class="n">_T2_I</span><span class="p">,</span> <span class="n">_T2_J</span><span class="p">]</span>  <span class="c1"># shape (9,)</span>
+<span class="n">_S2_TO_FULL9_W</span> <span class="o">=</span> <span class="n">_S2_W</span><span class="p">[</span><span class="n">_S2_TO_FULL9_IDX</span><span class="p">]</span>  <span class="c1"># shape (9,)</span>
 
 
-<div class="viewcode-block" id="Tensor">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.Tensor">[docs]</a>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Internal helpers</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_trailing</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise ``ValueError`` if the trailing shape of ``arr`` does not match ``expected``.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span> <span class="p">:]</span> <span class="o">!=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">expected</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Wrong </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> trailing shape </span><span class="si">{</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span><span class="w"> </span><span class="p">:]</span><span class="si">}</span><span class="s2">; expected </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_raw_array</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the underlying JAX array from a tensor object or a plain array.</span>
+
+<span class="sd">    If ``arg`` has a ``_array`` attribute (i.e. it is an equinox tensor</span>
+<span class="sd">    module), its ``_array`` field is returned directly.  Otherwise</span>
+<span class="sd">    ``jnp.asarray`` is applied.</span>
+
+<span class="sd">    This is used in constructors and in the :attr:`SymmetricTensor2.tensor`</span>
+<span class="sd">    property to handle the case where equinox&#39;s pytree unflatten sets</span>
+<span class="sd">    ``_array`` to a tensor module object during automatic differentiation,</span>
+<span class="sd">    bypassing ``__init__``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">arg</span><span class="o">.</span><span class="n">_array</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sym2_to_full9</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="s2">&quot;SymmetricTensor2&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a :class:`SymmetricTensor2` Kelvin array to the full 9-component</span>
+<span class="sd">    ordering without constructing the dense (3, 3) tensor as an intermediate.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : SymmetricTensor2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Shape ``(..., 9)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">_S2_W</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">_S2_TO_FULL9_IDX</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_array4</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract the Kelvin array from a rank-4 tensor object or a plain array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : _AbstractTensor4 or array_like</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        The raw Kelvin matrix, shape ``(..., N, N)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">_array</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Marker base class</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+
+
 <span class="k">class</span><span class="w"> </span><span class="nc">Tensor</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">_tensor</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Empty marker base class for all jaxmat tensor objects.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">):</span>
+<span class="sd">    Provides a single type to test against with ``isinstance(x, Tensor)``</span>
+<span class="sd">    without coupling to any specific rank or symmetry class.</span>
 
+<span class="sd">    Both rank-2 classes (:class:`Tensor2`, :class:`SymmetricTensor2`) and</span>
+<span class="sd">    rank-4 classes (:class:`Tensor4`, :class:`SymmetricTensor4`, and the</span>
+<span class="sd">    symmetry-reduced subclasses) inherit from this marker.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Rank-2 tensors</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Tensor2</span><span class="p">(</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Full (non-symmetric) second-rank tensor in 3-D.</span>
+
+<span class="sd">    Stored as a 9-component Kelvin array in the ordering</span>
+<span class="sd">    $[T_{11}, T_{22}, T_{33}, T_{12}, T_{21}, T_{13}, T_{31}, T_{23}, T_{32}]$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tensor : array_like, shape ``(..., 3, 3)``, optional</span>
+<span class="sd">        Dense tensor representation.</span>
+<span class="sd">    array : array_like, shape ``(..., 9)``, optional</span>
+<span class="sd">        Pre-built Kelvin array.  Passing another :class:`Tensor2` is accepted;</span>
+<span class="sd">        its ``_array`` field is used directly.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Exactly one of ``tensor`` or ``array`` may be provided.  If neither is</span>
+<span class="sd">    given the tensor is initialized to zero.</span>
+
+<span class="sd">    Batch dimensions precede the storage dimension: a batch of $N$ tensors</span>
+<span class="sd">    has ``array.shape == (N, 9)`` and ``tensor.shape == (N, 3, 3)``.</span>
+
+<span class="sd">    The ``@`` operator performs **dense matrix composition**</span>
+<span class="sd">    $(\mathbf{T} \cdot \mathbf{S})_{ik} = T_{ij} S_{jk}$ and always</span>
+<span class="sd">    returns a :class:`Tensor2`, regardless of the symmetry of the operands.</span>
+<span class="sd">    Use :meth:`double_contract` for $\mathbf{T}:\mathbf{S}$ and</span>
+<span class="sd">    :meth:`matvec` for $\mathbf{T} \cdot \mathbf{v}$.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_array</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;9-component Kelvin storage array — the sole JAX leaf.&quot;&quot;&quot;</span>
+
+    <span class="n">dim</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Spatial dimension.&quot;&quot;&quot;</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tensor rank.&quot;&quot;&quot;</span>
+    <span class="n">base_tensor_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shape of the base (unbatched) dense tensor.&quot;&quot;&quot;</span>
+    <span class="n">array_rank</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of storage dimensions (1 for rank-2, 2 for rank-4).&quot;&quot;&quot;</span>
+    <span class="n">base_array_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shape of the base (unbatched) Kelvin array.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrong shape </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> &lt;&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tensor</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+            <span class="n">_check_trailing</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">&quot;tensor&quot;</span><span class="p">)</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_T2_I</span><span class="p">,</span> <span class="n">_T2_J</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array_shape</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrong shape </span><span class="si">{</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> &lt;&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">array_shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_as_tensor</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">_raw_array</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+            <span class="n">_check_trailing</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">9</span><span class="p">,),</span> <span class="s2">&quot;array&quot;</span><span class="p">)</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tensor</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span>
+
+    <span class="c1"># ── representations ───────────────────────────────────────────────────────</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        9-component Kelvin array.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Shape ``(..., 9)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dense tensor representation.</span>
+
+<span class="sd">        Reconstructed via a single gather on ``_array`` followed by a</span>
+<span class="sd">        reshape — no scatter, no zero allocation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Shape ``(..., 3, 3)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_T2_RECON33</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">T</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shape of the underlying Kelvin array ``(..., 9)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="o">.</span><span class="n">shape</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">array</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_as_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">batch_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Leading batch dimensions ``(...)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">array_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">,)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tensor_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shape of the dense tensor ``(..., 3, 3)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_shape</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_tensor_shape</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__jax_array__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Allow ``jnp.asarray(T)`` to return the dense (3, 3) tensor.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__array__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tensor</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="c1"># ── scalar invariants ─────────────────────────────────────────────────────</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weaken_with</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-        <span class="n">other_array</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">+</span> <span class="n">other_array</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Trace $\mathrm{tr}(\mathbf{T}) = T_{ii}$.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weaken_with</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-        <span class="n">other_array</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">-</span> <span class="n">other_array</span><span class="p">)</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">det</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determinant $\det(\mathbf{T})$.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.linear_algebra</span><span class="w"> </span><span class="kn">import</span> <span class="n">det33</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__mul__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">det33</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">@</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+    <span class="c1"># ── derived tensors ───────────────────────────────────────────────────────</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">T</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tensor2&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transpose $T^{\mathsf{T}}_{ij} = T_{ji}$.</span>
+
+<span class="sd">        Computed via a single gather on the Kelvin array; no dense</span>
+<span class="sd">        intermediate is constructed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tensor2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_T2_TRANSPOSE</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sym</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SymmetricTensor2&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Symmetric part $(\mathbf{T} + \mathbf{T}^{\mathsf{T}}) / 2$.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SymmetricTensor2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">skw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tensor2&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Skew-symmetric part $(\mathbf{T} - \mathbf{T}^{\mathsf{T}}) / 2$.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tensor2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tensor2&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inverse $\mathbf{T}^{-1}$.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tensor2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.linear_algebra</span><span class="w"> </span><span class="kn">import</span> <span class="n">inv33</span>
+
+        <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">inv33</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Tensor2.rotate">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.rotate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tensor2&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rotate the tensor: $\mathbf{R} \mathbf{T} \mathbf{R}^{\mathsf{T}}$.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        R : array_like, shape (3, 3)</span>
+<span class="sd">            Orthogonal rotation matrix.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tensor2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...ij,...jk-&gt;...ik&quot;</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...ij,...kj-&gt;...ik&quot;</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">R</span><span class="p">))</span></div>
+
+
+    <span class="c1"># ── named contractions ─────────────────────────────────────────────────────</span>
+
+<div class="viewcode-block" id="Tensor2.double_contract">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.double_contract">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">double_contract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Tensor2&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Double contraction $\mathbf{T} : \mathbf{S} = T_{ij} S_{ij}$.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other : Tensor2 or array_like, shape ``(..., 3, 3)``</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Scalar (or batch of scalars).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Tensor2.matvec">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.matvec">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matvec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Matrix-vector product $(\mathbf{T} \cdot \mathbf{v})_i = T_{ij} v_j$.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        v : array_like, shape ``(..., 3)``</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Shape ``(..., 3)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...ij,...j-&gt;...i&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
+
+
+    <span class="c1"># ── composition ``@`` ─────────────────────────────────────────────────────</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tensor2&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dense matrix composition $(\mathbf{T} \cdot \mathbf{S})_{ik} = T_{ij} S_{jk}$.</span>
+
+<span class="sd">        Always returns :class:`Tensor2`, regardless of the symmetry of the</span>
+<span class="sd">        operands.  Use :meth:`double_contract` for the double contraction</span>
+<span class="sd">        $\mathbf{T} : \mathbf{S}$ and :meth:`matvec` for $\mathbf{T} \cdot</span>
+<span class="sd">        \mathbf{v}$.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">@</span> <span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__rmatmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">other</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="c1"># ── arithmetic ─────────────────────────────────────────────────────────────</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># same class → operate on Kelvin arrays</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor2</span><span class="p">):</span>  <span class="c1"># cross-symmetry → promote to Tensor2</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>  <span class="c1"># plain (3,3) array → tensor path</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">+</span> <span class="n">arr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">+</span> <span class="n">arr</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">-</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">-</span> <span class="n">arr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">-</span> <span class="n">arr</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">_array</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">tensor</span><span class="o">=</span><span class="n">arr</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">arr</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">tensor</span><span class="o">=-</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=-</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
 
-    <span class="c1"># def __repr__(self):</span>
-    <span class="c1">#     return f&quot;{self.__class__.__name__}=\n{self.tensor}&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_as_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_as_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_weaken_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
-
-<div class="viewcode-block" id="Tensor.rotate">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.Tensor.rotate">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rotate the tensor by applying rotation matrix to each index.&quot;&quot;&quot;</span>
-        <span class="c1"># Use different character ranges to avoid collision (works only for rank &lt;= 13)</span>
-        <span class="c1"># Rotation matrices: ab, cd, ef, gh, ...</span>
-        <span class="c1"># Tensor indices: ijkl...</span>
-        <span class="c1"># Output indices: ijkl...</span>
-
-        <span class="c1"># Generate pairs of indices (a,b), (c,d), (e,f), ...</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">&lt;=</span> <span class="mi">13</span>
-        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">chr</span><span class="p">(</span><span class="mi">97</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span><span class="p">),</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">97</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">)]</span>
-
-        <span class="n">rotation_pairs</span> <span class="o">=</span> <span class="p">[</span><span class="n">first</span> <span class="o">+</span> <span class="n">second</span> <span class="k">for</span> <span class="n">first</span><span class="p">,</span> <span class="n">second</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">]</span>
-        <span class="n">output_indices</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">first</span> <span class="k">for</span> <span class="n">first</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">])</span>
-        <span class="n">tensor_indices</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">second</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">second</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">])</span>
-
-        <span class="n">einsum_str</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rotation_pairs</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">tensor_indices</span> <span class="o">+</span> <span class="s2">&quot;-&gt;&quot;</span> <span class="o">+</span> <span class="n">output_indices</span>
-        <span class="p">)</span>
-
-        <span class="n">rotated_tensor</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="n">einsum_str</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="n">R</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">rotated_tensor</span><span class="p">)</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="Tensor2">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.Tensor2">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Tensor2</span><span class="p">(</span><span class="n">Tensor</span><span class="p">):</span>
-    <span class="n">dim</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">rank</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">)&quot;</span>
 
 <div class="viewcode-block" id="Tensor2.identity">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.Tensor2.identity">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.identity">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tensor2&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Second-rank identity $\delta_{ij}$.</span>
 
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_as_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">):</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span>
-        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">vec</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-                    <span class="n">vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
-                    <span class="n">vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">tensor</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">vec</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-                    <span class="n">vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tensor</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
-                    <span class="n">vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tensor</span><span class="p">[:,</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_as_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span>
-        <span class="n">tensor</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
-        <span class="c1"># Diagonal terms</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-            <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-
-        <span class="c1"># Off-diagonal terms</span>
-        <span class="n">offset</span> <span class="o">=</span> <span class="n">d</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-                <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">offset</span><span class="p">])</span>
-                <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">offset</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
-                <span class="n">offset</span> <span class="o">+=</span> <span class="mi">2</span>
-
-        <span class="k">return</span> <span class="n">tensor</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">sym</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span>
-            <span class="n">tensor</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">linear_algebra</span><span class="o">.</span><span class="n">inv33</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">))</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">eigenvalues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">eivenvalues</span><span class="p">,</span> <span class="n">eigendyads</span> <span class="o">=</span> <span class="n">linear_algebra</span><span class="o">.</span><span class="n">eig33</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">eivenvalues</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="k">for</span> <span class="n">N</span> <span class="ow">in</span> <span class="n">eigendyads</span><span class="p">])</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">T</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># we transpose only the last two indices in case of a batched tensor</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span></div>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tensor2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span></div>
 
 
 
-<div class="viewcode-block" id="SymmetricTensor2">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SymmetricTensor2</span><span class="p">(</span><span class="n">Tensor2</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Symmetric second-rank tensor in 3-D.</span>
+
+<span class="sd">    Stored as a 6-component Kelvin-Mandel array</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \{T\} = [T_{11},\, T_{22},\, T_{33},\,</span>
+<span class="sd">                 \sqrt{2}\,T_{12},\, \sqrt{2}\,T_{13},\, \sqrt{2}\,T_{23}]</span>
+
+<span class="sd">    The $\sqrt{2}$ scaling makes the Kelvin basis orthonormal so that the</span>
+<span class="sd">    dot product of two Kelvin vectors equals the double contraction of the</span>
+<span class="sd">    corresponding tensors: $\{T\} \cdot \{S\} = \mathbf{T} : \mathbf{S}$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tensor : array_like, shape ``(..., 3, 3)``, optional</span>
+<span class="sd">        Dense symmetric tensor.</span>
+<span class="sd">    array : array_like, shape ``(..., 6)``, optional</span>
+<span class="sd">        Pre-built Kelvin array.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The ``@`` operator returns :class:`Tensor2` because the product of two</span>
+<span class="sd">    symmetric matrices is not symmetric in general.</span>
+
+<span class="sd">    :meth:`double_contract` operates directly on the Kelvin arrays</span>
+<span class="sd">    (dot product), with no dense intermediate.</span>
+
+<span class="sd">    Batch dimensions and ``jacfwd`` compatibility: equinox may set ``_array``</span>
+<span class="sd">    directly to the tangent module during forward-mode AD, bypassing</span>
+<span class="sd">    ``__init__``.  The :attr:`tensor` property uses :func:`_raw_array` to</span>
+<span class="sd">    unwrap the value safely in that case.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_array_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shape of the base (unbatched) Kelvin array.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+            <span class="n">_check_trailing</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">&quot;tensor&quot;</span><span class="p">)</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_S2_I</span><span class="p">,</span> <span class="n">_S2_J</span><span class="p">]</span> <span class="o">*</span> <span class="n">_S2_W</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">_raw_array</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+            <span class="n">_check_trailing</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">6</span><span class="p">,),</span> <span class="s2">&quot;array&quot;</span><span class="p">)</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">array_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dense symmetric (3, 3) tensor.</span>
 
-<div class="viewcode-block" id="SymmetricTensor2.is_symmetric">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2.is_symmetric">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">is_symmetric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></div>
+<span class="sd">        Reconstructed by scattering the Kelvin components into the upper</span>
+<span class="sd">        triangle and symmetrising.  :func:`_raw_array` is applied to</span>
+<span class="sd">        ``_array`` first to handle the case where equinox sets ``_array``</span>
+<span class="sd">        to the tangent module object during ``jacfwd`` (bypassing</span>
+<span class="sd">        ``__init__``).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Shape ``(..., 3, 3)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">_raw_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>  <span class="c1"># (..., 6) JAX array</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="o">*</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_S2_I</span><span class="p">,</span> <span class="n">_S2_J</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">array</span> <span class="o">*</span> <span class="n">_S2_W</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">out</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">T</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SymmetricTensor2&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transpose — returns ``self`` since $\mathbf{T} = \mathbf{T}^{\mathsf{T}}$.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SymmetricTensor2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+<div class="viewcode-block" id="SymmetricTensor2.double_contract">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2.double_contract">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">double_contract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Double contraction $\mathbf{T} : \mathbf{S} = T_{ij} S_{ij}$.</span>
+
+<span class="sd">        When ``other`` is also a :class:`SymmetricTensor2`, the contraction</span>
+<span class="sd">        reduces to a Kelvin dot product $\{T\} \cdot \{S\}$ with no dense</span>
+<span class="sd">        intermediate.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other : SymmetricTensor2 or array_like, shape ``(..., 3, 3)``</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Scalar (or batch of scalars).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">*</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_as_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">):</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor2</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dense composition $(\mathbf{T} \cdot \mathbf{S})_{ik} = T_{ij} S_{jk}$.</span>
 
-        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">vec</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-                    <span class="n">vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">tensor</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">tensor</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">vec</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-                    <span class="n">vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">tensor</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="sd">        Returns :class:`Tensor2` because the product of two symmetric tensors</span>
+<span class="sd">        is not symmetric in general.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">@</span> <span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_as_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span>
-        <span class="n">tensor</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
 
-        <span class="c1"># Diagonal entries</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-            <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Rank-4 tensors</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
 
-        <span class="c1"># Off-diagonal entries (upper triangle) scaled by 1/sqrt(2)</span>
-        <span class="n">offset</span> <span class="o">=</span> <span class="n">d</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="n">offset</span><span class="p">]</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-                <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-                <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>  <span class="c1"># symmetry</span>
-                <span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">return</span> <span class="n">tensor</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_AbstractTensor4</span><span class="p">(</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class shared by :class:`Tensor4` and :class:`SymmetricTensor4`.</span>
+
+<span class="sd">    Centralises all operations that are identical for both subclasses:</span>
+<span class="sd">    shape metadata, arithmetic (``+``, ``-``, ``*``, ``/``, negation),</span>
+<span class="sd">    :attr:`T`, :attr:`inv`, :meth:`fourth_contract`, :meth:`rotate`,</span>
+<span class="sd">    and ``__jax_array__``.  Every method uses ``type(self)(...)`` so that</span>
+<span class="sd">    the correct concrete subclass is returned without any explicit dispatch.</span>
+
+<span class="sd">    Subclasses must provide</span>
+<span class="sd">    -------------------------</span>
+<span class="sd">    ``base_array_shape``</span>
+<span class="sd">        Class-level tuple giving the storage array shape, e.g. ``(9, 9)``</span>
+<span class="sd">        or ``(6, 6)``.</span>
+<span class="sd">    ``__init__``</span>
+<span class="sd">        Constructor accepting ``tensor=`` and ``array=`` keyword arguments.</span>
+<span class="sd">    ``tensor`` (property)</span>
+<span class="sd">        Dense ``(3, 3, 3, 3)`` representation.</span>
+<span class="sd">    ``__matmul__``</span>
+<span class="sd">        Double contraction / composition dispatch.</span>
+<span class="sd">    ``identity`` (classmethod)</span>
+<span class="sd">        Return the identity tensor of the concrete subclass.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_array</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kelvin storage matrix — the sole JAX leaf.&quot;&quot;&quot;</span>
+
+    <span class="n">dim</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Spatial dimension.&quot;&quot;&quot;</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tensor rank.&quot;&quot;&quot;</span>
+    <span class="n">base_tensor_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shape of the base (unbatched) dense tensor.&quot;&quot;&quot;</span>
+    <span class="n">array_rank</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of storage dimensions.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Kelvin matrix.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Shape ``(..., N, N)`` where ``N`` is 9 for :class:`Tensor4`</span>
+<span class="sd">            and 6 for :class:`SymmetricTensor4`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shape of the Kelvin storage array ``(..., N, N)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">batch_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Leading batch dimensions ``(...)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tensor_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shape of the dense tensor ``(..., 3, 3, 3, 3)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_shape</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_tensor_shape</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__jax_array__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Allow ``jnp.asarray(C)`` to return the dense (3, 3, 3, 3) tensor.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">T</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;_AbstractTensor4&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Major transpose $(\mathbb{C}^{\mathsf{T}})_{ijkl} = C_{klij}$.</span>
+
+<span class="sd">        Implemented as a swap of the last two axes of the Kelvin matrix.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Same type as ``self``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;_AbstractTensor4&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inverse of the Kelvin matrix $\mathbb{C}^{-1}$.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Same type as ``self``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">fourth_contract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Full fourth-order contraction $\mathbb{C} :: \mathbb{D} = C_{ijkl} D_{ijkl}$.</span>
+
+<span class="sd">        Computed as the Frobenius inner product of the two Kelvin matrices.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other : _AbstractTensor4 or array_like</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Scalar (or batch of scalars).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">*</span> <span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;_AbstractTensor4&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rotate the tensor by applying $\mathbf{R}$ to each index.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        R : array_like, shape (3, 3)</span>
+<span class="sd">            Orthogonal rotation matrix.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Same type as ``self``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span>
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ax</span><span class="p">)),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">tensor</span><span class="o">=</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">+</span> <span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">-</span> <span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=-</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Tensor4</span><span class="p">(</span><span class="n">_AbstractTensor4</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Full (non-minor-symmetric) fourth-rank tensor in 3-D.</span>
+
+<span class="sd">    Stored as a $(9 \times 9)$ Kelvin matrix corresponding to the full</span>
+<span class="sd">    double-index ordering $[T_{11}, T_{22}, T_{33}, T_{12}, T_{21},</span>
+<span class="sd">    T_{13}, T_{31}, T_{23}, T_{32}]$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tensor : array_like, shape ``(..., 3, 3, 3, 3)``, optional</span>
+<span class="sd">        Dense tensor representation.</span>
+<span class="sd">    array : array_like, shape ``(..., 9, 9)``, optional</span>
+<span class="sd">        Pre-built Kelvin matrix.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The ``@`` operator denotes **double contraction**:</span>
+
+<span class="sd">    - :class:`Tensor4` ``@`` :class:`Tensor2` → $C_{ijkl}\varepsilon_{kl}$ → :class:`Tensor2`.</span>
+<span class="sd">    - :class:`Tensor4` ``@`` :class:`Tensor4` → $(C:D)_{ijmn} = C_{ijkl}D_{klmn}$ → :class:`Tensor4`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="n">base_array_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shape of the base (unbatched) Kelvin matrix.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tensor</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">_T4_I</span><span class="p">,</span> <span class="n">_T4_J</span><span class="p">,</span> <span class="n">_T4_K</span><span class="p">,</span> <span class="n">_T4_L</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">_raw_array</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">)))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dense (3, 3, 3, 3) tensor via a 2-D gather on the Kelvin matrix.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Shape ``(..., 3, 3, 3, 3)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_T2_RECON33</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">_T2_RECON33</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="c1"># Multiplication of symmetric tensors cannot be ensured to remain symmetric</span>
-        <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">@</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Double contraction $\mathbb{C} : \boldsymbol{\varepsilon}$ or</span>
+<span class="sd">        composition $\mathbb{C} : \mathbb{D}$.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_weaken_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
-        <span class="k">return</span> <span class="n">Tensor2</span></div>
+<span class="sd">        - ``@`` :class:`SymmetricTensor2` or :class:`Tensor2` → :class:`Tensor2`.</span>
+<span class="sd">        - ``@`` :class:`Tensor4` → :class:`Tensor4`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">_sym2_to_full9</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor4</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Tensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+<div class="viewcode-block" id="Tensor4.identity">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.html#jaxmat.tensors.Tensor4.identity">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tensor4&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fourth-rank identity $\mathbb{I}_{ijkl} = \delta_{ik}\delta_{jl}$.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tensor4</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span></div>
 
 
 
-<div class="viewcode-block" id="symmetric_kelvin_mandel_index_map">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.symmetric_kelvin_mandel_index_map">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">symmetric_kelvin_mandel_index_map</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        - km_to_ij: list mapping KM index → (i,j)</span>
-<span class="sd">        - ij_to_km: dict mapping (i,j) → KM index</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SymmetricTensor4</span><span class="p">(</span><span class="n">_AbstractTensor4</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fourth-rank tensor with minor symmetries</span>
+<span class="sd">    $C_{ijkl} = C_{jikl} = C_{ijlk} = C_{jilk}$.</span>
+
+<span class="sd">    Stored as a $(6 \times 6)$ Kelvin-Mandel matrix.  The Kelvin scaling</span>
+<span class="sd">    ensures that the double contraction $\mathbb{C} : \boldsymbol{\varepsilon}$</span>
+<span class="sd">    is a plain matrix-vector product on the Kelvin arrays.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tensor : array_like, shape ``(..., 3, 3, 3, 3)``, optional</span>
+<span class="sd">        Dense tensor with minor symmetries.</span>
+<span class="sd">    array : array_like, shape ``(..., 6, 6)``, optional</span>
+<span class="sd">        Pre-built Kelvin matrix.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The ``@`` operator performs Kelvin-space products:</span>
+
+<span class="sd">    - ``@`` :class:`SymmetricTensor2` → $(6,6) \cdot (6,)$ → :class:`SymmetricTensor2`.</span>
+<span class="sd">    - ``@`` :class:`SymmetricTensor4` → $(6,6) \cdot (6,6)$ → :class:`SymmetricTensor4`.</span>
+
+<span class="sd">    Use :meth:`to_symmetric` on :class:`_AbstractTensor4` subclasses to</span>
+<span class="sd">    materialise them into this form before mixed-class operations.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">km_to_ij</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">ij_to_km</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">sqrt2</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mf">0.5</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-        <span class="n">ij_to_km</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
-        <span class="n">km_to_ij</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">))</span>
-        <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-            <span class="n">km_to_ij</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">),</span> <span class="n">sqrt2</span><span class="p">))</span>
-            <span class="n">ij_to_km</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">sqrt2</span><span class="p">)</span>
-            <span class="n">ij_to_km</span><span class="p">[(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">sqrt2</span><span class="p">)</span>  <span class="c1"># symmetry</span>
-            <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">km_to_ij</span><span class="p">,</span> <span class="n">ij_to_km</span></div>
+
+    <span class="n">base_array_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shape of the base (unbatched) Kelvin matrix.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="s2">&quot;_array&quot;</span><span class="p">,</span>
+                <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tensor</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">_S4_I</span><span class="p">,</span> <span class="n">_S4_J</span><span class="p">,</span> <span class="n">_S4_K</span><span class="p">,</span> <span class="n">_S4_L</span><span class="p">]</span> <span class="o">*</span> <span class="n">_S4_W</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">_raw_array</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dense (3, 3, 3, 3) tensor with minor symmetries enforced.</span>
+
+<span class="sd">        Reconstructed via a 2-D gather on ``_array / _S4_W``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jax.Array</span>
+<span class="sd">            Shape ``(..., 3, 3, 3, 3)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">_S4_W</span><span class="p">)[</span>
+            <span class="o">...</span><span class="p">,</span> <span class="n">_S2_RECON33</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">_S2_RECON33</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="p">]</span>
+
+<div class="viewcode-block" id="SymmetricTensor4.to_symmetric">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor4.to_symmetric">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_symmetric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SymmetricTensor4&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return ``self`` — already the fully materialised symmetric form.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SymmetricTensor4</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Kelvin-space double contraction or composition.</span>
 
-<div class="viewcode-block" id="SymmetricTensor4">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor4">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">SymmetricTensor4</span><span class="p">(</span><span class="n">Tensor</span><span class="p">):</span>
-    <span class="n">dim</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">rank</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="sd">        - ``@`` :class:`SymmetricTensor2` → $(6,6)@(6,)$ → :class:`SymmetricTensor2`.</span>
+<span class="sd">        - ``@`` :class:`SymmetricTensor4` → $(6,6)@(6,6)$ → :class:`SymmetricTensor4`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor4</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">SymmetricTensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="n">other_arr</span> <span class="o">=</span> <span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">other_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other_arr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">other_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">SymmetricTensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other_arr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rmatmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor4</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">SymmetricTensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
 
 <div class="viewcode-block" id="SymmetricTensor4.identity">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor4.identity">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor4.identity">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">dim</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">))</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SymmetricTensor4&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Symmetric fourth-rank identity</span>
+<span class="sd">        $\mathbb{I}^s_{ijkl} = \tfrac{1}{2}(\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})$.</span>
 
-
-<div class="viewcode-block" id="SymmetricTensor4.J">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor4.J">[docs]</a>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">J</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="n">I2</span> <span class="o">=</span> <span class="n">SymmetricTensor2</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span>
-        <span class="n">J</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij,kl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">I2</span><span class="p">,</span> <span class="n">I2</span><span class="p">)</span> <span class="o">/</span> <span class="bp">cls</span><span class="o">.</span><span class="n">dim</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">J</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="SymmetricTensor4.K">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor4.K">[docs]</a>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">K</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span> <span class="o">-</span> <span class="bp">cls</span><span class="o">.</span><span class="n">J</span><span class="p">()</span></div>
-
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">array_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">vdim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">vdim</span><span class="p">,</span> <span class="n">vdim</span><span class="p">)</span>
-
-<div class="viewcode-block" id="SymmetricTensor4.is_symmetric">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor4.is_symmetric">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">is_symmetric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></div>
-
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_as_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">km_to_ij</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetric_kelvin_mandel_index_map</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-        <span class="n">array</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">ij</span><span class="p">,</span> <span class="n">Na</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">km_to_ij</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">kl</span><span class="p">,</span> <span class="n">Nb</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">km_to_ij</span><span class="p">):</span>
-                <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">Na</span> <span class="o">*</span> <span class="n">Nb</span> <span class="o">*</span> <span class="n">tensor</span><span class="p">[</span><span class="o">*</span><span class="n">ij</span><span class="p">,</span> <span class="o">*</span><span class="n">kl</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">array</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_as_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Converts a KM matrix (n,n) back to full symmetric 4th-order tensor (d,d,d,d)</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SymmetricTensor4</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span>
-        <span class="n">km_to_ij</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetric_kelvin_mandel_index_map</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-        <span class="n">tensor</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">ij</span><span class="p">,</span> <span class="n">Na</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">km_to_ij</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">kl</span><span class="p">,</span> <span class="n">Nb</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">km_to_ij</span><span class="p">):</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">Na</span> <span class="o">*</span> <span class="n">Nb</span><span class="p">)</span>
-
-                <span class="c1"># Assign to all symmetric permutations</span>
-                <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">jj</span> <span class="ow">in</span> <span class="p">{</span><span class="n">ij</span><span class="p">,</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">ij</span><span class="p">)}:</span>
-                    <span class="k">for</span> <span class="n">kk</span><span class="p">,</span> <span class="n">ll</span> <span class="ow">in</span> <span class="p">{</span><span class="n">kl</span><span class="p">,</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">kl</span><span class="p">)}:</span>
-                        <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">,</span> <span class="n">kk</span><span class="p">,</span> <span class="n">ll</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-                        <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">kk</span><span class="p">,</span> <span class="n">ll</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">tensor</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">other</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
-            <span class="n">tensor</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">))</span></div>
-
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_eval_basis</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">basis</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">c</span> <span class="o">*</span> <span class="n">b</span> <span class="k">for</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">basis</span><span class="p">)])</span>
-
-
-<div class="viewcode-block" id="IsotropicTensor4">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.IsotropicTensor4">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">IsotropicTensor4</span><span class="p">(</span><span class="n">SymmetricTensor4</span><span class="p">):</span>
-    <span class="n">kappa</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span> <span class="o">=</span> <span class="n">kappa</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">())</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">basis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">J</span> <span class="o">=</span> <span class="n">SymmetricTensor4</span><span class="o">.</span><span class="n">J</span><span class="p">()</span>
-        <span class="n">K</span> <span class="o">=</span> <span class="n">SymmetricTensor4</span><span class="o">.</span><span class="n">K</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">J</span><span class="p">,</span> <span class="n">K</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">])</span>
-
-<div class="viewcode-block" id="IsotropicTensor4.eval">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.IsotropicTensor4.eval">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_eval_basis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">)</span></div>
-
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">IsotropicTensor4</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">9</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span></div>
 
 </pre></div>
 

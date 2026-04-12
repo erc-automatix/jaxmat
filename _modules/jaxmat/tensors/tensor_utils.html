@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -184,13 +184,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -209,7 +210,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +237,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -359,104 +361,308 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for jaxmat.tensors.tensor_utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">jaxmat/tensors/tensor_utils.py</span>
+
+<span class="sd">Functional utilities for second-rank tensor algebra.</span>
+
+<span class="sd">All functions here either return :class:`~jaxmat.tensors.Tensor2` /</span>
+<span class="sd">:class:`~jaxmat.tensors.SymmetricTensor2` objects, or require tensor-specific</span>
+<span class="sd">knowledge (e.g. the Kelvin dot product in :func:`norm`, the custom JVP in</span>
+<span class="sd">:func:`eigenvalues`).</span>
+
+<span class="sd">Array-level operations — including isotropic matrix functions</span>
+<span class="sd">(:func:`~jaxmat.tensors.linear_algebra.expm`,</span>
+<span class="sd">:func:`~jaxmat.tensors.linear_algebra.logm`, etc.) — live in</span>
+<span class="sd">:mod:`jaxmat.tensors.linear_algebra` and accept tensor objects directly via</span>
+<span class="sd">``__jax_array__``, so no explicit wrapping is needed.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.linear_algebra</span><span class="w"> </span><span class="kn">import</span> <span class="n">_sqrtm</span><span class="p">,</span> <span class="n">eig33</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tensor2</span><span class="p">,</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">SymmetricTensor4</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.generic_tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">Tensor2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.linear_algebra</span><span class="w"> </span><span class="kn">import</span> <span class="n">_sqrtm</span><span class="p">,</span> <span class="n">eig33</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">safe_sqrt</span>
 
-<span class="c1"># These functions apply to tensors</span>
-<div class="viewcode-block" id="polar">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.polar">[docs]</a>
-<span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">polar</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;RU&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the &#39;RU&#39; or &#39;VR&#39; polar decomposition of F.&quot;&quot;&quot;</span>
-    <span class="n">C</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">F</span>
-    <span class="n">U</span><span class="p">,</span> <span class="n">U_inv</span> <span class="o">=</span> <span class="n">_sqrtm</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">C</span><span class="p">))</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">F</span> <span class="o">@</span> <span class="n">U_inv</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;RU&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">R</span><span class="p">,</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;VR&quot;</span><span class="p">:</span>
-        <span class="n">V</span> <span class="o">=</span> <span class="p">(</span><span class="n">R</span> <span class="o">@</span> <span class="n">U</span> <span class="o">@</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">sym</span>
-        <span class="k">return</span> <span class="n">V</span><span class="p">,</span> <span class="n">R</span></div>
-
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Decompositions — return tensor objects</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
 
 
 <div class="viewcode-block" id="sym">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.sym">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">sym</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the symmetric part of a tensor.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">+</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></div>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.sym">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sym</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tensor2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SymmetricTensor2</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Symmetric part $(\mathbf{A} + \mathbf{A}^{\mathsf{T}}) / 2$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : Tensor2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SymmetricTensor2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">sym</span></div>
 
 
 
-<div class="viewcode-block" id="skew">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.skew">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">skew</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the skew part of a tensor.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">-</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></div>
+<div class="viewcode-block" id="skw">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.skw">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">skw</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tensor2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor2</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Skew-symmetric part $(\mathbf{A} - \mathbf{A}^{\mathsf{T}}) / 2$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : Tensor2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Tensor2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">skw</span></div>
 
 
 
-<div class="viewcode-block" id="axl">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.axl">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">axl</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the axial part of a skew symmetric tensor.</span>
-<span class="sd">    If not skew-symmetric, this function takes the skew-symmetric part first.&quot;&quot;&quot;</span>
-    <span class="n">As</span> <span class="o">=</span> <span class="n">skew</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">As</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">As</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="o">-</span><span class="n">As</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span></div>
+<div class="viewcode-block" id="vol">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.vol">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">vol</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SymmetricTensor2</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Volumetric (spherical) part $\tfrac{1}{3}\operatorname{tr}(\mathbf{A})\,\mathbf{I}$.</span>
 
+<span class="sd">    Complement of :func:`dev`: ``vol(A) + dev(A) == A`` for symmetric ``A``.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : Tensor2 or SymmetricTensor2</span>
 
-<div class="viewcode-block" id="tr">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.tr">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">tr</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trace of a n-dim 2nd-rank tensor.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span></div>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SymmetricTensor2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="dev">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.dev">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">dev</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-    <span class="n">Id</span> <span class="o">=</span> <span class="n">SymmetricTensor2</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">A</span> <span class="o">-</span> <span class="n">Id</span> <span class="o">*</span> <span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="n">A</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span></div>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.dev">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dev</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SymmetricTensor2</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deviatoric part $\mathbf{A} - \tfrac{1}{3}\operatorname{tr}(\mathbf{A})\,\mathbf{I}$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : Tensor2 or SymmetricTensor2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SymmetricTensor2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">A</span> <span class="o">-</span> <span class="n">SymmetricTensor2</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span></div>
 
 
 
-<div class="viewcode-block" id="dev_vect">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.dev_vect">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">dev_vect</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-    <span class="n">K</span> <span class="o">=</span> <span class="n">SymmetricTensor4</span><span class="o">.</span><span class="n">K</span><span class="p">()</span><span class="o">.</span><span class="n">array</span>
-    <span class="k">return</span> <span class="n">K</span> <span class="o">@</span> <span class="n">A</span></div>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Scalar invariants</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+
+
+<div class="viewcode-block" id="tr">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tr">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tr</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tensor2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trace $\operatorname{tr}(\mathbf{A}) = A_{ii}$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : Tensor2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Scalar (or batch of scalars).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">tr</span></div>
+
+
+
+<div class="viewcode-block" id="norm">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.norm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">norm</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tensor2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Frobenius norm $\|\mathbf{A}\| = \sqrt{\mathbf{A}:\mathbf{A}}$.</span>
+
+<span class="sd">    For :class:`SymmetricTensor2` operands the double contraction is evaluated</span>
+<span class="sd">    as a Kelvin dot product with no dense intermediate.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : Tensor2 or SymmetricTensor2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Scalar (or batch of scalars).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">safe_sqrt</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">double_contract</span><span class="p">(</span><span class="n">A</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="von_mises">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.von_mises">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">von_mises</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Von Mises equivalent stress.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \sigma_\text{VM} = \sqrt{\tfrac{3}{2}\,\mathbf{s}:\mathbf{s}}, \qquad</span>
+<span class="sd">        \mathbf{s} = \operatorname{dev}(\boldsymbol{\sigma})</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sig : Tensor2 or SymmetricTensor2</span>
+<span class="sd">        Cauchy stress tensor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Scalar (or batch of scalars).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">dev</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">safe_sqrt</span><span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">s</span><span class="o">.</span><span class="n">double_contract</span><span class="p">(</span><span class="n">s</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="axl">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.axl">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">axl</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tensor2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Axial vector of a skew-symmetric tensor.</span>
+
+<span class="sd">    The axial vector $\mathbf{w}$ associated with $\mathbf{W} = \operatorname{skw}(\mathbf{A})$</span>
+<span class="sd">    satisfies $\mathbf{W}\mathbf{v} = \mathbf{w} \times \mathbf{v}$ and is given by</span>
+<span class="sd">    $w_i = -\tfrac{1}{2}\,\varepsilon_{ijk}\,W_{jk}$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : Tensor2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Shape ``(..., 3)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">skw</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span></div>
+
+
+
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Polar decomposition</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+
+
+<div class="viewcode-block" id="polar">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.polar">[docs]</a>
+<span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">polar</span><span class="p">(</span><span class="n">F</span><span class="p">:</span> <span class="n">Tensor2</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;RU&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Polar decomposition $\mathbf{F} = \mathbf{R}\mathbf{U}$ or</span>
+<span class="sd">    $\mathbf{F} = \mathbf{V}\mathbf{R}$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    F : Tensor2</span>
+<span class="sd">        Deformation gradient.</span>
+<span class="sd">    mode : {&quot;RU&quot;, &quot;VR&quot;}, optional</span>
+<span class="sd">        Selects the right polar decomposition (``&quot;RU&quot;``, default) or the</span>
+<span class="sd">        left polar decomposition (``&quot;VR&quot;``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        ``(R, U)`` for ``mode=&quot;RU&quot;`` where ``R`` is a :class:`Tensor2`</span>
+<span class="sd">        (rotation) and ``U`` a :class:`SymmetricTensor2` (right stretch), or</span>
+<span class="sd">        ``(V, R)`` for ``mode=&quot;VR&quot;`` where ``V`` is a :class:`SymmetricTensor2`</span>
+<span class="sd">        (left stretch).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">sym</span>
+    <span class="n">U_dense</span><span class="p">,</span> <span class="n">U_inv_dense</span> <span class="o">=</span> <span class="n">_sqrtm</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">C</span><span class="p">))</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">U_dense</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">F</span> <span class="o">@</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">U_inv_dense</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;RU&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">R</span><span class="p">,</span> <span class="n">U</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="p">(</span><span class="n">R</span> <span class="o">@</span> <span class="n">U</span> <span class="o">@</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">sym</span>
+    <span class="k">return</span> <span class="n">V</span><span class="p">,</span> <span class="n">R</span></div>
 
 
 
 <div class="viewcode-block" id="stretch_tensor">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.stretch_tensor">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">stretch_tensor</span><span class="p">(</span><span class="n">F</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the strech tensor U = sqrtm(F.T @ F).&quot;&quot;&quot;</span>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.stretch_tensor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">stretch_tensor</span><span class="p">(</span><span class="n">F</span><span class="p">:</span> <span class="n">Tensor2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SymmetricTensor2</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Right stretch tensor $\mathbf{U} = (\mathbf{F}^{\mathsf{T}}\mathbf{F})^{1/2}$.</span>
+
+<span class="sd">    Convenience wrapper around :func:`polar`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    F : Tensor2</span>
+<span class="sd">        Deformation gradient.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SymmetricTensor2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">polar</span><span class="p">(</span><span class="n">F</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
 
 
 
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Spectral analysis</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+
+
 <span class="nd">@jax</span><span class="o">.</span><span class="n">custom_jvp</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">eigenvalues</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
-    <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigendyads</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">eigenvalues</span><span class="p">(</span><span class="n">sig</span><span class="p">:</span> <span class="n">SymmetricTensor2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Eigenvalues $\lambda_1 \leq \lambda_2 \leq \lambda_3$ of a symmetric tensor.</span>
+
+<span class="sd">    Wraps :func:`~jaxmat.tensors.linear_algebra.eig33` and provides a</span>
+<span class="sd">    stable custom JVP via the eigenprojectors, correct even for repeated</span>
+<span class="sd">    or near-repeated eigenvalues.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sig : SymmetricTensor2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Shape ``(..., 3)``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The custom JVP computes</span>
+<span class="sd">    $\dot{\lambda}_i = (\mathbf{n}_i \otimes \mathbf{n}_i) : \dot{\mathbf{A}}$</span>
+<span class="sd">    from the eigenprojectors returned by ``eig33``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sig</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">eigvals</span>
 
 
-<div class="viewcode-block" id="eigenvalues_jvp">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.eigenvalues_jvp">[docs]</a>
 <span class="nd">@eigenvalues</span><span class="o">.</span><span class="n">defjvp</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">eigenvalues_jvp</span><span class="p">(</span><span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_eigenvalues_jvp</span><span class="p">(</span><span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
     <span class="p">(</span><span class="n">sig</span><span class="p">,)</span> <span class="o">=</span> <span class="n">primals</span>
     <span class="p">(</span><span class="n">dsig</span><span class="p">,)</span> <span class="o">=</span> <span class="n">tangents</span>
-    <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigendyads</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
-    <span class="n">deig</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">eigendyads</span><span class="p">,</span> <span class="n">dsig</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">deig</span></div>
-
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigendyads</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sig</span><span class="p">))</span>
+    <span class="n">deig</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">eigendyads</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dsig</span><span class="p">),</span> <span class="n">axes</span><span class="o">=</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">deig</span>
 </pre></div>
 
                 </article>

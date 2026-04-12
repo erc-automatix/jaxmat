@@ -184,13 +184,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -209,7 +210,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +237,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -359,7 +361,8 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>All modules for which code is available</h1>
-<ul><li><a href="jaxmat/loader.html">jaxmat.loader</a></li>
+<ul><li><a href="jaxlib/_jax.html">jaxlib._jax</a></li>
+<li><a href="jaxmat/loader.html">jaxmat.loader</a></li>
 <li><a href="jaxmat/materials/behavior.html">jaxmat.materials.behavior</a></li>
 <li><a href="jaxmat/materials/elasticity.html">jaxmat.materials.elasticity</a></li>
 <li><a href="jaxmat/materials/elastoplasticity.html">jaxmat.materials.elastoplasticity</a></li>
@@ -375,6 +378,8 @@ document.write(`
 <li><a href="jaxmat/state.html">jaxmat.state</a></li>
 <li><a href="jaxmat/tensors/generic_tensors.html">jaxmat.tensors.generic_tensors</a></li>
 <li><a href="jaxmat/tensors/linear_algebra.html">jaxmat.tensors.linear_algebra</a></li>
+<li><a href="jaxmat/tensors/mappings.html">jaxmat.tensors.mappings</a></li>
+<li><a href="jaxmat/tensors/symmetry_classes.html">jaxmat.tensors.symmetry_classes</a></li>
 <li><a href="jaxmat/tensors/tensor_utils.html">jaxmat.tensors.tensor_utils</a></li>
 <li><a href="jaxmat/tensors/utils.html">jaxmat.tensors.utils</a></li>
 </ul>

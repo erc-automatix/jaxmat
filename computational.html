@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -60,7 +60,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'computational';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Conventions for representing tensors" href="tensors.html" />
+    <link rel="next" title="Sharp bits" href="sharp_bits.html" />
     <link rel="prev" title="Nonlinear constitutive behaviors" href="concepts.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -185,14 +185,12 @@
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -210,7 +208,6 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -238,6 +235,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -406,25 +405,44 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="computational-aspects">
 <h1>Computational aspects<a class="headerlink" href="#computational-aspects" title="Link to this heading">#</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> inherits all the standard features of the JAX ecosystem: automatic differentiation (AD), automatic vectorization (<code class="docutils literal notranslate"><span class="pre">vmap</span></code>), and just-in-time (JIT) compilation, while also adhering to JAX’s strict rules such as function purity, immutability of arrays, and program tracing. This section highlights aspects specific to <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>; for a general introduction to these concepts, see the <a class="reference external" href="https://docs.jax.dev/en/latest/">JAX documentation</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> inherits all the standard features of the JAX ecosystem: automatic
+differentiation (AD), automatic vectorization (<code class="docutils literal notranslate"><span class="pre">vmap</span></code>), and just-in-time (JIT)
+compilation, while also adhering to JAX’s strict rules such as function purity,
+immutability of arrays, and program tracing. This section highlights aspects
+specific to <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>; for a general introduction to these concepts, see the
+<a class="reference external" href="https://docs.jax.dev/en/latest/">JAX documentation</a>.</p>
 <section id="precision">
 <h2>Precision<a class="headerlink" href="#precision" title="Link to this heading">#</a></h2>
-<p>As material models generally involve relatively complex nonlinear equations to solve, we recommend working in <code class="docutils literal notranslate"><span class="pre">float64</span></code> precision for better stability and accuracy rather than in the default <code class="docutils literal notranslate"><span class="pre">float32</span></code> precision commonly used in machine learning applications. When importing <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, <code class="docutils literal notranslate"><span class="pre">float64</span></code> precision is set by default. Precision can be set manually if needed as:</p>
+<p>As material models generally involve relatively complex nonlinear equations to
+solve, we recommend working in <code class="docutils literal notranslate"><span class="pre">float64</span></code> precision for better stability and
+accuracy rather than in the default <code class="docutils literal notranslate"><span class="pre">float32</span></code> precision commonly used in
+machine learning applications. When importing <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, <code class="docutils literal notranslate"><span class="pre">float64</span></code> precision is
+set by default. Precision can be set manually if needed as:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_enable_x64&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="just-in-time-compilation-and-backend-device">
 <h2>Just-In-Time Compilation and backend device<a class="headerlink" href="#just-in-time-compilation-and-backend-device" title="Link to this heading">#</a></h2>
-<p>In JAX, it is usually recommended to JIT only the <strong>outermost function</strong> of a computation.<br />
-In <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, this means we typically JIT the <strong>constitutive update function</strong>, or a batched wrapper around it.</p>
-<p>When JIT-tracing, concrete values are replaced by <em>tracers</em>, and operations must remain compatible with JAX’s functional semantics. Care must be taken when writing implementations involving conditionals or loops to ensure that the traced code remains valid.</p>
-<p>As in JAX, <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> supports device-portable batched constitutive updates; users may run the same code on CPU or GPU.
-The observed performance will strongly depends on the hardware device, the used batch size  and the computational intensity of the material model, see the <a class="reference internal" href="#demos/performance.md"><code class="xref myst docutils literal notranslate"><span class="pre">demos/performance.md</span></code></a> demo for more details.</p>
+<p>In JAX, it is usually recommended to JIT only the <strong>outermost function</strong> of a
+computation.  In <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, this means we typically JIT the <strong>constitutive
+update function</strong>, or a batched wrapper around it.</p>
+<p>When JIT-tracing, concrete values are replaced by <em>tracers</em>, and operations
+must remain compatible with JAX’s functional semantics. Care must be taken when
+writing implementations involving conditionals or loops to ensure that the
+traced code remains valid.</p>
+<p>As in JAX, <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> supports device-portable batched constitutive updates;
+users may run the same code on CPU or GPU. The observed performance will
+strongly depends on the hardware device, the used batch size  and the
+computational intensity of the material model, see the <a class="reference internal" href="#demos/performance.md"><code class="xref myst docutils literal notranslate"><span class="pre">demos/performance.md</span></code></a>
+demo for more details.</p>
 </section>
 <section id="on-automatic-vectorization">
 <h2>On Automatic Vectorization<a class="headerlink" href="#on-automatic-vectorization" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> relies heavily on <strong>batched constitutive updates</strong>. Instead of evaluating the stress for one strain input at a time, we can evaluate many inputs simultaneously — for example, one per quadrature point in a finite element assembly loop.</p>
+<p><code class="docutils literal notranslate"><span class="pre">jaxmat</span></code> relies heavily on <strong>batched constitutive updates</strong>. Instead of
+evaluating the stress for one strain input at a time, we can evaluate many
+inputs simultaneously — for example, one per quadrature point in a finite
+element assembly loop.</p>
 <p>This is achieved with <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code>, which transforms a function such as:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">constitutive_update</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">strain</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 </pre></div>
@@ -433,28 +451,42 @@ The observed performance will strongly depends on the hardware device, the used 
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">batched_constitutive_update</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">strain_batch</span><span class="p">,</span> <span class="n">state_batch</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>that operates efficiently across a whole array of strains or states. For more details, see the <a class="reference internal" href="demos/quickstart/batched_computation.html"><span class="doc std std-doc">Batching across material points</span></a> demo.</p>
-<p>It is also possible to batch through a set of material parameters sharing a common PyTree, see this other demo: <a class="reference internal" href="demos/quickstart/material_parameters_batching.html"><span class="doc std std-doc">Batching across material parameters</span></a>.</p>
+<p>that operates efficiently across a whole array of strains or states. For more
+details, see the <a class="reference internal" href="demos/quickstart/batched_computation.html"><span class="doc std std-doc">Batching across material points</span></a> demo.</p>
+<p>It is also possible to batch through a set of material parameters sharing a
+common PyTree, see this other demo:
+<a class="reference internal" href="demos/quickstart/material_parameters_batching.html"><span class="doc std std-doc">Batching across material parameters</span></a>.</p>
 </section>
 <section id="on-automatic-differentiation">
 <h2>On Automatic Differentiation<a class="headerlink" href="#on-automatic-differentiation" title="Link to this heading">#</a></h2>
-<p>AD is central to <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, most notably for computing the consistent tangent operator<a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. In practice, AD is applied directly to the <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code> function.</p>
-<p>However, the way the update is implemented matters. Consider implicit systems solved with a Newton method:</p>
+<p>AD is central to <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, most notably for computing the consistent tangent
+operator<a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. In practice, AD is applied directly to the <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code>
+function.</p>
+<p>However, the way the update is implemented matters. Consider implicit systems
+solved with a Newton method:</p>
 <ul class="simple">
-<li><p>If the Newton iterations are written out explicitly, AD will differentiate through all iterations (<em>algorithmic unrolling</em>). This leads to:</p>
+<li><p>If the Newton iterations are written out explicitly, AD will differentiate
+through all iterations (<em>algorithmic unrolling</em>). This leads to:</p>
 <ul>
 <li><p>unnecessarily large and complex computational graphs,</p></li>
 <li><p>possible numerical instability due to accumulation of floating-point errors.</p></li>
 </ul>
 </li>
-<li><p>A better approach is to use the <em>implicit function theorem</em> (IFT): instead of differentiating through iterations, one solves an auxiliary linear system to obtain the derivative. This yields a more efficient and more accurate evaluation.</p></li>
+<li><p>A better approach is to use the <em>implicit function theorem</em> (IFT): instead of
+differentiating through iterations, one solves an auxiliary linear system to
+obtain the derivative. This yields a more efficient and more accurate
+evaluation.</p></li>
 </ul>
-<p>In <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, we typically use solvers from <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> and <code class="docutils literal notranslate"><span class="pre">diffrax</span></code> (the issue is the same for ODEs) which already implement this implicit differentiation technique.</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>, we typically use solvers from <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> and <code class="docutils literal notranslate"><span class="pre">diffrax</span></code> (the
+issue is the same for ODEs) which already implement this implicit
+differentiation technique.</p>
 <hr class="footnotes docutils" />
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id2" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>AD can also be used in other contexts, such as computing normal vectors to yield surfaces, derivatives of hyperelastic potentials, or Jacobians of implicit systems of nonlinear equations</p>
+<p>AD can also be used in other contexts, such as computing normal vectors
+to yield surfaces, derivatives of hyperelastic potentials, or Jacobians of
+implicit systems of nonlinear equations</p>
 </aside>
 </aside>
 </section>
@@ -500,11 +532,11 @@ The observed performance will strongly depends on the hardware device, the used 
       </div>
     </a>
     <a class="right-next"
-       href="tensors.html"
+       href="sharp_bits.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Conventions for representing tensors</p>
+        <p class="prev-next-title">Sharp bits</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

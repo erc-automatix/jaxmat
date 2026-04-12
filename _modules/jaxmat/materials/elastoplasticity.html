@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -184,14 +184,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -209,7 +207,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +234,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -359,25 +358,27 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for jaxmat.materials.elastoplasticity</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">optax.tree_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">tree_add</span><span class="p">,</span> <span class="n">tree_zeros_like</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_value</span><span class="p">,</span> <span class="n">enforce_dtype</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractState</span><span class="p">,</span> <span class="n">make_batched</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">dev</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">FischerBurmeister</span> <span class="k">as</span> <span class="n">FB</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_value</span><span class="p">,</span> <span class="n">enforce_dtype</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">.behavior</span><span class="w"> </span><span class="kn">import</span> <span class="n">SmallStrainBehavior</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.elasticity</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearElasticIsotropic</span><span class="p">,</span> <span class="n">AbstractLinearElastic</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.elasticity</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractLinearElastic</span><span class="p">,</span> <span class="n">LinearElasticIsotropic</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plastic_surfaces</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractPlasticSurface</span><span class="p">,</span>
     <span class="n">vonMises</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">FischerBurmeister</span> <span class="k">as</span> <span class="n">FB</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 
 
 <div class="viewcode-block" id="InternalState">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.InternalState">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.InternalState">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">InternalState</span><span class="p">(</span><span class="n">AbstractState</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Internal state for hardening plasticity</span>
@@ -392,7 +393,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="vonMisesIsotropicHardening">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.vonMisesIsotropicHardening">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.vonMisesIsotropicHardening">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">vonMisesIsotropicHardening</span><span class="p">(</span><span class="n">SmallStrainBehavior</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Small-strain rate-independent elastoplastic constitutive model with isotropic hardening</span>
@@ -410,7 +411,7 @@ document.write(`
     <span class="n">internal_type</span> <span class="o">=</span> <span class="n">InternalState</span>
 
 <div class="viewcode-block" id="vonMisesIsotropicHardening.constitutive_update">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.vonMisesIsotropicHardening.constitutive_update">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.vonMisesIsotropicHardening.constitutive_update">[docs]</a>
     <span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
     <span class="nd">@eqx</span><span class="o">.</span><span class="n">debug</span><span class="o">.</span><span class="n">assert_max_traces</span><span class="p">(</span><span class="n">max_traces</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
@@ -450,7 +451,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="GeneralIsotropicHardening">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.GeneralIsotropicHardening">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.GeneralIsotropicHardening">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GeneralIsotropicHardening</span><span class="p">(</span><span class="n">SmallStrainBehavior</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Small-strain rate-independent elastoplastic constitutive model with isotropic hardening</span>
@@ -468,7 +469,7 @@ document.write(`
     <span class="n">internal_type</span> <span class="o">=</span> <span class="n">InternalState</span>
 
 <div class="viewcode-block" id="GeneralIsotropicHardening.constitutive_update">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.GeneralIsotropicHardening.constitutive_update">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.GeneralIsotropicHardening.constitutive_update">[docs]</a>
     <span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
     <span class="nd">@eqx</span><span class="o">.</span><span class="n">debug</span><span class="o">.</span><span class="n">assert_max_traces</span><span class="p">(</span><span class="n">max_traces</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
@@ -486,9 +487,7 @@ document.write(`
             <span class="k">def</span><span class="w"> </span><span class="nf">residual</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
                 <span class="n">dp</span><span class="p">,</span> <span class="n">depsp</span> <span class="o">=</span> <span class="n">dy</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">dy</span><span class="o">.</span><span class="n">epsp</span>
                 <span class="n">sig</span> <span class="o">=</span> <span class="n">eval_stress</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span>
-                <span class="n">yield_criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surface</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_stress</span><span class="p">(</span>
-                    <span class="n">p_old</span> <span class="o">+</span> <span class="n">dp</span>
-                <span class="p">)</span>
+                <span class="n">yield_criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surface</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_stress</span><span class="p">(</span><span class="n">p_old</span> <span class="o">+</span> <span class="n">dp</span><span class="p">)</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surface</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
                 <span class="n">res</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">FB</span><span class="p">(</span><span class="o">-</span><span class="n">yield_criterion</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">dp</span><span class="p">),</span>
@@ -498,9 +497,7 @@ document.write(`
                 <span class="k">return</span> <span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
             <span class="n">dy0</span> <span class="o">=</span> <span class="n">tree_zeros_like</span><span class="p">(</span><span class="n">isv_old</span><span class="p">)</span>
-            <span class="n">sol</span> <span class="o">=</span> <span class="n">optx</span><span class="o">.</span><span class="n">root_find</span><span class="p">(</span>
-                <span class="n">residual</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">dy0</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">adjoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adjoint</span>
-            <span class="p">)</span>
+            <span class="n">sol</span> <span class="o">=</span> <span class="n">optx</span><span class="o">.</span><span class="n">root_find</span><span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">dy0</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">adjoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adjoint</span><span class="p">)</span>
             <span class="n">dy</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">value</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">aux</span>
             <span class="n">sig</span> <span class="o">=</span> <span class="n">eval_stress</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span>
@@ -514,7 +511,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="GeneralHardeningInternalState">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.GeneralHardeningInternalState">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.GeneralHardeningInternalState">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GeneralHardeningInternalState</span><span class="p">(</span><span class="n">AbstractState</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal state for the :class:`GeneralHardening` model.&quot;&quot;&quot;</span>
 
@@ -533,14 +530,16 @@ document.write(`
 
 
 <div class="viewcode-block" id="GeneralHardening">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.GeneralHardening">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.GeneralHardening">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GeneralHardening</span><span class="p">(</span><span class="n">SmallStrainBehavior</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Small-strain rate-independent elastoplastic constitutive model with general</span>
-<span class="sd">    combined isotropic and kinematic hardening and generic plastic surface.</span>
-<span class="sd">    The model accounts for a single plastic surface but several kinematic hardening variables.</span>
+<span class="sd">    combined isotropic and kinematic hardening and generic plastic surface. The</span>
+<span class="sd">    model accounts for a single plastic surface but several kinematic hardening</span>
+<span class="sd">    variables.</span>
 
-<span class="sd">    Return-mapping requires solving a non-linear system in terms of $p$, $\bepsp$ and the $\balpha_i$.</span>
+<span class="sd">    Return-mapping requires solving a non-linear system in terms of $p$,</span>
+<span class="sd">    $\bepsp$ and the $\balpha_i$.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">elasticity</span><span class="p">:</span> <span class="n">AbstractLinearElastic</span>
@@ -551,22 +550,24 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generic plastic surface.&quot;&quot;&quot;</span>
     <span class="n">combined_hardening</span><span class="p">:</span> <span class="n">eqx</span><span class="o">.</span><span class="n">Module</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Combined hardening module representing a hardening potential $\psi_\textrm{h}(\balpha,p)$. </span>
-<span class="sd">    Should provide two methods:</span>
+<span class="sd">    Combined hardening module representing a hardening potential</span>
+<span class="sd">    $\psi_\textrm{h}(\balpha,p)$. Should provide two methods:</span>
 
-<span class="sd">    - ``combined_hardening.dalpha(alpha, p)`` returning $\dfrac{\partial \psi_\textrm{h}}{\partial \balpha}(\balpha,p)$</span>
-<span class="sd">    - ``combined_hardening.dp(alpha, p)`` returning $\dfrac{\partial \psi_\textrm{h}}{\partial p}(\balpha,p)$</span>
+<span class="sd">    - ``combined_hardening.dalpha(alpha, p)`` returning $\dfrac{\partial</span>
+<span class="sd">      \psi_\textrm{h}}{\partial \balpha}(\balpha,p)$</span>
+<span class="sd">    - ``combined_hardening.dp(alpha, p)`` returning $\dfrac{\partial</span>
+<span class="sd">      \psi_\textrm{h}}{\partial p}(\balpha,p)$</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">nvar</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">static</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GeneralHardening.make_internal_state">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.GeneralHardening.make_internal_state">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.GeneralHardening.make_internal_state">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">make_internal_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">GeneralHardeningInternalState</span><span class="p">(</span><span class="n">nvar</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nvar</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeneralHardening.constitutive_update">
-<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.GeneralHardening.constitutive_update">[docs]</a>
+<a class="viewcode-back" href="../../../api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.GeneralHardening.constitutive_update">[docs]</a>
     <span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
     <span class="nd">@eqx</span><span class="o">.</span><span class="n">debug</span><span class="o">.</span><span class="n">assert_max_traces</span><span class="p">(</span><span class="n">max_traces</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>

@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -63,7 +63,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="jaxmat.loader module" href="api/jaxmat.loader.html" />
-    <link rel="prev" title="Conventions for representing tensors" href="tensors.html" />
+    <link rel="prev" title="Computational aspects" href="computational.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -187,14 +187,12 @@
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -212,7 +210,6 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +237,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -418,28 +417,44 @@ document.write(`
 <h2>Computational mechanics aspects<a class="headerlink" href="#computational-mechanics-aspects" title="Link to this heading">#</a></h2>
 <section id="enforcing-plastic-consistency-conditions">
 <h3>Enforcing plastic consistency conditions<a class="headerlink" href="#enforcing-plastic-consistency-conditions" title="Link to this heading">#</a></h3>
-<p>In computational plasticity, ensuring the plastic consistency condition is crucial for accurate stress updates. Traditionally, this is done using the <em>elastic predictor / plastic corrector scheme</em>, where an initial elastic trial stress is corrected iteratively to satisfy the yield condition. While effective, this approach often requires conditional flow control and makes behavior implementation more cumbersome, especially when handling multiple plastic surfaces.</p>
-<p>An alternative is to enforce consistency directly using complementarity <span class="math notranslate nohighlight">\(C\)</span>-functions such as the <em>Fischer-Burmeister</em> (<span class="math notranslate nohighlight">\(\text{FB}\)</span>) function defined as:</p>
+<p>In computational plasticity, ensuring the plastic consistency condition is
+crucial for accurate stress updates. Traditionally, this is done using the
+<em>elastic predictor / plastic corrector scheme</em>, where an initial elastic trial
+stress is corrected iteratively to satisfy the yield condition. While
+effective, this approach often requires conditional flow control and makes
+behavior implementation more cumbersome, especially when handling multiple
+plastic surfaces.</p>
+<p>An alternative is to enforce consistency directly using complementarity
+<span class="math notranslate nohighlight">\(C\)</span>-functions such as the <em>Fischer-Burmeister</em> (<span class="math notranslate nohighlight">\(\text{FB}\)</span>) function defined
+as:</p>
 <div class="math notranslate nohighlight">
 \[\text{FB}(x, y) = x + y - \sqrt{x^2 + y^2}\]</div>
-<p>This function provides a semi-smooth <a class="footnote-reference brackets" href="#semismooth" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> reformulation of the complementarity conditions:</p>
+<p>This function provides a semi-smooth <a class="footnote-reference brackets" href="#semismooth" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> reformulation of the
+complementarity conditions:</p>
 <div class="math notranslate nohighlight">
 \[x \geq 0, y \geq 0, xy = 0 \quad \Leftrightarrow \text{FB}(x, y) = 0.\]</div>
-<p>In the context of plasticity, complementarity conditions of plastic evolution generally write:</p>
+<p>In the context of plasticity, complementarity conditions of plastic evolution
+generally write:</p>
 <div class="math notranslate nohighlight">
 \[
 f(\bsig, p) \leq 0, \quad \dot{p} \geq 0, \quad \dot{p}f(\sigma,p) = 0
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(f(\bsig, p)\)</span> is the yield function and <span class="math notranslate nohighlight">\(p\)</span> the cumulated plastic strain acting as a plastic multiplier.</p>
-<p>Using the $\text{FB} function allows to encode both elastic and plastic evolution into a single non-linear equation:</p>
+<p>where <span class="math notranslate nohighlight">\(f(\bsig, p)\)</span> is the yield function and <span class="math notranslate nohighlight">\(p\)</span> the cumulated plastic strain
+acting as a plastic multiplier.</p>
+<p>Using the $\text{FB} function allows to encode both elastic and plastic
+evolution into a single non-linear equation:</p>
 <div class="math notranslate nohighlight">
 \[\text{FB}(-f(\bsig,p),\dot{p}) = 0\]</div>
 <p>where the negative sign ensures that <span class="math notranslate nohighlight">\(f(\bsig,p) \leq 0\)</span> as common practice in plasticity.</p>
 <p>The advantages are that:</p>
 <ol class="arabic simple">
-<li><p>The FB function transforms the non-smooth complementarity problem into a semi-smooth differentiable system, improving numerical robustness.</p></li>
-<li><p>Both the yield condition and non-negativity of the plastic multiplier are enforced simultaneously, avoiding case disjunctions or active-set methods.</p></li>
-<li><p>Newton-type solvers can be applied directly to the FB function, often leading to faster and more stable convergence than traditional elastic predictor/plastic corrector schemes.</p></li>
+<li><p>The FB function transforms the non-smooth complementarity problem into a
+semi-smooth differentiable system, improving numerical robustness.</p></li>
+<li><p>Both the yield condition and non-negativity of the plastic multiplier are
+enforced simultaneously, avoiding case disjunctions or active-set methods.</p></li>
+<li><p>Newton-type solvers can be applied directly to the FB function, often
+leading to faster and more stable convergence than traditional elastic
+predictor/plastic corrector schemes.</p></li>
 </ol>
 </section>
 </section>
@@ -447,11 +462,15 @@ f(\bsig, p) \leq 0, \quad \dot{p} \geq 0, \quad \dot{p}f(\sigma,p) = 0
 <h2>JAX-related sharp bits<a class="headerlink" href="#jax-related-sharp-bits" title="Link to this heading">#</a></h2>
 <section id="optimistix-and-lineax-solver-options">
 <h3><code class="docutils literal notranslate"><span class="pre">optimistix</span></code> and <code class="docutils literal notranslate"><span class="pre">lineax</span></code> solver options<a class="headerlink" href="#optimistix-and-lineax-solver-options" title="Link to this heading">#</a></h3>
-<p>By default <code class="docutils literal notranslate"><span class="pre">lineax</span></code> and <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> check that the solve was successful, verifying that the return doesn’t have NaNs etc. This extra check may induce additional costs. This can be disabled by passing <code class="docutils literal notranslate"><span class="pre">solver(...,</span> <span class="pre">throw=False)</span></code>.</p>
+<p>By default <code class="docutils literal notranslate"><span class="pre">lineax</span></code> and <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> check that the solve was successful,
+verifying that the return doesn’t have NaNs etc. This extra check may induce
+additional costs. This can be disabled by passing <code class="docutils literal notranslate"><span class="pre">solver(...,</span> <span class="pre">throw=False)</span></code>.</p>
 </section>
 <section id="recompilation-due-to-changing-dtype">
 <h3>Recompilation due to changing <code class="docutils literal notranslate"><span class="pre">dtype</span></code><a class="headerlink" href="#recompilation-due-to-changing-dtype" title="Link to this heading">#</a></h3>
-<p>If not careful, you may induce recompilation of jitted constitutive models when inadvertly changing <code class="docutils literal notranslate"><span class="pre">dtype</span></code>s between function calls. For instance, if calling first:</p>
+<p>If not careful, you may induce recompilation of jitted constitutive models when
+inadvertly changing <code class="docutils literal notranslate"><span class="pre">dtype</span></code>s between function calls. For instance, if calling
+first:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dt</span> <span class="o">=</span> <span class="mf">0.</span>
 <span class="n">material</span><span class="o">.</span><span class="n">constitutive_update</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 </pre></div>
@@ -461,12 +480,15 @@ f(\bsig, p) \leq 0, \quad \dot{p} \geq 0, \quad \dot{p}f(\sigma,p) = 0
     <span class="n">material</span><span class="o">.</span><span class="n">constitutive_update</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>JIT compilation will be triggered once more at the start of the loop since <code class="docutils literal notranslate"><span class="pre">dt</span></code> changed <code class="docutils literal notranslate"><span class="pre">dtype</span></code> from <code class="docutils literal notranslate"><span class="pre">float</span></code> to <code class="docutils literal notranslate"><span class="pre">jnp.float64</span></code> for instance.</p>
+<p>JIT compilation will be triggered once more at the start of the loop since <code class="docutils literal notranslate"><span class="pre">dt</span></code>
+changed <code class="docutils literal notranslate"><span class="pre">dtype</span></code> from <code class="docutils literal notranslate"><span class="pre">float</span></code> to <code class="docutils literal notranslate"><span class="pre">jnp.float64</span></code> for instance.</p>
 <hr class="footnotes docutils" />
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="semismooth" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>The Fischer-Burmeister is not differentiable at the origin <span class="math notranslate nohighlight">\((0,0)\)</span>, but it is semi-smooth, meaning directional derivatives exist and Newton-type methods can still converge robustly.</p>
+<p>The Fischer-Burmeister is not differentiable at the origin
+<span class="math notranslate nohighlight">\((0,0)\)</span>, but it is semi-smooth, meaning directional derivatives exist and
+Newton-type methods can still converge robustly.</p>
 </aside>
 </aside>
 </section>
@@ -504,12 +526,12 @@ f(\bsig, p) \leq 0, \quad \dot{p} \geq 0, \quad \dot{p}f(\sigma,p) = 0
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="tensors.html"
+       href="computational.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Conventions for representing tensors</p>
+        <p class="prev-next-title">Computational aspects</p>
       </div>
     </a>
     <a class="right-next"

@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -187,13 +187,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -212,7 +213,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +240,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -456,7 +458,7 @@ document.write(`
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elastoplasticity.InternalState.epsp">
-<span class="sig-name descname"><span class="pre">epsp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2" title="jaxmat.tensors.generic_tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.elastoplasticity.InternalState.epsp" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">epsp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2" title="jaxmat.tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.elastoplasticity.InternalState.epsp" title="Link to this definition">#</a></dt>
 <dd><p>Plastic strain tensor</p>
 </dd></dl>
 
@@ -609,13 +611,13 @@ constitutive behaviors (elastic, plastic, viscoplastic, etc.).</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elastoplasticity.GeneralHardeningInternalState.epsp">
-<span class="sig-name descname"><span class="pre">epsp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2" title="jaxmat.tensors.generic_tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.elastoplasticity.GeneralHardeningInternalState.epsp" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">epsp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2" title="jaxmat.tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.elastoplasticity.GeneralHardeningInternalState.epsp" title="Link to this definition">#</a></dt>
 <dd><p>Plastic strain tensor</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elastoplasticity.GeneralHardeningInternalState.alpha">
-<span class="sig-name descname"><span class="pre">alpha</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.generic_tensors.html#jaxmat.tensors.generic_tensors.SymmetricTensor2" title="jaxmat.tensors.generic_tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.elastoplasticity.GeneralHardeningInternalState.alpha" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">alpha</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2" title="jaxmat.tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a></em><a class="headerlink" href="#jaxmat.materials.elastoplasticity.GeneralHardeningInternalState.alpha" title="Link to this definition">#</a></dt>
 <dd><p>Kinematic hardening variables <span class="math notranslate nohighlight">\(\balpha_i\)</span>.</p>
 </dd></dl>
 
@@ -632,9 +634,11 @@ constitutive behaviors (elastic, plastic, viscoplastic, etc.).</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GeneralHardening</span></span><a class="reference internal" href="../_modules/jaxmat/materials/elastoplasticity.html#GeneralHardening"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.materials.elastoplasticity.GeneralHardening" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="jaxmat.materials.behavior.html#jaxmat.materials.behavior.SmallStrainBehavior" title="jaxmat.materials.behavior.SmallStrainBehavior"><code class="xref py py-class docutils literal notranslate"><span class="pre">SmallStrainBehavior</span></code></a></p>
 <p>Small-strain rate-independent elastoplastic constitutive model with general
-combined isotropic and kinematic hardening and generic plastic surface.
-The model accounts for a single plastic surface but several kinematic hardening variables.</p>
-<p>Return-mapping requires solving a non-linear system in terms of <span class="math notranslate nohighlight">\(p\)</span>, <span class="math notranslate nohighlight">\(\bepsp\)</span> and the <span class="math notranslate nohighlight">\(\balpha_i\)</span>.</p>
+combined isotropic and kinematic hardening and generic plastic surface. The
+model accounts for a single plastic surface but several kinematic hardening
+variables.</p>
+<p>Return-mapping requires solving a non-linear system in terms of <span class="math notranslate nohighlight">\(p\)</span>,
+<span class="math notranslate nohighlight">\(\bepsp\)</span> and the <span class="math notranslate nohighlight">\(\balpha_i\)</span>.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elastoplasticity.GeneralHardening.elasticity">
 <span class="sig-name descname"><span class="pre">elasticity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.AbstractLinearElastic" title="jaxmat.materials.elasticity.AbstractLinearElastic"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractLinearElastic</span></code></a></em><a class="headerlink" href="#jaxmat.materials.elastoplasticity.GeneralHardening.elasticity" title="Link to this definition">#</a></dt>
@@ -656,11 +660,13 @@ The model accounts for a single plastic surface but several kinematic hardening 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="jaxmat.materials.elastoplasticity.GeneralHardening.combined_hardening">
 <span class="sig-name descname"><span class="pre">combined_hardening</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></em><a class="headerlink" href="#jaxmat.materials.elastoplasticity.GeneralHardening.combined_hardening" title="Link to this definition">#</a></dt>
-<dd><p>Combined hardening module representing a hardening potential <span class="math notranslate nohighlight">\(\psi_\textrm{h}(\balpha,p)\)</span>.
-Should provide two methods:</p>
+<dd><p>Combined hardening module representing a hardening potential
+<span class="math notranslate nohighlight">\(\psi_\textrm{h}(\balpha,p)\)</span>. Should provide two methods:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">combined_hardening.dalpha(alpha,</span> <span class="pre">p)</span></code> returning <span class="math notranslate nohighlight">\(\dfrac{\partial \psi_\textrm{h}}{\partial \balpha}(\balpha,p)\)</span></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">combined_hardening.dp(alpha,</span> <span class="pre">p)</span></code> returning <span class="math notranslate nohighlight">\(\dfrac{\partial \psi_\textrm{h}}{\partial p}(\balpha,p)\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">combined_hardening.dalpha(alpha,</span> <span class="pre">p)</span></code> returning <span class="math notranslate nohighlight">\(\dfrac{\partial
+\psi_\textrm{h}}{\partial \balpha}(\balpha,p)\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">combined_hardening.dp(alpha,</span> <span class="pre">p)</span></code> returning <span class="math notranslate nohighlight">\(\dfrac{\partial
+\psi_\textrm{h}}{\partial p}(\balpha,p)\)</span></p></li>
 </ul>
 </dd></dl>
 

@@ -63,7 +63,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Data-driven identification" href="../../identification.html" />
-    <link rel="prev" title="Modified Cam-Clay" href="CamClay.html" />
+    <link rel="prev" title="Modified Cam-Clay" href="cam_clay.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -187,13 +187,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../pheno_models.html">Phenomenological models</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -212,7 +213,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +240,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -417,29 +419,46 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="multi-surface-plasticity-model">
 <h1>Multi-surface plasticity model<a class="headerlink" href="#multi-surface-plasticity-model" title="Link to this heading">#</a></h1>
-<p>In this example, we show how to implement a multi-surface elasto-plastic constitutive model that combines several yield surfaces.</p>
+<p>In this example, we show how to implement a multi-surface elasto-plastic constitutive model that
+combines several yield surfaces.</p>
 <div class="important admonition">
 <p class="admonition-title">Objectives</p>
 <p>This demo is to illustrate how to:</p>
 <ul class="simple">
 <li><p>Define a custom multi-surface plasticity model in <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>.</p></li>
-<li><p>Combine several yield surfaces and associated yield stresses within the same constitutive update.</p></li>
-<li><p>Use <a class="reference internal" href="../../sharp_bits.html"><span class="std std-doc">Fischer-Burmeister functions</span></a> to tackle plastic complementarity, thereby avoiding an explicit tracking of active/inactive yield surfaces.</p></li>
-<li><p>Validate the implementation by visualizing the resulting stress paths in the <span class="math notranslate nohighlight">\((p, q)\)</span> (mean–deviatoric) stress space.</p></li>
+<li><p>Combine several yield surfaces and associated yield stresses within the same constitutive
+update.</p></li>
+<li><p>Use <a class="reference internal" href="../../sharp_bits.html"><span class="std std-doc">Fischer-Burmeister functions</span></a> to tackle plastic complementarity,
+thereby avoiding an explicit tracking of active/inactive yield surfaces.</p></li>
+<li><p>Validate the implementation by visualizing the resulting stress paths in the <span class="math notranslate nohighlight">\((p, q)\)</span>
+(mean-deviatoric) stress space.</p></li>
 </ul>
 </div>
-<p>For the sake of illustration, we consider a Drucker–Prager yield surface describing the main frictional effect in the plasticity of several geomaterials. We also add an elliptic cap in compression and a hydrostatic tension cutoff. Assuming no hardening, we plot the final yield surface obtained from various strain-driven load paths in the hydrostatic/deviatoric <span class="math notranslate nohighlight">\((p,q)\)</span>-plane.</p>
+<p>For the sake of illustration, we consider a Drucker-Prager yield surface describing the main
+frictional effect in the plasticity of several geomaterials. We also add an elliptic cap in
+compression and a hydrostatic tension cutoff. Assuming no hardening, we plot the final yield
+surface obtained from various strain-driven load paths in the hydrostatic/deviatoric
+<span class="math notranslate nohighlight">\((p,q)\)</span>-plane.</p>
 <section id="multi-surface-plasticity-setting">
 <h2>Multi-surface plasticity setting<a class="headerlink" href="#multi-surface-plasticity-setting" title="Link to this heading">#</a></h2>
-<p>We consider <span class="math notranslate nohighlight">\(i=1,\ldots, N\)</span> different yield surfaces. Each of them is associated with its own yield stress function <span class="math notranslate nohighlight">\(f_i(\bsig)\)</span> and yield stress <span class="math notranslate nohighlight">\(\sigma_{0i}\)</span>. Here, we do not consider any hardening so the yield stresses are all constants. However it is possible to account for independent isotropic hardening of each surface. Hence, each yield surface is associated with its own plastic multiplier, which we denote <span class="math notranslate nohighlight">\(p_i\)</span> <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>We consider <span class="math notranslate nohighlight">\(i=1,\ldots, N\)</span> different yield surfaces. Each of them is associated with its own
+yield stress function <span class="math notranslate nohighlight">\(f_i(\bsig)\)</span> and yield stress <span class="math notranslate nohighlight">\(\sigma_{0i}\)</span>. Here, we do not consider any
+hardening so the yield stresses are all constants. However it is possible to account for
+independent isotropic hardening of each surface. Hence, each yield surface is associated with its
+own plastic multiplier, which we denote <span class="math notranslate nohighlight">\(p_i\)</span> <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 <section id="generalized-flow-rule">
 <h3>Generalized flow rule<a class="headerlink" href="#generalized-flow-rule" title="Link to this heading">#</a></h3>
-<p>For a smooth yield surface <span class="math notranslate nohighlight">\(f(\bsig)\)</span>, we now that the associated flow rule is expressed as <span class="math notranslate nohighlight">\(\dot{\bepsp}=\dot{\lambda}\partial_{\bsig} f\)</span>. In the non-smooth case, the flow rule generalizes as follows:</p>
+<p>For a smooth yield surface <span class="math notranslate nohighlight">\(f(\bsig)\)</span>, we now that the associated flow rule is expressed as
+<span class="math notranslate nohighlight">\(\dot{\bepsp}=\dot{\lambda}\partial_{\bsig} f\)</span>. In the non-smooth case, the flow rule generalizes
+as follows:</p>
 <div class="math notranslate nohighlight">
 \[
 \dot{\bepsp}=\dot{\lambda}\bn \quad \text{where } \bn\in \Nn_{f}(\bsig)
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(\Nn_f\)</span> is the normal cone to the plastic surface <span class="math notranslate nohighlight">\(f\)</span>. For smooth parts <span class="math notranslate nohighlight">\(\Nn_f(\bsig)=\{\partial_{\bsig} f\}\)</span> contains only a single normal vector element. In the case of many surfaces intersecting at <span class="math notranslate nohighlight">\(\bsig\)</span>, <span class="math notranslate nohighlight">\(\bn\)</span> can take any value belonging to a positive convex combination of the normal vectors <span class="math notranslate nohighlight">\(\bn_i=\partial_{\bsig}f_i\)</span> of each surface:</p>
+<p>where <span class="math notranslate nohighlight">\(\Nn_f\)</span> is the normal cone to the plastic surface <span class="math notranslate nohighlight">\(f\)</span>. For smooth parts
+<span class="math notranslate nohighlight">\(\Nn_f(\bsig)=\{\partial_{\bsig} f\}\)</span> contains only a single normal vector element. In the case of
+many surfaces intersecting at <span class="math notranslate nohighlight">\(\bsig\)</span>, <span class="math notranslate nohighlight">\(\bn\)</span> can take any value belonging to a positive convex
+combination of the normal vectors <span class="math notranslate nohighlight">\(\bn_i=\partial_{\bsig}f_i\)</span> of each surface:</p>
 <div class="math notranslate nohighlight">
 \[
 \dot{\bepsp} = \sum_{i=1}^N\dot{\lambda}_i \partial_{\bsig}f_i(\bsig)
@@ -447,49 +466,64 @@ document.write(`
 </section>
 <section id="plastic-complementarity-conditions">
 <h3>Plastic complementarity conditions<a class="headerlink" href="#plastic-complementarity-conditions" title="Link to this heading">#</a></h3>
-<p>The evolution of these quantities is determined implicitly by a return-mapping–like algorithm formulated as a root-finding problem. Classically, we should choose which surface is active, compute a projected stress and then check if the surface remains active. This active-set strategy is relatively cumbersome to implement. Instead, the use of complementarity functions such as <a class="reference internal" href="../../sharp_bits.html"><span class="std std-doc">Fischer-Burmeister functions</span></a> allows to avoid explicitly testing which surface is active or not. Elastic and plastic evolution are simultaneously accounted for by requiring that, for all plastic mechanism <span class="math notranslate nohighlight">\(i\)</span>:</p>
+<p>The evolution of these quantities is determined implicitly by a return-mapping-like algorithm
+formulated as a root-finding problem. Classically, we should choose which surface is active,
+compute a projected stress and then check if the surface remains active. This active-set strategy
+is relatively cumbersome to implement. Instead, the use of complementarity functions such as
+<a class="reference internal" href="../../sharp_bits.html"><span class="std std-doc">Fischer-Burmeister functions</span></a> allows to avoid explicitly testing which
+surface is active or not. Elastic and plastic evolution are simultaneously accounted for by
+requiring that, for all plastic mechanism <span class="math notranslate nohighlight">\(i\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[
-\text{FB}(\sigma_0-f_i(\bsig), \Delta p_i) = 0 \quad \Leftrightarrow \quad f_i(\bsig)\leq \sigma_{0i},\: \Delta p_i \geq 0, \: (f_i(\bsig)-\sigma_{0i})\Delta p_i=0
+\text{FB}(\sigma_0-f_i(\bsig), \Delta p_i) = 0 \quad \Leftrightarrow \quad f_i(\bsig)\leq
+\sigma_{0i},\: \Delta p_i \geq 0, \: (f_i(\bsig)-\sigma_{0i})\Delta p_i=0
 \]</div>
-<p>As a result, it is even possible with this formulation to account for two plastic mechanisms being simultaneously activated.</p>
+<p>As a result, it is even possible with this formulation to account for two plastic mechanisms being
+simultaneously activated.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>This approach does not remove all issues associated with non-smooth yield surfaces. Convergence issues might still appear, especially in the apex region.</p>
+<p>This approach does not remove all issues associated with non-smooth yield surfaces. Convergence
+issues might still appear, especially in the apex region.</p>
 </div>
 </section>
 </section>
 <section id="implementation">
 <h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
-<p>We begin by defining an <code class="docutils literal notranslate"><span class="pre">InternalState</span></code> defining the model internal state variables: the total plastic strain <span class="math notranslate nohighlight">\(\bepsp\)</span> and several plastic multipliers <span class="math notranslate nohighlight">\(p_i\)</span> for each yield surface. Here, the plastic multipliers are represented as a vector of size <span class="math notranslate nohighlight">\(N\)</span> (<code class="docutils literal notranslate"><span class="pre">n_surf</span></code> in the code).</p>
-<p>We define the internal state as a PyTree-like Equinox dataclass with statically known attributes (<code class="docutils literal notranslate"><span class="pre">n_surf</span></code>), and dynamic arrays (<code class="docutils literal notranslate"><span class="pre">epsp</span></code> and <code class="docutils literal notranslate"><span class="pre">p</span></code>) that can be efficiently traced by JAX.</p>
+<p>We begin by defining an <code class="docutils literal notranslate"><span class="pre">InternalState</span></code> defining the model internal state variables: the total
+plastic strain <span class="math notranslate nohighlight">\(\bepsp\)</span> and several plastic multipliers <span class="math notranslate nohighlight">\(p_i\)</span> for each yield surface. Here, the
+plastic multipliers are represented as a vector of size <span class="math notranslate nohighlight">\(N\)</span> (<code class="docutils literal notranslate"><span class="pre">n_surf</span></code> in the code).</p>
+<p>We define the internal state as a PyTree-like Equinox dataclass with statically known attributes
+(<code class="docutils literal notranslate"><span class="pre">n_surf</span></code>), and dynamic arrays (<code class="docutils literal notranslate"><span class="pre">epsp</span></code> and <code class="docutils literal notranslate"><span class="pre">p</span></code>) that can be efficiently traced by JAX.</p>
 <div class="tip admonition">
 <p class="admonition-title">Why <strong>post_init</strong> is used</p>
-<p>Because <code class="docutils literal notranslate"><span class="pre">equinox</span></code> modules are immutable, fields that depend on other parameters (like the number of yield surfaces <code class="docutils literal notranslate"><span class="pre">n_surf</span></code>) cannot be directly initialized in the constructor.
-The <code class="docutils literal notranslate"><span class="pre">__post_init__</span></code> method provides a clean way to perform such initialization after object creation.</p>
-<p>Here, it allocates the array <code class="docutils literal notranslate"><span class="pre">p</span></code> with zeros of size <code class="docutils literal notranslate"><span class="pre">(n_surf,)</span></code>, ensuring that the internal variable dimensions automatically match the number of yield surfaces, the structure remains static and JAX-traceable, and the module follows Equinox’s immutable data model.</p>
-<p>In short, <strong>post_init</strong> lets us safely set up shape-dependent fields while keeping the model compatible with JAX transformations like <code class="docutils literal notranslate"><span class="pre">jit</span></code> and <code class="docutils literal notranslate"><span class="pre">vmap</span></code>.</p>
+<p>Because <code class="docutils literal notranslate"><span class="pre">equinox</span></code> modules are immutable, fields that depend on other parameters (like the number
+of yield surfaces <code class="docutils literal notranslate"><span class="pre">n_surf</span></code>) cannot be directly initialized in the constructor.
+The <code class="docutils literal notranslate"><span class="pre">__post_init__</span></code> method provides a clean way to perform such initialization after object
+creation.</p>
+<p>Here, it allocates the array <code class="docutils literal notranslate"><span class="pre">p</span></code> with zeros of size <code class="docutils literal notranslate"><span class="pre">(n_surf,)</span></code>, ensuring that the internal
+variable dimensions automatically match the number of yield surfaces, the structure remains static
+and JAX-traceable, and the module follows Equinox’s immutable data model.</p>
+<p>In short, <strong>post_init</strong> lets us safely set up shape-dependent fields while keeping the model
+compatible with JAX transformations like <code class="docutils literal notranslate"><span class="pre">jit</span></code> and <code class="docutils literal notranslate"><span class="pre">vmap</span></code>.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">optax.tree_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">tree_add</span><span class="p">,</span> <span class="n">tree_zeros_like</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractState</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">pq_invariants</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.materials.behavior</span><span class="w"> </span><span class="kn">import</span> <span class="n">SmallStrainBehavior</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.materials.elasticity</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearElasticIsotropic</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.materials.plastic_surfaces</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractPlasticSurface</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">pq_invariants</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">FischerBurmeister</span> <span class="k">as</span> <span class="n">FB</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
-
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">InternalState</span><span class="p">(</span><span class="n">AbstractState</span><span class="p">):</span>
@@ -502,184 +536,20 @@ The <code class="docutils literal notranslate"><span class="pre">__post_init__</
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ERROR:2025-11-19 15:00:30,738:jax._src.xla_bridge:444: Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
-Traceback (most recent call last):
-  File &quot;/home/bleyerj/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/xla_bridge.py&quot;, line 442, in discover_pjrt_plugins
-    plugin_module.initialize()
-  File &quot;/home/bleyerj/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax_plugins/xla_cuda13/__init__.py&quot;, line 334, in initialize
-    c_api = xb.register_plugin(
-            ^^^^^^^^^^^^^^^^^^^
-  File &quot;/home/bleyerj/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/xla_bridge.py&quot;, line 548, in register_plugin
-    c_api = xla_client.load_pjrt_plugin_dynamically(plugin_name, library_path)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File &quot;/home/bleyerj/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jaxlib/xla_client.py&quot;, line 107, in load_pjrt_plugin_dynamically
-    return _xla.load_pjrt_plugin(plugin_name, library_path, c_api=None)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-jaxlib._jax.XlaRuntimeError: ALREADY_EXISTS: PJRT_Api already exists for device type cuda
-E1119 15:00:30.850076 1538028 cuda_dnn.cc:534] Could not create cudnn handle: CUDNN_STATUS_NOT_INITIALIZED
-E1119 15:00:30.850107 1538028 cuda_dnn.cc:538] Memory usage: 3926720512 bytes free, 4094164992 bytes total.
-E1119 15:00:30.850141 1538028 cuda_dnn.cc:548] Possibly insufficient driver version: 535.274.2
-E1119 15:00:30.850580 1538028 cuda_dnn.cc:534] Could not create cudnn handle: CUDNN_STATUS_NOT_INITIALIZED
-E1119 15:00:30.850609 1538028 cuda_dnn.cc:538] Memory usage: 3926720512 bytes free, 4094164992 bytes total.
-E1119 15:00:30.850630 1538028 cuda_dnn.cc:548] Possibly insufficient driver version: 535.274.2
-E1119 15:00:30.927333 1538028 cuda_dnn.cc:534] Could not create cudnn handle: CUDNN_STATUS_NOT_INITIALIZED
-E1119 15:00:30.927390 1538028 cuda_dnn.cc:538] Memory usage: 3926720512 bytes free, 4094164992 bytes total.
-E1119 15:00:30.927422 1538028 cuda_dnn.cc:548] Possibly insufficient driver version: 535.274.2
-E1119 15:00:30.933707 1538028 cuda_dnn.cc:534] Could not create cudnn handle: CUDNN_STATUS_NOT_INITIALIZED
-E1119 15:00:30.933758 1538028 cuda_dnn.cc:538] Memory usage: 3926720512 bytes free, 4094164992 bytes total.
-E1119 15:00:30.933787 1538028 cuda_dnn.cc:548] Possibly insufficient driver version: 535.274.2
-</pre></div>
 </div>
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">XlaRuntimeError</span><span class="g g-Whitespace">                           </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">4</span>
-<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
-<span class="ne">----&gt; </span><span class="mi">4</span> <span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
-<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="kn">from</span><span class="w"> </span><span class="nn">optax.tree_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">tree_add</span><span class="p">,</span> <span class="n">tree_zeros_like</span>
-<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractState</span>
-
-<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">3</span>
-<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.metadata</span>
-<span class="ne">----&gt; </span><span class="mi">3</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">compat</span> <span class="k">as</span> <span class="n">compat</span><span class="p">,</span> <span class="n">internal</span> <span class="k">as</span> <span class="n">internal</span>
-<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._adjoint</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-<span class="g g-Whitespace">      </span><span class="mi">5</span>     <span class="n">AbstractAdjoint</span> <span class="k">as</span> <span class="n">AbstractAdjoint</span><span class="p">,</span>
-<span class="g g-Whitespace">      </span><span class="mi">6</span>     <span class="n">ImplicitAdjoint</span> <span class="k">as</span> <span class="n">ImplicitAdjoint</span><span class="p">,</span>
-<span class="g g-Whitespace">      </span><span class="mi">7</span>     <span class="n">RecursiveCheckpointAdjoint</span> <span class="k">as</span> <span class="n">RecursiveCheckpointAdjoint</span><span class="p">,</span>
-<span class="g g-Whitespace">      </span><span class="mi">8</span> <span class="p">)</span>
-<span class="g g-Whitespace">      </span><span class="mi">9</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._fixed_point</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-<span class="g g-Whitespace">     </span><span class="mi">10</span>     <span class="n">AbstractFixedPointSolver</span> <span class="k">as</span> <span class="n">AbstractFixedPointSolver</span><span class="p">,</span>
-<span class="g g-Whitespace">     </span><span class="mi">11</span>     <span class="n">fixed_point</span> <span class="k">as</span> <span class="n">fixed_point</span><span class="p">,</span>
-<span class="g g-Whitespace">     </span><span class="mi">12</span> <span class="p">)</span>
-
-<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">compat</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._impl</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize</span> <span class="k">as</span> <span class="n">minimize</span><span class="p">,</span> <span class="n">OptimizeResults</span> <span class="k">as</span> <span class="n">OptimizeResults</span>
-
-<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">compat</span><span class="o">/</span><span class="n">_impl</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">8</span>
-<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
-<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="ne">----&gt; </span><span class="mi">8</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.._minimise</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimise</span>
-<span class="g g-Whitespace">      </span><span class="mi">9</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.._misc</span><span class="w"> </span><span class="kn">import</span> <span class="n">max_norm</span>
-<span class="g g-Whitespace">     </span><span class="mi">10</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.._solution</span><span class="w"> </span><span class="kn">import</span> <span class="n">RESULTS</span>
-
-<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">_minimise</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">9</span>
-<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="kn">import</span><span class="w"> </span><span class="nn">jax.tree_util</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jtu</span>
-<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyTree</span><span class="p">,</span> <span class="n">Scalar</span>
-<span class="ne">----&gt; </span><span class="mi">9</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._adjoint</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractAdjoint</span><span class="p">,</span> <span class="n">ImplicitAdjoint</span>
-<span class="g g-Whitespace">     </span><span class="mi">10</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._custom_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aux</span><span class="p">,</span> <span class="n">Fn</span><span class="p">,</span> <span class="n">MaybeAuxFn</span><span class="p">,</span> <span class="n">SolverState</span><span class="p">,</span> <span class="n">Y</span>
-<span class="g g-Whitespace">     </span><span class="mi">11</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._iterate</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractIterativeSolver</span><span class="p">,</span> <span class="n">iterative_solve</span>
-
-<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">_adjoint</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">10</span>
-<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="kn">import</span><span class="w"> </span><span class="nn">lineax</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">lx</span>
-<span class="g g-Whitespace">      </span><span class="mi">8</span> <span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">Array</span><span class="p">,</span> <span class="n">PyTree</span>
-<span class="ne">---&gt; </span><span class="mi">10</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._ad</span><span class="w"> </span><span class="kn">import</span> <span class="n">implicit_jvp</span>
-<span class="g g-Whitespace">     </span><span class="mi">13</span> <span class="k">class</span><span class="w"> </span><span class="nc">AbstractAdjoint</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="g g-Whitespace">     </span><span class="mi">14</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;The abstract base class of all adjoints.&quot;&quot;&quot;</span>
-
-<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">_ad</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">15</span>
-<span class="g g-Whitespace">     </span><span class="mi">12</span> <span class="kn">from</span><span class="w"> </span><span class="nn">equinox.internal</span><span class="w"> </span><span class="kn">import</span> <span class="n">ω</span>
-<span class="g g-Whitespace">     </span><span class="mi">13</span> <span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyTree</span>
-<span class="ne">---&gt; </span><span class="mi">15</span> <span class="kn">from</span><span class="w"> </span><span class="nn">._misc</span><span class="w"> </span><span class="kn">import</span> <span class="n">tree_full_like</span>
-<span class="g g-Whitespace">     </span><span class="mi">18</span> <span class="k">def</span><span class="w"> </span><span class="nf">_is_global_function</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-<span class="g g-Whitespace">     </span><span class="mi">19</span>     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="vm">__closure__</span> <span class="ow">is</span> <span class="kc">None</span>
-
-<span class="n">File</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">fenicsx</span><span class="o">-</span><span class="n">v0</span><span class="mf">.9</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">optimistix</span><span class="o">/</span><span class="n">_misc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">138</span>
-<span class="g g-Whitespace">    </span><span class="mi">128</span>     <span class="n">values</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">jfu</span><span class="o">.</span><span class="n">ravel_pytree</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">129</span>     <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">132</span> <span class="k">def</span><span class="w"> </span><span class="nf">feasible_step_length</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">133</span>     <span class="n">current</span><span class="p">:</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
-<span class="g g-Whitespace">    </span><span class="mi">134</span>     <span class="n">proposed_step</span><span class="p">:</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
-<span class="g g-Whitespace">    </span><span class="mi">135</span>     <span class="n">lower_bound</span><span class="p">:</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
-<span class="g g-Whitespace">    </span><span class="mi">136</span>     <span class="n">upper_bound</span><span class="p">:</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
-<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="o">*</span><span class="p">,</span>
-<span class="ne">--&gt; </span><span class="mi">138</span>     <span class="n">offset</span><span class="p">:</span> <span class="n">ScalarLike</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
-<span class="g g-Whitespace">    </span><span class="mi">139</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PyTree</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="s2">&quot; T&quot;</span><span class="p">]:</span>  <span class="c1"># pyright: ignore[reportUndefinedVariable]</span>
-<span class="g g-Whitespace">    </span><span class="mi">140</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;Returns the maximum feasible step length for any current value, its bounds, and a</span>
-<span class="g g-Whitespace">    </span><span class="mi">141</span><span class="sd">     proposed step, as a value for each element of the PyTree.</span>
-<span class="g g-Whitespace">    </span><span class="mi">142</span><span class="sd">     Where taking the full step does not result in a violation of the bounds, a value of</span>
-<span class="sd">   (...)</span>
-<span class="g g-Whitespace">    </span><span class="mi">176</span><span class="sd">         used are typically on the order of 10^-2. Keyword-only argument.</span>
-<span class="g g-Whitespace">    </span><span class="mi">177</span><span class="sd">     &quot;&quot;&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">179</span>     <span class="k">def</span><span class="w"> </span><span class="nf">max_step</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">):</span>
-
-<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/numpy/lax_numpy.py:5553,</span> in <span class="ni">array</span><span class="nt">(object, dtype, copy, order, ndmin, device)</span>
-<span class="g g-Whitespace">   </span><span class="mi">5551</span> <span class="k">else</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">5552</span>   <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected input type for array: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="ne">-&gt; </span><span class="mi">5553</span> <span class="n">out_array</span><span class="p">:</span> <span class="n">Array</span> <span class="o">=</span> <span class="n">lax_internal</span><span class="o">.</span><span class="n">_convert_element_type</span><span class="p">(</span>
-<span class="g g-Whitespace">   </span><span class="mi">5554</span>     <span class="n">out</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">weak_type</span><span class="o">=</span><span class="n">weak_type</span><span class="p">,</span> <span class="n">sharding</span><span class="o">=</span><span class="n">sharding</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">5555</span> <span class="k">if</span> <span class="n">ndmin</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">out_array</span><span class="p">):</span>
-<span class="g g-Whitespace">   </span><span class="mi">5556</span>   <span class="n">out_array</span> <span class="o">=</span> <span class="n">lax</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">out_array</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndmin</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">out_array</span><span class="p">)))</span>
-
-<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/lax/lax.py:1727,</span> in <span class="ni">_convert_element_type</span><span class="nt">(operand, new_dtype, weak_type, sharding, warn_on_complex_to_real_cast)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1725</span>   <span class="k">return</span> <span class="n">operand</span>
-<span class="g g-Whitespace">   </span><span class="mi">1726</span> <span class="k">else</span><span class="p">:</span>
-<span class="ne">-&gt; </span><span class="mi">1727</span>   <span class="k">return</span> <span class="n">convert_element_type_p</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span>
-<span class="g g-Whitespace">   </span><span class="mi">1728</span>       <span class="n">operand</span><span class="p">,</span> <span class="n">new_dtype</span><span class="o">=</span><span class="n">new_dtype</span><span class="p">,</span> <span class="n">weak_type</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">weak_type</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1729</span>       <span class="n">sharding</span><span class="o">=</span><span class="n">sharding</span><span class="p">)</span>
-
-<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/core.py:531,</span> in <span class="ni">Primitive.bind</span><span class="nt">(self, *args, **params)</span>
-<span class="g g-Whitespace">    </span><span class="mi">529</span> <span class="k">def</span><span class="w"> </span><span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
-<span class="g g-Whitespace">    </span><span class="mi">530</span>   <span class="n">args</span> <span class="o">=</span> <span class="n">args</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_canonicalization</span> <span class="k">else</span> <span class="nb">map</span><span class="p">(</span><span class="n">canonicalize_value</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">531</span>   <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_true_bind</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
-
-<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/core.py:551,</span> in <span class="ni">Primitive._true_bind</span><span class="nt">(self, *args, **params)</span>
-<span class="g g-Whitespace">    </span><span class="mi">549</span> <span class="n">trace_ctx</span><span class="o">.</span><span class="n">set_trace</span><span class="p">(</span><span class="n">eval_trace</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">550</span> <span class="k">try</span><span class="p">:</span>
-<span class="ne">--&gt; </span><span class="mi">551</span>   <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bind_with_trace</span><span class="p">(</span><span class="n">prev_trace</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">552</span> <span class="k">finally</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">553</span>   <span class="n">trace_ctx</span><span class="o">.</span><span class="n">set_trace</span><span class="p">(</span><span class="n">prev_trace</span><span class="p">)</span>
-
-<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/lax/lax.py:4897,</span> in <span class="ni">_convert_element_type_bind_with_trace</span><span class="nt">(trace, args, params)</span>
-<span class="g g-Whitespace">   </span><span class="mi">4895</span> <span class="k">def</span><span class="w"> </span><span class="nf">_convert_element_type_bind_with_trace</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-<span class="g g-Whitespace">   </span><span class="mi">4896</span>   <span class="n">sharding</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sharding&#39;</span><span class="p">]</span>
-<span class="ne">-&gt; </span><span class="mi">4897</span>   <span class="n">operand</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">Primitive</span><span class="o">.</span><span class="n">bind_with_trace</span><span class="p">(</span><span class="n">convert_element_type_p</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">4898</span>   <span class="k">if</span> <span class="n">sharding</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">sharding</span><span class="o">.</span><span class="n">_is_concrete</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">4899</span>     <span class="k">with</span> <span class="n">core</span><span class="o">.</span><span class="n">set_current_trace</span><span class="p">(</span><span class="n">trace</span><span class="p">):</span>
-
-<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/core.py:556,</span> in <span class="ni">Primitive.bind_with_trace</span><span class="nt">(self, trace, args, params)</span>
-<span class="g g-Whitespace">    </span><span class="mi">555</span> <span class="k">def</span><span class="w"> </span><span class="nf">bind_with_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-<span class="ne">--&gt; </span><span class="mi">556</span>   <span class="k">return</span> <span class="n">trace</span><span class="o">.</span><span class="n">process_primitive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-
-<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/core.py:1060,</span> in <span class="ni">EvalTrace.process_primitive</span><span class="nt">(self, primitive, args, params)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1058</span> <span class="n">args</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">full_lower</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1059</span> <span class="n">check_eval_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-<span class="ne">-&gt; </span><span class="mi">1060</span> <span class="k">return</span> <span class="n">primitive</span><span class="o">.</span><span class="n">impl</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
-
-<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/dispatch.py:88,</span> in <span class="ni">apply_primitive</span><span class="nt">(prim, *args, **params)</span>
-<span class="g g-Whitespace">     </span><span class="mi">86</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">jax_jit</span><span class="o">.</span><span class="n">swap_thread_local_state_disable_jit</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">87</span> <span class="k">try</span><span class="p">:</span>
-<span class="ne">---&gt; </span><span class="mi">88</span>   <span class="n">outs</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">89</span> <span class="k">finally</span><span class="p">:</span>
-<span class="g g-Whitespace">     </span><span class="mi">90</span>   <span class="n">lib</span><span class="o">.</span><span class="n">jax_jit</span><span class="o">.</span><span class="n">swap_thread_local_state_disable_jit</span><span class="p">(</span><span class="n">prev</span><span class="p">)</span>
-
-    <span class="p">[</span><span class="o">...</span> <span class="n">skipping</span> <span class="n">hidden</span> <span class="mi">11</span> <span class="n">frame</span><span class="p">]</span>
-
-<span class="nn">File ~/miniconda3/envs/fenicsx-v0.9/lib/python3.11/site-packages/jax/_src/compiler.py:335,</span> in <span class="ni">backend_compile</span><span class="nt">(backend, module, executable_devices, options, host_callbacks)</span>
-<span class="g g-Whitespace">    </span><span class="mi">326</span>     <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">327</span>         <span class="n">built_c</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">328</span>         <span class="n">executable_devices</span><span class="o">=</span><span class="n">executable_devices</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
-<span class="g g-Whitespace">    </span><span class="mi">329</span>         <span class="n">compile_options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">330</span>         <span class="n">host_callbacks</span><span class="o">=</span><span class="n">host_callbacks</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">331</span>     <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">332</span>   <span class="c1"># Some backends don&#39;t have `host_callbacks` option yet</span>
-<span class="g g-Whitespace">    </span><span class="mi">333</span>   <span class="c1"># TODO(sharadmv): remove this fallback when all backends allow `compile`</span>
-<span class="g g-Whitespace">    </span><span class="mi">334</span>   <span class="c1"># to take in `host_callbacks`</span>
-<span class="ne">--&gt; </span><span class="mi">335</span>   <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">336</span>       <span class="n">built_c</span><span class="p">,</span> <span class="n">executable_devices</span><span class="o">=</span><span class="n">executable_devices</span><span class="p">,</span> <span class="n">compile_options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-<span class="g g-Whitespace">    </span><span class="mi">337</span> <span class="k">except</span> <span class="n">xc</span><span class="o">.</span><span class="n">XlaRuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">338</span>   <span class="k">for</span> <span class="n">error_handler</span> <span class="ow">in</span> <span class="n">_XLA_RUNTIME_ERROR_HANDLERS</span><span class="p">:</span>
-
-<span class="ne">XlaRuntimeError</span>: FAILED_PRECONDITION: DNN library initialization failed. Look at the errors above for more details.
-</pre></div>
-</div>
-</div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">MultiSurfacePlasticity</span></code> class defines the main constitutive behavior.
-It extends <code class="docutils literal notranslate"><span class="pre">SmallStrainBehavior</span></code> and is defined by several different fields: an elastic model, a list of yield surfaces, and a list of their corresponding yield stresses.</p>
-<p>During initialization, the <strong>post_init</strong> method checks that the number of yield surfaces matches the number of yield stresses. We then implement the <code class="docutils literal notranslate"><span class="pre">make_internal_state</span></code> method to create the internal state (<code class="docutils literal notranslate"><span class="pre">InternalState</span></code>) with the correct number of plastic multipliers.
-This ensures consistency and avoids manual setup when extending the model to more surfaces.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code> method then performs an implicit return-mapping procedure using <code class="docutils literal notranslate"><span class="pre">optimistix.root_find</span></code>. The residuals correspond to the plasticity complementarity conditions of each surface, enforced using Fischer-Burmeister functions, and the incremental generalized plastic flow rules which leverage the normals of each surface. Note that the final residual, called <code class="docutils literal notranslate"><span class="pre">res</span></code>, is a PyTree as a nested list/tuple and does not need to be flattened. All residuals are then solved together within a single implicit solve.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">MultiSurfacePlasticity</span></code> class defines the main constitutive behavior. It extends
+<code class="docutils literal notranslate"><span class="pre">SmallStrainBehavior</span></code> and is defined by several different fields: an elastic model, a list of
+yield surfaces, and a list of their corresponding yield stresses.</p>
+<p>During initialization, the <strong>post_init</strong> method checks that the number of yield surfaces matches
+the number of yield stresses. We then implement the <code class="docutils literal notranslate"><span class="pre">make_internal_state</span></code> method to create the
+internal state (<code class="docutils literal notranslate"><span class="pre">InternalState</span></code>) with the correct number of plastic multipliers. This ensures
+consistency and avoids manual setup when extending the model to more surfaces.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code> method then performs an implicit return-mapping procedure using
+<code class="docutils literal notranslate"><span class="pre">optimistix.root_find</span></code>. The residuals correspond to the plasticity complementarity conditions of
+each surface, enforced using Fischer-Burmeister functions, and the incremental generalized plastic
+flow rules which leverage the normals of each surface. Note that the final residual, called <code class="docutils literal notranslate"><span class="pre">res</span></code>,
+is a PyTree as a nested list/tuple and does not need to be flattened. All residuals are then
+solved together within a single implicit solve.</p>
 <p>Finally, the <code class="docutils literal notranslate"><span class="pre">&#64;eqx.filter_jit</span></code> decorator enables JIT compilation for efficiency.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -718,9 +588,7 @@ This ensures consistency and avoids manual setup when extending the model to mor
                 <span class="n">res_epsp</span> <span class="o">=</span> <span class="n">depsp</span>
                 <span class="n">res_plast</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_surf</span><span class="p">):</span>
-                    <span class="n">yield_criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surfaces</span><span class="p">[</span><span class="n">i</span><span class="p">](</span>
-                        <span class="n">sig</span>
-                    <span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_stresses</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="n">yield_criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surfaces</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">sig</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_stresses</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                     <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plastic_surfaces</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
                     <span class="n">res_plast</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FB</span><span class="p">(</span><span class="o">-</span><span class="n">yield_criterion</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
                     <span class="n">res_epsp</span> <span class="o">-=</span> <span class="n">n</span> <span class="o">*</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -751,8 +619,9 @@ This ensures consistency and avoids manual setup when extending the model to mor
 </div>
 <section id="constant-yield-stress-definition">
 <h3>Constant yield stress definition<a class="headerlink" href="#constant-yield-stress-definition" title="Link to this heading">#</a></h3>
-<p>A simple <code class="docutils literal notranslate"><span class="pre">YieldStress</span></code> class is first introduced to represent constant yield limits for each surface (no hardening).
-It simply returns a constant scalar value <span class="math notranslate nohighlight">\(\sigma_{0i}\)</span> independent of plastic strain.</p>
+<p>A simple <code class="docutils literal notranslate"><span class="pre">YieldStress</span></code> class is first introduced to represent constant yield limits for each
+surface (no hardening). It simply returns a constant scalar value <span class="math notranslate nohighlight">\(\sigma_{0i}\)</span> independent of
+plastic strain.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">YieldStress</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -767,12 +636,14 @@ It simply returns a constant scalar value <span class="math notranslate nohighli
 </section>
 <section id="elliptic-cap-surface">
 <h3>Elliptic cap surface<a class="headerlink" href="#elliptic-cap-surface" title="Link to this heading">#</a></h3>
-<p>A Cam-Clay like elliptical cap surface is implemented as a function in <span class="math notranslate nohighlight">\((p,q)\)</span> space (using the <code class="docutils literal notranslate"><span class="pre">pq_invariants</span></code> utility function):</p>
+<p>A Cam-Clay like elliptical cap surface is implemented as a function in <span class="math notranslate nohighlight">\((p,q)\)</span> space (using the
+<code class="docutils literal notranslate"><span class="pre">pq_invariants</span></code> utility function):</p>
 <div class="math notranslate nohighlight">
 \[
 f_\text{cap}(p,q) = \sqrt{(p-p_0)^2 + (q/M)^2} \leq \sigma_c
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(M\)</span> controls the ellipse aspect ratio, <span class="math notranslate nohighlight">\(p_0\)</span> its center along the hydrostatic axis and <span class="math notranslate nohighlight">\(\sigma_c\)</span> corresponds to the maximum compressive hydrostatic strength.</p>
+<p>where <span class="math notranslate nohighlight">\(M\)</span> controls the ellipse aspect ratio, <span class="math notranslate nohighlight">\(p_0\)</span> its center along the hydrostatic axis and
+<span class="math notranslate nohighlight">\(\sigma_c\)</span> corresponds to the maximum compressive hydrostatic strength.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">EllipticCap</span><span class="p">(</span><span class="n">jm</span><span class="o">.</span><span class="n">AbstractPlasticSurface</span><span class="p">):</span>
@@ -809,14 +680,19 @@ f_\text{t}(p) = \sigma_m = \tfrac{1}{3}\tr(\bsig) \leq \sigma_t
 </section>
 <section id="drucker-prager-yield-surface">
 <h3>Drucker-Prager yield surface<a class="headerlink" href="#drucker-prager-yield-surface" title="Link to this heading">#</a></h3>
-<p>Finally, the Drucker-Prager yield condition is expressed as a function of the first and second invariants <span class="math notranslate nohighlight">\(I_1=\tr(\bsig)\)</span> and <span class="math notranslate nohighlight">\(J_2=\sqrt{\frac{1}{2}\bs:\bs}\)</span> with <span class="math notranslate nohighlight">\(\bs=\dev(\bsig)\)</span> as follows:</p>
+<p>Finally, the Drucker-Prager yield condition is expressed as a function of the first and second
+invariants <span class="math notranslate nohighlight">\(I_1=\tr(\bsig)\)</span> and <span class="math notranslate nohighlight">\(J_2=\sqrt{\frac{1}{2}\bs:\bs}\)</span> with <span class="math notranslate nohighlight">\(\bs=\dev(\bsig)\)</span> as follows:</p>
 <div class="math notranslate nohighlight">
 \[
 f_\text{DP}(\bsig) = \alpha I_1 + \sqrt{J_2} \leq \tau_c
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(\alpha\)</span> controls the slope of the Drucker-Prager surface in the <span class="math notranslate nohighlight">\((p,q)\)</span> plane (can be related to a friction angle) and <span class="math notranslate nohighlight">\(\tau_c\)</span> is the shear strength.</p>
-<p>Next, we instantiate the composite <code class="docutils literal notranslate"><span class="pre">MultiSurfacePlasticity</span></code> material by specifying an isotropic linear elastic model, a list of yield stresses and plastic surfaces.
-We then select some numerical values and instantiate the final behavior. Its <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code> method is then vectorized using <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> to allow evaluation of multiple strain paths in parallel.</p>
+<p>where <span class="math notranslate nohighlight">\(\alpha\)</span> controls the slope of the Drucker-Prager surface in the <span class="math notranslate nohighlight">\((p,q)\)</span> plane (can be
+related to a friction angle) and <span class="math notranslate nohighlight">\(\tau_c\)</span> is the shear strength.</p>
+<p>Next, we instantiate the composite <code class="docutils literal notranslate"><span class="pre">MultiSurfacePlasticity</span></code> material by specifying an isotropic
+linear elastic model, a list of yield stresses and plastic surfaces.
+We then select some numerical values and instantiate the final behavior. Its <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code>
+method is then vectorized using <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> to allow evaluation of multiple strain paths in
+parallel.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sig0</span> <span class="o">=</span> <span class="mf">15.0</span>
@@ -840,9 +716,42 @@ We then select some numerical values and instantiate the final behavior. Its <co
 <span class="p">)</span>
 
 
-<span class="n">batched_constitutive_update</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span>
-    <span class="n">material</span><span class="o">.</span><span class="n">constitutive_update</span><span class="p">,</span> <span class="n">in_axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-<span class="p">)</span>
+<span class="n">batched_constitutive_update</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">material</span><span class="o">.</span><span class="n">constitutive_update</span><span class="p">,</span> <span class="n">in_axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_772333/785072193.py:7: UserWarning: Using `field(init=False)` on `equinox.Module` can lead to surprising behaviour when used around `jax.grad`. In the following example, observe how JAX computes gradients with respect to the `.len` attribute (which is a PyTree leaf passed across the `jax.grad` boundary) and that there are no gradients with respect to `.a` or `.b`:
+
+```
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+
+class Foo(eqx.Module):
+    a: jax.Array
+    b: jax.Array
+    len: jax.Array = eqx.field(init=False)
+
+    def __post_init__(self):
+        self.len = jnp.sqrt(self.a**2 + self.b**2)
+
+    def __call__(self, x):
+        return self.len * x
+
+@jax.jit
+@jax.grad
+def call(module, x):
+    return module(x)
+
+grads = call(Foo(jnp.array(3.0), jnp.array(4.0)), 5)
+# Foo(
+#   a=Array(0., dtype=float32, weak_type=True),
+#   b=Array(0., dtype=float32, weak_type=True),
+#   len=Array(5., dtype=float32, weak_type=True)
+# )
+```
+  material = MultiSurfacePlasticity(
 </pre></div>
 </div>
 </div>
@@ -851,7 +760,10 @@ We then select some numerical values and instantiate the final behavior. Its <co
 </section>
 <section id="loading-setup">
 <h2>Loading setup<a class="headerlink" href="#loading-setup" title="Link to this heading">#</a></h2>
-<p>We define a series of strain directions covering the entire range of loading paths in the <span class="math notranslate nohighlight">\((p,q)\)</span> stress space — from pure compression to pure tension. This is done by parameterizing the strain directions with an angle <span class="math notranslate nohighlight">\(\theta \in [0, \pi]\)</span> and converting them into strain tensors consistent with these directions.</p>
+<p>We define a series of strain directions covering the entire range of loading paths in the <span class="math notranslate nohighlight">\((p,q)\)</span>
+stress space — from pure compression to pure tension. This is done by parameterizing the strain
+directions with an angle <span class="math notranslate nohighlight">\(\theta \in [0, \pi]\)</span> and converting them into strain tensors consistent
+with these directions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">40</span>
@@ -867,9 +779,45 @@ We then select some numerical values and instantiate the final behavior. Its <co
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_772333/2171183650.py:12: UserWarning: Using `field(init=False)` on `equinox.Module` can lead to surprising behaviour when used around `jax.grad`. In the following example, observe how JAX computes gradients with respect to the `.len` attribute (which is a PyTree leaf passed across the `jax.grad` boundary) and that there are no gradients with respect to `.a` or `.b`:
+
+```
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+
+class Foo(eqx.Module):
+    a: jax.Array
+    b: jax.Array
+    len: jax.Array = eqx.field(init=False)
+
+    def __post_init__(self):
+        self.len = jnp.sqrt(self.a**2 + self.b**2)
+
+    def __call__(self, x):
+        return self.len * x
+
+@jax.jit
+@jax.grad
+def call(module, x):
+    return module(x)
+
+grads = call(Foo(jnp.array(3.0), jnp.array(4.0)), 5)
+# Foo(
+#   a=Array(0., dtype=float32, weak_type=True),
+#   b=Array(0., dtype=float32, weak_type=True),
+#   len=Array(5., dtype=float32, weak_type=True)
+# )
+```
+  return InternalState(n_surf=self.n_surf)
+</pre></div>
 </div>
-<p>The initial stress state is set to a hydrostatic compression <span class="math notranslate nohighlight">\(\bsig_0 = -5\sigma_0 \bI\)</span> to ensure that all paths start well within the elastic domain.
-This serves as a convenient reference point for the subsequent stress paths.</p>
+</div>
+</div>
+<p>The initial stress state is set to a hydrostatic compression <span class="math notranslate nohighlight">\(\bsig_0 = -5\sigma_0 \bI\)</span> to ensure
+that all paths start well within the elastic domain. This serves as a convenient reference point
+for the subsequent stress paths.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sig_init</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -877,15 +825,15 @@ This serves as a convenient reference point for the subsequent stress paths.</p>
 <span class="n">sig_init</span> <span class="o">=</span> <span class="n">sig_init</span><span class="o">.</span><span class="n">at</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span> <span class="o">*</span> <span class="n">sig0</span><span class="p">)</span>
 <span class="n">sig_init</span> <span class="o">=</span> <span class="n">sig_init</span><span class="o">.</span><span class="n">at</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span> <span class="o">*</span> <span class="n">sig0</span><span class="p">)</span>
 
-<span class="n">state</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">tree_at</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">stress</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">sig_init</span><span class="p">)</span>
-<span class="p">)</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">tree_at</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">stress</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">sig_init</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>We now incrementally apply total strain magnitudes in the defined directions and compute the corresponding stress responses using the batched constitutive update.
-At each increment, the imposed strain tensor is updated and the nonlinear local problem is solved for each direction. The resulting stress is transformed to <span class="math notranslate nohighlight">\((p, q)\)</span> coordinates for plotting.</p>
+<p>We now incrementally apply total strain magnitudes in the defined directions and compute the
+corresponding stress responses using the batched constitutive update. At each increment, the
+imposed strain tensor is updated and the nonlinear local problem is solved for each direction. The
+resulting stress is transformed to <span class="math notranslate nohighlight">\((p, q)\)</span> coordinates for plotting.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Nincr</span> <span class="o">=</span> <span class="mi">100</span>
@@ -909,15 +857,17 @@ At each increment, the imposed strain tensor is updated and the nonlinear local 
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;contextlib.ExitStack at 0x785c8878a450&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;contextlib.ExitStack at 0x776bcc7bbe30&gt;
 </pre></div>
 </div>
 </div>
 </div>
-<p>Finally, we plot the resulting family of trajectories illustrating how the stress state evolves under different loading directions.
-We also the reference yield surfaces (Drucker–Prager, elliptic cap, and tension cutoff) as dashed lines for reference.</p>
-<p>This visualization allows verifying that the stress paths remain within or tangent to the yield surfaces,
-and that the model correctly reproduces the expected multi-surface plastic behavior of pressure-sensitive materials.</p>
+<p>Finally, we plot the resulting family of trajectories illustrating how the stress state evolves
+under different loading directions. We also the reference yield surfaces (Drucker-Prager, elliptic
+cap, and tension cutoff) as dashed lines for reference.</p>
+<p>This visualization allows verifying that the stress paths remain within or tangent to the yield
+surfaces, and that the model correctly reproduces the expected multi-surface plastic behavior of
+pressure-sensitive materials.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p_DP</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigc</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sigc</span><span class="p">,</span> <span class="n">Nincr</span><span class="p">)</span>
@@ -936,14 +886,16 @@ and that the model correctly reproduces the expected multi-surface plastic behav
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/e6b0c2ffb5454a1fe906a4aea8da2eae071227a56fcc6ff37aecbeb295d823d1.png" src="../../_images/e6b0c2ffb5454a1fe906a4aea8da2eae071227a56fcc6ff37aecbeb295d823d1.png" />
+<img alt="../../_images/f0101013d642fbaf5bb383e9eb99c894b30a52523fd7cc1089796761451843a4.png" src="../../_images/f0101013d642fbaf5bb383e9eb99c894b30a52523fd7cc1089796761451843a4.png" />
 </div>
 </div>
 <hr class="footnotes docutils" />
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id2" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>This is an abuse of notation regarding the classical cumulated plastic strain of standard <span class="math notranslate nohighlight">\(J_2\)</span>-plasticity, we should rather denote them <span class="math notranslate nohighlight">\(\lambda_ i\)</span>. We chose the notation <span class="math notranslate nohighlight">\(p_i\)</span> to keep the implementation as close as possible to simpler plastic behaviors.</p>
+<p>This is an abuse of notation regarding the classical cumulated plastic strain of standard
+<span class="math notranslate nohighlight">\(J_2\)</span>-plasticity, we should rather denote them <span class="math notranslate nohighlight">\(\lambda_ i\)</span>. We chose the notation <span class="math notranslate nohighlight">\(p_i\)</span> to
+keep the implementation as close as possible to simpler plastic behaviors.</p>
 </aside>
 </aside>
 </section>
@@ -980,7 +932,7 @@ and that the model correctly reproduces the expected multi-surface plastic behav
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="CamClay.html"
+       href="cam_clay.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">

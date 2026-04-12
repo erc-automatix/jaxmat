@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -184,13 +184,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -209,7 +210,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -237,6 +237,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -359,49 +361,85 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for jaxmat.tensors.linear_algebra</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">jaxmat/tensors/linear_algebra.py</span>
+
+<span class="sd">Linear algebra operations on plain JAX arrays.</span>
+
+<span class="sd">All functions operate on ``jax.Array`` objects of shape ``(3, 3)`` (or</span>
+<span class="sd">batched equivalents).  Because tensor wrapper classes implement</span>
+<span class="sd">``__jax_array__``, any function here accepts a :class:`~jaxmat.tensors.Tensor2`</span>
+<span class="sd">or :class:`~jaxmat.tensors.SymmetricTensor2` directly — no explicit</span>
+<span class="sd">conversion is needed.</span>
+
+<span class="sd">Public API</span>
+<span class="sd">----------</span>
+<span class="sd">det33, inv33, eig33,</span>
+<span class="sd">principal_invariants, main_invariants, pq_invariants,</span>
+<span class="sd">isotropic_function, sqrtm, inv_sqrtm, expm, logm, powm</span>
+
+<span class="sd">Private (internal helpers)</span>
+<span class="sd">--------------------------</span>
+<span class="sd">_dim, _tr, _dev, _sqrtm</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax</span><span class="w"> </span><span class="kn">import</span> <span class="n">lax</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">safe_norm</span><span class="p">,</span> <span class="n">safe_sqrt</span>
 
-
-<div class="viewcode-block" id="dim">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.dim">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">dim</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Dimension ``dim`` of a n-rank matrix $\bA$, assuming ``shape=(dim, dim, ..., dim)``.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Internal helpers</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_dim</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spatial dimension of a square matrix $\mathbf{A}$, inferred from its shape.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<div class="viewcode-block" id="tr">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.tr">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">tr</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Trace $\operatorname{tr}(\mathbf{A}) = A_{ii}$.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dev</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Trace of a matrix $\bA$.</span>
-<span class="sd">    $$\tr(\bA)=A_{ii}$$</span>
+<span class="sd">    Deviatoric part of a $d \times d$ matrix $\mathbf{A}$.</span>
+
+<span class="sd">    .. math:: \operatorname{dev}(\mathbf{A}) = \mathbf{A} -</span>
+<span class="sd">        \frac{1}{d}\operatorname{tr}(\mathbf{A})\,\mathbf{I}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span></div>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">_dim</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">A</span> <span class="o">-</span> <span class="n">_tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="dev">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.dev">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">dev</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Deviatoric part of a $d\times d$ matrix $\bA$.</span>
-<span class="sd">    $$\dev(\bA) = \bA - \dfrac{1}{d}\bI$$</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">dim</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-    <span class="n">Id</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">A</span> <span class="o">-</span> <span class="n">tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span> <span class="o">*</span> <span class="n">Id</span></div>
-
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Public array-level operations</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
 
 
 <div class="viewcode-block" id="det33">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.det33">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">det33</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Determinant $\det(\bA)$ of a 3x3 matrix $\bA$, computed using explicit formula.&quot;&quot;&quot;</span>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.det33">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">det33</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determinant $\det(\mathbf{A})$ of a $3 \times 3$ matrix.</span>
+
+<span class="sd">    Evaluated via the explicit Sarrus formula, avoiding ``jnp.linalg.det``</span>
+<span class="sd">    overhead for the fixed-size case.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Scalar determinant.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">a11</span><span class="p">,</span> <span class="n">a12</span><span class="p">,</span> <span class="n">a13</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
     <span class="n">a21</span><span class="p">,</span> <span class="n">a22</span><span class="p">,</span> <span class="n">a23</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
     <span class="n">a31</span><span class="p">,</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a33</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
@@ -414,15 +452,27 @@ document.write(`
 
 
 <div class="viewcode-block" id="inv33">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.inv33">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">inv33</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Inverse $\bA^{-1}$ of a 3x3 matrix $\bA$, explicitly computed using cofactor formula.&quot;&quot;&quot;</span>
-    <span class="c1"># Minors and cofactors</span>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.inv33">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inv33</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inverse $\mathbf{A}^{-1}$ of a $3 \times 3$ matrix.</span>
+
+<span class="sd">    Computed via the explicit cofactor formula (adjugate divided by</span>
+<span class="sd">    determinant), avoiding ``jnp.linalg.solve`` overhead for the fixed-size</span>
+<span class="sd">    case.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Shape (3, 3).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">a11</span><span class="p">,</span> <span class="n">a12</span><span class="p">,</span> <span class="n">a13</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
     <span class="n">a21</span><span class="p">,</span> <span class="n">a22</span><span class="p">,</span> <span class="n">a23</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
     <span class="n">a31</span><span class="p">,</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a33</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-
-    <span class="c1"># Cofactor matrix (transposed for adjugate directly)</span>
     <span class="n">cof</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="p">[</span><span class="n">a22</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a23</span> <span class="o">*</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a13</span> <span class="o">*</span> <span class="n">a32</span> <span class="o">-</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a33</span><span class="p">,</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a23</span> <span class="o">-</span> <span class="n">a13</span> <span class="o">*</span> <span class="n">a22</span><span class="p">],</span>
@@ -430,27 +480,36 @@ document.write(`
             <span class="p">[</span><span class="n">a21</span> <span class="o">*</span> <span class="n">a32</span> <span class="o">-</span> <span class="n">a22</span> <span class="o">*</span> <span class="n">a31</span><span class="p">,</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a31</span> <span class="o">-</span> <span class="n">a11</span> <span class="o">*</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a11</span> <span class="o">*</span> <span class="n">a22</span> <span class="o">-</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a21</span><span class="p">],</span>
         <span class="p">]</span>
     <span class="p">)</span>
-
     <span class="n">det</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">a11</span> <span class="o">*</span> <span class="p">(</span><span class="n">a22</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a23</span> <span class="o">*</span> <span class="n">a32</span><span class="p">)</span>
         <span class="o">-</span> <span class="n">a12</span> <span class="o">*</span> <span class="p">(</span><span class="n">a21</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a23</span> <span class="o">*</span> <span class="n">a31</span><span class="p">)</span>
         <span class="o">+</span> <span class="n">a13</span> <span class="o">*</span> <span class="p">(</span><span class="n">a21</span> <span class="o">*</span> <span class="n">a32</span> <span class="o">-</span> <span class="n">a22</span> <span class="o">*</span> <span class="n">a31</span><span class="p">)</span>
     <span class="p">)</span>
-
-    <span class="n">invA</span> <span class="o">=</span> <span class="n">cof</span> <span class="o">/</span> <span class="n">det</span>
-    <span class="k">return</span> <span class="n">invA</span></div>
+    <span class="k">return</span> <span class="n">cof</span> <span class="o">/</span> <span class="n">det</span></div>
 
 
 
 <div class="viewcode-block" id="principal_invariants">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.principal_invariants">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">principal_invariants</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Principal invariants of a 3x3 matrix $\bA$.</span>
-<span class="sd">    $$\begin{align*}</span>
-<span class="sd">    I_1 &amp;= \tr(\bA)\\</span>
-<span class="sd">    I_2 &amp;= \frac{1}{2}(\tr(\bA)^2-\tr(\bA^2))\\</span>
-<span class="sd">    I_3 &amp;= \det(\bA)</span>
-<span class="sd">    \end{align*}$$</span>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.principal_invariants">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">principal_invariants</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Principal invariants $(I_1, I_2, I_3)$ of a $3 \times 3$ matrix $\mathbf{A}$.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        I_1 = \operatorname{tr}(\mathbf{A}), \quad</span>
+<span class="sd">        I_2 = \tfrac{1}{2}\bigl(\operatorname{tr}(\mathbf{A})^2</span>
+<span class="sd">              - \operatorname{tr}(\mathbf{A}^2)\bigr), \quad</span>
+<span class="sd">        I_3 = \det(\mathbf{A})</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    I1, I2, I3 : jax.Array</span>
+<span class="sd">        Three scalar invariants.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">i1</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
     <span class="n">i2</span> <span class="o">=</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">A</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
@@ -460,10 +519,23 @@ document.write(`
 
 
 <div class="viewcode-block" id="main_invariants">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.main_invariants">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">main_invariants</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Main invariants of a 3x3 matrix $\bA$:</span>
-<span class="sd">    $$\tr(\bA),\: \tr(\bA^2),\: \tr(\bA^3)$$.</span>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.main_invariants">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main_invariants</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main (trace-power) invariants $(J_1, J_2, J_3)$ of a $3 \times 3$ matrix.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        J_k = \operatorname{tr}(\mathbf{A}^k), \quad k = 1, 2, 3</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    J1, J2, J3 : jax.Array</span>
+<span class="sd">        Three scalar invariants.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">j1</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
     <span class="n">j2</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">A</span><span class="p">)</span>
@@ -473,132 +545,240 @@ document.write(`
 
 
 <div class="viewcode-block" id="pq_invariants">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.pq_invariants">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">pq_invariants</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Hydrostatic/deviatoric equivalent stresses $(p,q)$. Typically used in soil mechanics.</span>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.pq_invariants">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pq_invariants</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Hydrostatic pressure $p$ and deviatoric equivalent stress $q$.</span>
 
-<span class="sd">    $$p = - \tr(\bsig)/3 = -I_1/3$$</span>
-<span class="sd">    $$q = \sqrt{\frac{3}{2}\bs:\bs} = \sqrt{3 J_2}$$</span>
+<span class="sd">    Commonly used in soil mechanics and pressure-sensitive plasticity.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        p = -\tfrac{1}{3}\operatorname{tr}(\boldsymbol{\sigma}), \qquad</span>
+<span class="sd">        q = \sqrt{\tfrac{3}{2}\,\mathbf{s}:\mathbf{s}}</span>
+
+<span class="sd">    where $\mathbf{s} = \operatorname{dev}(\boldsymbol{\sigma})$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sig : array_like, shape (3, 3)</span>
+<span class="sd">        Cauchy stress tensor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    p : jax.Array</span>
+<span class="sd">        Mean pressure (positive in compression).</span>
+<span class="sd">    q : jax.Array</span>
+<span class="sd">        Von Mises equivalent stress.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">p</span> <span class="o">=</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">dev</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">_dev</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">safe_sqrt</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vdot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span></div>
 
 
 
-<div class="viewcode-block" id="eig33">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.eig33">[docs]</a>
-<span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">eig33</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes the eigenvalues and eigenvalue derivatives of a 3 x 3 real symmetric matrix.</span>
+<div class="viewcode-block" id="eig33_HA">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.eig33_HA">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">eig33_HA</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Eigenvalues and eigenvalue dyads of a $3 \times 3$ real symmetric matrix.</span>
 
-<span class="sd">    This function implements a numerically stable eigendecomposition for 3 x 3 symmetric</span>
-<span class="sd">    matrices based on the method by Harari &amp; Albocher (2023)</span>
-
-<span class="sd">    The implementation avoids catastrophic cancellation and loss of precision in</span>
-<span class="sd">    cases where two or more eigenvalues are nearly equal.</span>
+<span class="sd">    Implements the numerically stable method of Harari &amp; Albocher (2023),</span>
+<span class="sd">    which avoids catastrophic cancellation when two or more eigenvalues are</span>
+<span class="sd">    nearly equal.  Eigenvalue dyads (derivatives of eigenvalues with respect</span>
+<span class="sd">    to $\mathbf{A}$) are obtained via ``jax.jacfwd``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    A : array_like of shape (3, 3)</span>
-<span class="sd">        Real symmetric matrix whose eigenvalues (and optionally eigenvalue dyads)</span>
-<span class="sd">        are to be computed.</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+<span class="sd">        Real symmetric matrix.</span>
 <span class="sd">    rtol : float, optional</span>
-<span class="sd">        Relative tolerance used to determine near-isotropic or nearly repeated</span>
-<span class="sd">        eigenvalue cases. Default is `1e-16`.</span>
+<span class="sd">        Relative tolerance for the near-isotropic and two-equal-eigenvalue</span>
+<span class="sd">        branches.  Defaults to ``1e-16``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    eigvals : jax.Array of shape (3,)</span>
-<span class="sd">        Eigenvalues of ``A\`, ordered in a consistent but unspecified order.</span>
-<span class="sd">    eigendyads : jax.Array of shape (3, 3, 3)</span>
-<span class="sd">        Derivatives of the eigenvalues with respect to the components of ``A\`,</span>
-<span class="sd">        obtained via forward-mode automatic differentiation (`jax.jacfwd`).</span>
-
+<span class="sd">    eigvals : jax.Array, shape (3,)</span>
+<span class="sd">        Eigenvalues in ascending order.</span>
+<span class="sd">    eigendyads : jax.Array, shape (3, 3, 3)</span>
+<span class="sd">        Rank-1 projectors $\mathbf{n}_i \otimes \mathbf{n}_i$ for each</span>
+<span class="sd">        eigenvalue, forming the derivative</span>
+<span class="sd">        $\partial \lambda_i / \partial \mathbf{A}$.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    - The method distinguishes three cases:</span>
-<span class="sd">        1. Near-isotropic case (``s &lt; rtol * ||A||``): all eigenvalues are nearly equal.</span>
-<span class="sd">        2. Two nearly equal eigenvalues: handled by a special branch to ensure stability.</span>
-<span class="sd">        3. Three distinct eigenvalues: computed via trigonometric relations.</span>
-<span class="sd">    - The implementation uses ``safe_norm`` and ``safe_sqrt`` for numerical safety.</span>
-<span class="sd">    - Input ``A`` must be symmetric; asymmetry may lead to inaccurate results.</span>
-
+<span class="sd">    The input must be symmetric; asymmetric components are silently ignored</span>
+<span class="sd">    by the algorithm.</span>
 
 <span class="sd">    .. admonition:: References</span>
 <span class="sd">        :class: seealso</span>
 
-<span class="sd">        Harari, I., &amp; Albocher, U. (2023). Computation of eigenvalues of a real,</span>
-<span class="sd">        symmetric 3 x 3 matrix with particular reference to the pernicious case of</span>
-<span class="sd">        two nearly equal eigenvalues. *International Journal for Numerical Methods in</span>
-<span class="sd">        Engineering*, 124(5), 1089-1110.</span>
+<span class="sd">        Harari, I., &amp; Albocher, U. (2023). Computation of eigenvalues of a</span>
+<span class="sd">        real, symmetric 3x3 matrix with particular reference to the</span>
+<span class="sd">        pernicious case of two nearly equal eigenvalues. *International</span>
+<span class="sd">        Journal for Numerical Methods in Engineering*, 124(5), 1089-1110.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_eigvals_HarariAlbocher</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Eigendecomposition of 3x3 symmetric matrix based on Harari, I., &amp; Albocher, U. (2023).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
         <span class="n">norm</span> <span class="o">=</span> <span class="n">safe_norm</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-        <span class="n">Id</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">dim</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+        <span class="n">Id</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">_dim</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
         <span class="n">I1</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-        <span class="n">S</span> <span class="o">=</span> <span class="n">dev</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-        <span class="n">J2</span> <span class="o">=</span> <span class="n">tr</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">S</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">_dev</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">J2</span> <span class="o">=</span> <span class="n">_tr</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">S</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">safe_sqrt</span><span class="p">(</span><span class="n">J2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">branch_near_iso</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-            <span class="n">eigvals</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,))</span> <span class="o">*</span> <span class="n">I1</span> <span class="o">/</span> <span class="mi">3</span>
-            <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvals</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_near_iso</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+            <span class="n">ev</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,))</span> <span class="o">*</span> <span class="n">I1</span> <span class="o">/</span> <span class="mi">3</span>
+            <span class="k">return</span> <span class="n">ev</span><span class="p">,</span> <span class="n">ev</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">branch_general</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_general</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
             <span class="n">T</span> <span class="o">=</span> <span class="n">S</span> <span class="o">@</span> <span class="n">S</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">J2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">Id</span>
             <span class="n">d</span> <span class="o">=</span> <span class="n">safe_norm</span><span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">s</span> <span class="o">*</span> <span class="n">S</span><span class="p">)</span> <span class="o">/</span> <span class="n">safe_norm</span><span class="p">(</span><span class="n">T</span> <span class="o">+</span> <span class="n">s</span> <span class="o">*</span> <span class="n">S</span><span class="p">)</span>
             <span class="n">sj</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span>
             <span class="n">cond</span> <span class="o">=</span> <span class="n">sj</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">rtol</span> <span class="o">*</span> <span class="n">norm</span>
 
-            <span class="k">def</span><span class="w"> </span><span class="nf">branch_two_eigvals</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-                <span class="n">lamb_max</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span>
-                <span class="n">eigvals_dev</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">lamb_max</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">lamb_max</span><span class="p">])</span>
-                <span class="n">eigvals</span> <span class="o">=</span> <span class="n">eigvals_dev</span> <span class="o">+</span> <span class="n">I1</span> <span class="o">/</span> <span class="mi">3</span>
-                <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvals</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">_two</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+                <span class="n">lm</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span>
+                <span class="n">ev</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">lm</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">lm</span><span class="p">])</span> <span class="o">+</span> <span class="n">I1</span> <span class="o">/</span> <span class="mi">3</span>
+                <span class="k">return</span> <span class="n">ev</span><span class="p">,</span> <span class="n">ev</span>
 
-            <span class="k">def</span><span class="w"> </span><span class="nf">branch_three_eigvals</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-                <span class="n">alpha</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">d</span><span class="o">**</span><span class="n">sj</span><span class="p">)</span>
-                <span class="n">lambda_d</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sj</span> <span class="o">*</span> <span class="n">s</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">_three</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">safe_norm</span><span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">s</span> <span class="o">*</span> <span class="n">S</span><span class="p">)</span> <span class="o">**</span> <span class="n">sj</span><span class="p">,</span> <span class="n">safe_norm</span><span class="p">(</span><span class="n">T</span> <span class="o">+</span> <span class="n">s</span> <span class="o">*</span> <span class="n">S</span><span class="p">)</span> <span class="o">**</span> <span class="n">sj</span><span class="p">)</span>
+                <span class="n">ld</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sj</span> <span class="o">*</span> <span class="n">s</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
                 <span class="n">sd</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+                <span class="n">ev_dev</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">ld</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">sd</span><span class="p">,</span> <span class="o">-</span><span class="n">ld</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">sd</span><span class="p">,</span> <span class="n">ld</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">ev_dev</span> <span class="o">+</span> <span class="n">I1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="n">ev_dev</span> <span class="o">+</span> <span class="n">I1</span> <span class="o">/</span> <span class="mi">3</span>
 
-                <span class="n">eigvals_dev</span> <span class="o">=</span> <span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
-                    <span class="n">lambda_d</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
-                    <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-                        <span class="p">[</span><span class="o">-</span><span class="n">lambda_d</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">sd</span><span class="p">,</span> <span class="o">-</span><span class="n">lambda_d</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">sd</span><span class="p">,</span> <span class="n">lambda_d</span><span class="p">]</span>
-                    <span class="p">),</span>
-                    <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-                        <span class="p">[</span><span class="n">lambda_d</span><span class="p">,</span> <span class="o">-</span><span class="n">lambda_d</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">sd</span><span class="p">,</span> <span class="o">-</span><span class="n">lambda_d</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">sd</span><span class="p">]</span>
-                    <span class="p">),</span>
-                    <span class="n">operand</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                <span class="p">)</span>
-                <span class="n">eigvals</span> <span class="o">=</span> <span class="n">eigvals_dev</span> <span class="o">+</span> <span class="n">I1</span> <span class="o">/</span> <span class="mi">3</span>
-                <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvals</span>
+            <span class="k">return</span> <span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">_two</span><span class="p">,</span> <span class="n">_three</span><span class="p">,</span> <span class="n">operand</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
-            <span class="k">return</span> <span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
-                <span class="n">cond</span><span class="p">,</span> <span class="n">branch_two_eigvals</span><span class="p">,</span> <span class="n">branch_three_eigvals</span><span class="p">,</span> <span class="n">operand</span><span class="o">=</span><span class="kc">None</span>
-            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">s</span> <span class="o">&lt;</span> <span class="n">rtol</span> <span class="o">*</span> <span class="n">norm</span><span class="p">,</span> <span class="n">_near_iso</span><span class="p">,</span> <span class="n">_general</span><span class="p">,</span> <span class="n">operand</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">s</span> <span class="o">&lt;</span> <span class="n">rtol</span> <span class="o">*</span> <span class="n">norm</span><span class="p">,</span> <span class="n">branch_near_iso</span><span class="p">,</span> <span class="n">branch_general</span><span class="p">,</span> <span class="n">operand</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-
-    <span class="n">eigendyads</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jacfwd</span><span class="p">(</span><span class="n">compute_eigvals_HarariAlbocher</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">A</span><span class="p">)</span>
-
+    <span class="n">eigendyads</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jacfwd</span><span class="p">(</span><span class="n">_compute</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
+    <span class="n">eigvals</span> <span class="o">=</span> <span class="n">eigvals</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+    <span class="n">eigendyads</span> <span class="o">=</span> <span class="n">eigendyads</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+    <span class="n">eigendyads</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigendyads</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">eigendyads</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigendyads</span></div>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_sqrtm</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+<div class="viewcode-block" id="eig33">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.eig33">[docs]</a>
+<span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">eig33</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">J2s</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+        <span class="n">d0</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">offdiag</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">diag</span> <span class="o">=</span> <span class="p">(</span><span class="n">d0</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">d1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">d2</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span>
+        <span class="k">return</span> <span class="n">offdiag</span> <span class="o">+</span> <span class="n">diag</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">J3s</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+        <span class="n">d0</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">d1</span> <span class="o">+</span> <span class="n">d2</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="n">d0</span> <span class="o">-</span> <span class="n">d2</span>
+        <span class="n">t3</span> <span class="o">=</span> <span class="o">-</span><span class="n">d0</span> <span class="o">-</span> <span class="n">d1</span>
+        <span class="n">offdiag</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">mixed</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">t1</span> <span class="o">+</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">t2</span> <span class="o">+</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">t3</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.0</span>
+        <span class="n">diag</span> <span class="o">=</span> <span class="p">(</span><span class="n">t1</span> <span class="o">*</span> <span class="n">t2</span> <span class="o">*</span> <span class="n">t3</span><span class="p">)</span> <span class="o">/</span> <span class="mf">27.0</span>
+        <span class="k">return</span> <span class="n">offdiag</span> <span class="o">+</span> <span class="n">mixed</span> <span class="o">-</span> <span class="n">diag</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">dxs</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+        <span class="n">d0</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">d2</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="o">-</span><span class="n">d1</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">d0</span>
+
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="mf">3.0</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">u</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">*</span> <span class="n">v</span> <span class="o">-</span> <span class="n">w</span> <span class="o">*</span> <span class="n">w</span><span class="p">)),</span>
+                <span class="n">alpha</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">gamma</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">u</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">w</span><span class="p">,</span>
+                <span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">gamma</span> <span class="o">-</span> <span class="n">v</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">beta</span> <span class="o">-</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">+</span> <span class="n">u</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">u</span> <span class="o">-</span> <span class="n">v</span> <span class="o">*</span> <span class="n">v</span> <span class="o">-</span> <span class="n">w</span> <span class="o">*</span> <span class="n">w</span><span class="p">),</span>
+                <span class="mf">2.0</span>
+                <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">gamma</span> <span class="o">+</span> <span class="n">u</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">beta</span> <span class="o">-</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">u</span><span class="p">)),</span>
+                <span class="mf">2.0</span>
+                <span class="o">*</span> <span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">+</span> <span class="n">u</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="p">(</span><span class="n">beta</span> <span class="o">-</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">u</span><span class="p">)),</span>
+            <span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">discs</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+        <span class="n">terms</span> <span class="o">=</span> <span class="n">dxs</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">terms</span> <span class="o">*</span> <span class="n">terms</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_eigvals</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">I1</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">j2</span> <span class="o">=</span> <span class="n">J2s</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">j3</span> <span class="o">=</span> <span class="n">J3s</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">discriminant</span> <span class="o">=</span> <span class="n">discs</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">normA</span> <span class="o">=</span> <span class="n">safe_norm</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">branch_near_iso</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+            <span class="n">eigvals</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">I1</span> <span class="o">/</span> <span class="mf">3.0</span>
+            <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvals</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">branch_general</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">safe_sqrt</span><span class="p">(</span><span class="mf">27.0</span> <span class="o">*</span> <span class="n">discriminant</span><span class="p">),</span> <span class="mf">27.0</span> <span class="o">*</span> <span class="n">j3</span><span class="p">)</span>
+            <span class="n">amplitude</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">safe_sqrt</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">j2</span><span class="p">)</span>
+            <span class="n">shifts</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">eigvals</span> <span class="o">=</span> <span class="p">(</span><span class="n">amplitude</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">cos</span><span class="p">((</span><span class="n">phi</span> <span class="o">+</span> <span class="n">shifts</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">+</span> <span class="n">I1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.0</span>
+            <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvals</span>
+
+        <span class="k">return</span> <span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">j2</span> <span class="o">&lt;</span> <span class="n">rtol</span> <span class="o">*</span> <span class="n">normA</span><span class="p">,</span> <span class="n">branch_near_iso</span><span class="p">,</span> <span class="n">branch_general</span><span class="p">,</span> <span class="n">operand</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">eigendyads</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jacfwd</span><span class="p">(</span><span class="n">compute_eigvals</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
+    <span class="n">eigvals</span> <span class="o">=</span> <span class="n">eigvals</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+    <span class="n">eigendyads</span> <span class="o">=</span> <span class="n">eigendyads</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+    <span class="n">eigendyads</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigendyads</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">eigendyads</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigendyads</span></div>
+
+
+
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Private (implementation detail)</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sqrtm</span><span class="p">(</span><span class="n">C</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">]:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unified expression for sqrt and inverse sqrt of a symmetric matrix $\bC$</span>
-<span class="sd">    Simo, J. C., &amp; Hughes, T. J. (1998). Computational inelasticity., p.244</span>
+<span class="sd">    Square root $\mathbf{U} = \mathbf{C}^{1/2}$ and inverse square root</span>
+<span class="sd">    $\mathbf{U}^{-1}$ of a symmetric positive definite $3 \times 3$ matrix.</span>
+
+<span class="sd">    Uses the closed-form expression due to Simo &amp; Hughes (1998), p. 244,</span>
+<span class="sd">    based on the principal invariants of $\mathbf{U}$.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    C : array_like, shape (3, 3)</span>
+<span class="sd">        Symmetric positive definite matrix (typically the right Cauchy-Green</span>
+<span class="sd">        deformation tensor $\mathbf{C} = \mathbf{F}^{\mathsf{T}}\mathbf{F}$).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    U : jax.Array, shape (3, 3)</span>
+<span class="sd">        Matrix square root $\mathbf{C}^{1/2}$.</span>
+<span class="sd">    U_inv : jax.Array, shape (3, 3)</span>
+<span class="sd">        Inverse square root $\mathbf{C}^{-1/2}$.</span>
+
+<span class="sd">    .. admonition:: References</span>
+<span class="sd">        :class: seealso</span>
+
+<span class="sd">        Simo, J. C., &amp; Hughes, T. J. R. (1998). *Computational Inelasticity*.</span>
+<span class="sd">        Springer. p. 244.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">Id</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">C2</span> <span class="o">=</span> <span class="n">C</span> <span class="o">@</span> <span class="n">C</span>
@@ -613,87 +793,168 @@ document.write(`
     <span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">U_inv</span>
 
 
-<div class="viewcode-block" id="sqrtm">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.sqrtm">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">sqrtm</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Matrix square-root $\bA^{1/2}$ of a symmetric 3x3 matrix $\bA$.</span>
-<span class="sd">    Computed using the unified square root and inverse square root</span>
-<span class="sd">    formula, see Simo &amp; Hughes, 1998.</span>
-
-<span class="sd">    .. admonition:: References</span>
-<span class="sd">        :class: seealso</span>
-
-<span class="sd">        Simo, J. C., &amp; Hughes, T. J. (1998). Computational inelasticity., p.244</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_sqrtm</span><span class="p">(</span><span class="n">A</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="inv_sqrtm">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.inv_sqrtm">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">inv_sqrtm</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Matrix inverse square-root $\bA^{-1/2}$ of a symmetric 3x3 matrix $\bA$.</span>
-
-<span class="sd">    Computed using the unified square root and inverse square root</span>
-<span class="sd">    formula, see Simo &amp; Hughes, 1998.</span>
-
-<span class="sd">    .. admonition:: References</span>
-<span class="sd">        :class: seealso</span>
-
-<span class="sd">        Simo, J. C., &amp; Hughes, T. J. (1998). Computational inelasticity., p.244</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_sqrtm</span><span class="p">(</span><span class="n">A</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
-
-
-
 <div class="viewcode-block" id="isotropic_function">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.isotropic_function">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">isotropic_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes an isotropic function of a symmetric 3x3 matrix $\bA$.</span>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.isotropic_function">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">isotropic_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Isotropic matrix function $f(\mathbf{A})$ of a symmetric $3 \times 3$ matrix.</span>
+
+<span class="sd">    Evaluates the spectral decomposition</span>
+<span class="sd">    $f(\mathbf{A}) = \sum_{i=1}^{3} f(\lambda_i)\,\mathbf{n}_i \otimes \mathbf{n}_i$</span>
+<span class="sd">    where $\lambda_i$ are the eigenvalues and $\mathbf{n}_i$ the corresponding</span>
+<span class="sd">    eigenvectors of $\mathbf{A}$.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    fun : callable</span>
-<span class="sd">        A scalar function $f(x)$</span>
-<span class="sd">    A : jax.Array</span>
-<span class="sd">        A symmetric 3x3 matrix</span>
+<span class="sd">        Scalar function $f : \mathbb{R} \to \mathbb{R}$ applied to each eigenvalue.</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+<span class="sd">        Real symmetric matrix.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    jax.Array</span>
-<span class="sd">        A new 3x3 matrix $f_{\bA}$ such that</span>
-<span class="sd">        $$f_{\bA} = \sum_{i=1}^3 f(\lambda_i) \bn_i \otimes \bn_i$$</span>
-<span class="sd">        where $\lambda_i$ and $\bn_i$ are the eigenvalues and eigenvectors of $\bA$.</span>
+<span class="sd">        Shape (3, 3).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigendyads</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">fi</span> <span class="o">*</span> <span class="n">Ni</span> <span class="k">for</span> <span class="n">fi</span><span class="p">,</span> <span class="n">Ni</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">eigendyads</span><span class="p">)])</span></div>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">projectors</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="c1"># The projectors P_i = ∂λ_i/∂A come from jacfwd, which perturbs each</span>
+    <span class="c1"># element of A independently (without enforcing A_{ij} = A_{ji}).  This</span>
+    <span class="c1"># means P_i may have a small antisymmetric component.  Symmetrising before</span>
+    <span class="c1"># the spectral reconstruction removes that noise and ensures f(A) is</span>
+    <span class="c1"># symmetric, consistent with the reference implementation.</span>
+    <span class="n">projectors</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">projectors</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">projectors</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;a,aij-&gt;ij&quot;</span><span class="p">,</span> <span class="n">fun</span><span class="p">(</span><span class="n">eigvals</span><span class="p">),</span> <span class="n">projectors</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="sqrtm">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.sqrtm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sqrtm</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Matrix square root $\mathbf{A}^{1/2}$ of a symmetric positive definite</span>
+<span class="sd">    $3 \times 3$ matrix.</span>
+
+<span class="sd">    Uses the closed-form expression of Simo &amp; Hughes (1998) based on the</span>
+<span class="sd">    principal invariants of $\mathbf{A}^{1/2}$.  Accepts any object that</span>
+<span class="sd">    implements ``__jax_array__`` (e.g. a :class:`~jaxmat.tensors.SymmetricTensor2`).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+<span class="sd">        Symmetric positive definite matrix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Shape (3, 3).</span>
+
+<span class="sd">    .. admonition:: References</span>
+<span class="sd">        :class: seealso</span>
+
+<span class="sd">        Simo, J. C., &amp; Hughes, T. J. R. (1998). *Computational Inelasticity*.</span>
+<span class="sd">        Springer. p. 244.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_sqrtm</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="inv_sqrtm">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.inv_sqrtm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inv_sqrtm</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inverse square root $\mathbf{A}^{-1/2}$ of a symmetric positive definite</span>
+<span class="sd">    $3 \times 3$ matrix.</span>
+
+<span class="sd">    Computed jointly with :func:`sqrtm` via the same closed-form expression,</span>
+<span class="sd">    so both are available at identical cost.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+<span class="sd">        Symmetric positive definite matrix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Shape (3, 3).</span>
+
+<span class="sd">    .. admonition:: References</span>
+<span class="sd">        :class: seealso</span>
+
+<span class="sd">        Simo, J. C., &amp; Hughes, T. J. R. (1998). *Computational Inelasticity*.</span>
+<span class="sd">        Springer. p. 244.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_sqrtm</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span></div>
 
 
 
 <div class="viewcode-block" id="expm">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.expm">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">expm</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Matrix exponential $\exp(\bA)$ of a symmetric 3x3 matrix $\bA$.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">isotropic_function</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span></div>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.expm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">expm</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Matrix exponential $\exp(\mathbf{A})$ of a symmetric $3 \times 3$ matrix.</span>
+
+<span class="sd">    Computed via the spectral decomposition; see :func:`isotropic_function`.</span>
+<span class="sd">    Accepts any object that implements ``__jax_array__``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Shape (3, 3).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">isotropic_function</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="logm">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.logm">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">logm</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Matrix logarithm $\log(\bA)$ of a symmetric 3x3 matrix $\bA$.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">isotropic_function</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span></div>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.logm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">logm</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Matrix logarithm $\log(\mathbf{A})$ of a symmetric positive definite</span>
+<span class="sd">    $3 \times 3$ matrix.</span>
+
+<span class="sd">    Computed via the spectral decomposition; see :func:`isotropic_function`.</span>
+<span class="sd">    Accepts any object that implements ``__jax_array__``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+<span class="sd">        Symmetric positive definite matrix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Shape (3, 3).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">isotropic_function</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="powm">
-<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.powm">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">powm</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Matrix power $\bA^m$ of exponent $m$ of a symmetric 3x3 matrix $\bA$.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">isotropic_function</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span></div>
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.powm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">powm</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Matrix power $\mathbf{A}^m$ of a symmetric $3 \times 3$ matrix.</span>
+
+<span class="sd">    Computed via the spectral decomposition; see :func:`isotropic_function`.</span>
+<span class="sd">    Accepts any object that implements ``__jax_array__``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+<span class="sd">    m : float</span>
+<span class="sd">        Exponent.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Shape (3, 3).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">isotropic_function</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))</span></div>
 
 </pre></div>
 

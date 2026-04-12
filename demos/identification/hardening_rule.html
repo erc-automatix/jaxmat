@@ -187,13 +187,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/batched_computation.html">Batching across material points</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/tensors.html">Working with tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pytrees.html">Composable and differentiable material models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/Green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/CamClay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
 </ul>
 </details></li>
@@ -212,7 +213,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../computational.html">Computational aspects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tensors.html">Conventions for representing tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sharp_bits.html">Sharp bits</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
@@ -240,6 +240,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
@@ -410,7 +412,8 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="identification-of-a-nonlinear-isotropic-hardening-rule">
 <h1>Identification of a nonlinear isotropic hardening rule<a class="headerlink" href="#identification-of-a-nonlinear-isotropic-hardening-rule" title="Link to this heading">#</a></h1>
-<p>In this demo, we use stress/plastic strain data of a steel material to show how to identify a nonlinear isotropic hardening rule with <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>.</p>
+<p>In this demo, we use stress/plastic strain data of a steel material to show how to identify a
+nonlinear isotropic hardening rule with <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code>.</p>
 <div class="important admonition">
 <p class="admonition-title">Objectives</p>
 <p>In particular, this demo shows:</p>
@@ -423,22 +426,30 @@ document.write(`
 </div>
 <section id="loading-and-preprocessing-experimental-data">
 <h2>Loading and preprocessing experimental data<a class="headerlink" href="#loading-and-preprocessing-experimental-data" title="Link to this heading">#</a></h2>
-<p>We start by importing the necessary packages and loading experimental uniaxial stress–strain data from a steel sample. Data has been obtained from the X100 data used in <a class="reference external" href="https://github.com/MEALORII/TP_MEALOR/blob/main/TP5_Ductile_fracture/TP5_GTN_model.ipynb">the MEALOR “Simulation of ductile fracture models” lab session</a>, see also <span id="id1">[<a class="reference internal" href="#id23" title="Jacques Besson, Jérémy Bleyer, Sylvia Feld-Payet, Anne-Françoise Gourgues-Lorenzon, Florent Hannard, Thomas Helfer, Jeremy Hure, Djimedo Kondo, Veronique Lazarus, Christophe Le Bourlot, and others. Mealor ii damage mechanics and local approach to fracture. 2023.">Besson <em>et al.</em>, 2023</a>]</span>. The data represent the evolution of the yield stress as a function of equivalent plastic strain <span class="math notranslate nohighlight">\(p\)</span>.</p>
-<p>To test the robustness of our identification procedure, we artificially add a small amount of Gaussian noise to both the stress and plastic strain values. The noisy data are then sorted and truncated to define a training subset limited to <span class="math notranslate nohighlight">\(p&lt;5.10^{-2}\)</span>, leaving the rest for extrapolation.</p>
-<p>The plot below shows the ground-truth stress–strain curve and the noisy data used for training.</p>
+<p>We start by importing the necessary packages and loading experimental uniaxial stress-strain data
+from a steel sample. Data has been obtained from the X100 dataset used in the MEALOR lab session
+on ductile fracture models, see also <span id="id1">[<a class="reference internal" href="#id23" title="Jacques Besson, Jérémy Bleyer, Sylvia Feld-Payet, Anne-Françoise Gourgues-Lorenzon, Florent Hannard, Thomas Helfer, Jeremy Hure, Djimedo Kondo, Veronique Lazarus, Christophe Le Bourlot, and others. Mealor ii damage mechanics and local approach to fracture. 2023.">Besson <em>et al.</em>, 2023</a>]</span>. The data represent the
+evolution of the yield stress as a function of equivalent plastic strain <span class="math notranslate nohighlight">\(p\)</span>.</p>
+<p>To test the robustness of our identification procedure, we artificially add a small amount of
+Gaussian noise to both the stress and plastic strain values. The noisy data are then sorted and
+truncated to define a training subset limited to <span class="math notranslate nohighlight">\(p&lt;5.10^{-2}\)</span>, leaving the rest for
+extrapolation.</p>
+<p>The plot below shows the ground-truth stress-strain curve and the noisy data used for training.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_platform_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">optimistix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optx</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.nn.icnn</span><span class="w"> </span><span class="kn">import</span> <span class="n">ICNN</span><span class="p">,</span> <span class="n">ICNNSkip</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.nn.icnn</span><span class="w"> </span><span class="kn">import</span> <span class="n">ICNN</span>
+
+<span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_platform_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+
 
 <span class="n">current_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
@@ -470,12 +481,6 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;&gt;:36: SyntaxWarning: &quot;\s&quot; is an invalid escape sequence. Such sequences will not work in the future. Did you mean &quot;\\s&quot;? A raw string is also an option.
-&lt;&gt;:36: SyntaxWarning: &quot;\s&quot; is an invalid escape sequence. Such sequences will not work in the future. Did you mean &quot;\\s&quot;? A raw string is also an option.
-/tmp/ipykernel_497987/2170504242.py:36: SyntaxWarning: &quot;\s&quot; is an invalid escape sequence. Such sequences will not work in the future. Did you mean &quot;\\s&quot;? A raw string is also an option.
-  plt.ylabel(&quot;Yield stress $\sigma_Y$&quot;)
-</pre></div>
-</div>
 <img alt="../../_images/5259d7a6b175e68b904515efe6af6aefdc258aa1d5a9c9ac3abd41ab3744d45f.png" src="../../_images/5259d7a6b175e68b904515efe6af6aefdc258aa1d5a9c9ac3abd41ab3744d45f.png" />
 </div>
 </div>
@@ -483,17 +488,27 @@ document.write(`
 <section id="defining-candidate-hardening-laws">
 <h2>Defining candidate hardening laws<a class="headerlink" href="#defining-candidate-hardening-laws" title="Link to this heading">#</a></h2>
 <p>We now define two different models for the isotropic hardening law <span class="math notranslate nohighlight">\(\sigma_Y(p)\)</span>:</p>
-<ul>
+<ul class="simple">
 <li><p>Phenomenological Sum-Exponential Model:
-We consider an extended version of the Voce hardening law, where the yield stress saturates exponentially with plastic strain. We consider here a sum of <span class="math notranslate nohighlight">\(N\)</span> saturating exponentials written as:</p>
+We consider an extended version of the Voce hardening law, where the yield stress saturates
+exponentially with plastic strain. We consider here a sum of <span class="math notranslate nohighlight">\(N\)</span> saturating exponentials written
+as:</p></li>
+</ul>
 <div class="math notranslate nohighlight">
 \[\sigma_Y(p) = \sigma_0 + \sum_{i=1}^N \Delta\sigma_i \big(1 - \exp(-b_i p))\]</div>
-<p>where the parameters <span class="math notranslate nohighlight">\(\sigma_0\)</span>, <span class="math notranslate nohighlight">\(\Delta\sigma_i\)</span>, and <span class="math notranslate nohighlight">\(b_i\)</span> are learnable. Here <span class="math notranslate nohighlight">\(\sigma_0\)</span> denotes the initial yield stress and <span class="math notranslate nohighlight">\(\sigma_0+\sum_i \Delta\sigma_i\)</span> will correspond to the saturating stress.</p>
-</li>
+<p>where the parameters <span class="math notranslate nohighlight">\(\sigma_0\)</span>, <span class="math notranslate nohighlight">\(\Delta\sigma_i\)</span>, and <span class="math notranslate nohighlight">\(b_i\)</span> are learnable. Here <span class="math notranslate nohighlight">\(\sigma_0\)</span>
+denotes the initial yield stress and <span class="math notranslate nohighlight">\(\sigma_0+\sum_i \Delta\sigma_i\)</span> will correspond to the
+saturating stress.</p>
+<ul class="simple">
 <li><p>Neural Network Model based on Input-Convex Neural Networks (ICNN):
-This model enforces convexity of the potential by construction, guaranteeing a monotonic hardening behavior. The yield stress is defined as the gradient of the convex potential output by the ICNN, see also <a class="reference internal" href="../neural_network_models/hyperelastic_PANN.html"><span class="doc std std-doc">Physics-Augmented Neural Networks for data-driven hyperelasticity</span></a>.</p></li>
+This model enforces convexity of the potential by construction, guaranteeing a monotonic hardening
+behavior. The yield stress is defined as the gradient of the convex potential output by the ICNN,
+see also <a class="reference internal" href="../neural_network_models/hyperelastic_PANN.html"><span class="doc std std-doc">Physics-Augmented Neural Networks for data-driven hyperelasticity</span></a>.</p></li>
 </ul>
-<p>Both models are implemented as <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code>s, allowing them to be handled as JAX PyTrees and trained with differentiable solvers.</p>
+<p>Both models are implemented as <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code>s, allowing them to be handled as JAX PyTrees and
+trained with differentiable solvers.</p>
+<p>Both models are implemented as <code class="docutils literal notranslate"><span class="pre">equinox.Module</span></code>s, allowing them to be handled as JAX PyTrees and
+trained with differentiable solvers.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SumExpHardening</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -526,12 +541,17 @@ This model enforces convexity of the potential by construction, guaranteeing a m
 </section>
 <section id="defining-the-loss-function">
 <h2>Defining the loss function<a class="headerlink" href="#defining-the-loss-function" title="Link to this heading">#</a></h2>
-<p>The training process minimizes a loss function that measures the mean squared error between the predicted yield stress <span class="math notranslate nohighlight">\(\hat{\sigma}_Y(p)\)</span> and the noisy data. To prevent overfitting and promote smoothness, we add an <span class="math notranslate nohighlight">\(L^1\)</span> regularization term on the model parameters:</p>
+<p>The training process minimizes a loss function that measures the mean squared error between the
+predicted yield stress <span class="math notranslate nohighlight">\(\hat{\sigma}_Y(p)\)</span> and the noisy data. To prevent overfitting and promote
+smoothness, we add an <span class="math notranslate nohighlight">\(L^1\)</span> regularization term on the model parameters:</p>
 <div class="math notranslate nohighlight">
 \[
-\mathcal{L}(\btheta) = \dfrac{1}{M}\sum_{k=1}^M (\hat\sigma_Y(p^{(k)};\btheta) - \sigma_Y^\text{data,(k)})^2 + \dfrac{\gamma}{n_{\btheta}} \|\btheta\|_1
+\mathcal{L}(\btheta) = \dfrac{1}{M}\sum_{k=1}^M (\hat\sigma_Y(p^{(k)};\btheta) -
+\sigma_Y^\text{data,(k)})^2 + \dfrac{\gamma}{n_{\btheta}} \|\btheta\|_1
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(M\)</span> is the number of data points, <span class="math notranslate nohighlight">\(\gamma\)</span> is a regularization coefficient and <span class="math notranslate nohighlight">\(n_{\btheta}\)</span> denotes the total number of parameters in <span class="math notranslate nohighlight">\(\btheta\)</span>. Both the data loss and the regularization term are written in a fully JAX-compatible manner.</p>
+<p>where <span class="math notranslate nohighlight">\(M\)</span> is the number of data points, <span class="math notranslate nohighlight">\(\gamma\)</span> is a regularization coefficient and <span class="math notranslate nohighlight">\(n_{\btheta}\)</span>
+denotes the total number of parameters in <span class="math notranslate nohighlight">\(\btheta\)</span>. Both the data loss and the regularization
+term are written in a fully JAX-compatible manner.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">loss</span><span class="p">(</span><span class="n">hardening</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
@@ -558,9 +578,14 @@ This model enforces convexity of the potential by construction, guaranteeing a m
 </section>
 <section id="training-procedure">
 <h2>Training procedure<a class="headerlink" href="#training-procedure" title="Link to this heading">#</a></h2>
-<p>We use the quasi-Newton BFGS solver from the <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> library to minimize the total loss. The BFGS algorithm is particularly well suited for small parameter sets and ensures fast convergence without the need for stochastic optimization.</p>
-<p>Each hardening model (phenomenological and ICNN-based) is trained independently on the same noisy dataset.</p>
-<p>During optimization, the solver adjusts the parameters to best reproduce the measured yield stress values. Thanks to JAX’s automatic differentiation, all gradients are computed exactly and efficiently.</p>
+<p>We use the quasi-Newton BFGS solver from the <code class="docutils literal notranslate"><span class="pre">optimistix</span></code> library to minimize the total loss. The
+BFGS algorithm is particularly well suited for small parameter sets and ensures fast convergence
+without the need for stochastic optimization.</p>
+<p>Each hardening model (phenomenological and ICNN-based) is trained independently on the same noisy
+dataset.</p>
+<p>During optimization, the solver adjusts the parameters to best reproduce the measured yield stress
+values. Thanks to JAX’s automatic differentiation, all gradients are computed exactly and
+efficiently.</p>
 <p>Note that <span class="math notranslate nohighlight">\(\gamma\)</span> is a hyperparameter which must be tuned by chosen before hand by the user.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -591,9 +616,7 @@ This model enforces convexity of the potential by construction, guaranteeing a m
 
     <span class="n">epsp_extrap</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">5e-2</span><span class="p">,</span> <span class="mf">14e-2</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
     <span class="n">sig_extrap</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">trained_hardening</span><span class="p">)(</span><span class="n">epsp_extrap</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-        <span class="n">epsp_extrap</span><span class="p">,</span> <span class="n">sig_extrap</span><span class="p">,</span> <span class="s2">&quot;-C0&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Extrapolation&quot;</span>
-    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epsp_extrap</span><span class="p">,</span> <span class="n">sig_extrap</span><span class="p">,</span> <span class="s2">&quot;-C0&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Extrapolation&quot;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">14e-2</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Equivalent plastic strain $p$&quot;</span><span class="p">)</span>
@@ -605,24 +628,25 @@ This model enforces convexity of the potential by construction, guaranteeing a m
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;&gt;:34: SyntaxWarning: &quot;\s&quot; is an invalid escape sequence. Such sequences will not work in the future. Did you mean &quot;\\s&quot;? A raw string is also an option.
-&lt;&gt;:34: SyntaxWarning: &quot;\s&quot; is an invalid escape sequence. Such sequences will not work in the future. Did you mean &quot;\\s&quot;? A raw string is also an option.
-/tmp/ipykernel_497987/1942242727.py:34: SyntaxWarning: &quot;\s&quot; is an invalid escape sequence. Such sequences will not work in the future. Did you mean &quot;\\s&quot;? A raw string is also an option.
-  plt.ylabel(&quot;Yield stress $\sigma_Y$&quot;)
-</pre></div>
-</div>
-<img alt="../../_images/1641b9ecba5dcdac4c0771fe5287118952fc6c0ea7f1bbcd28f7c29431f04303.png" src="../../_images/1641b9ecba5dcdac4c0771fe5287118952fc6c0ea7f1bbcd28f7c29431f04303.png" />
-<img alt="../../_images/2e0ebe813862f8fabdd05c55185498ce54746f47733c00bfc69858b6c78635c4.png" src="../../_images/2e0ebe813862f8fabdd05c55185498ce54746f47733c00bfc69858b6c78635c4.png" />
+<img alt="../../_images/3efc59244ccc8569329d7c2f19fdb5eafe5dce12de3dd41fb5f62a70ab7281c0.png" src="../../_images/3efc59244ccc8569329d7c2f19fdb5eafe5dce12de3dd41fb5f62a70ab7281c0.png" />
+<img alt="../../_images/b004306a9bc87c689f18c8e6b3aa2315b9d3a24c5ef512f16a9c8c7233cb076b.png" src="../../_images/b004306a9bc87c689f18c8e6b3aa2315b9d3a24c5ef512f16a9c8c7233cb076b.png" />
 </div>
 </div>
 </section>
 <section id="results-and-extrapolation">
 <h2>Results and extrapolation<a class="headerlink" href="#results-and-extrapolation" title="Link to this heading">#</a></h2>
-<p>After training, we visualize the predicted hardening curves along with the experimental data. The solid black line shows the ground truth, red crosses the noisy training data,</p>
-<p>We also evaluate the models beyond the training range (<span class="math notranslate nohighlight">\(p &gt; 5.10^{-2}\)</span>) in blue to test their extrapolation capability.
-This is important for constitutive modeling since we often need to predict material behavior beyond the calibrated strain range.</p>
-<p>Typically, the phenomenological <code class="docutils literal notranslate"><span class="pre">SumExp</span></code> model performs well within the training range but may struggle when generalizing outside the training region. We can check that tuning the hyperparameter <span class="math notranslate nohighlight">\(\gamma\)</span> or increasing the number of terms does not yield much better results. In this case, it is preferable to use a relatively small number <span class="math notranslate nohighlight">\(N\)</span> of terms in the expansion.</p>
-<p>Conversely, the ICNN-based model can learn more flexible shapes while still guaranteeing monotonic hardening, thanks to its convexity constraint. As a result, it performs relatively well outside the training range in general.</p>
+<p>After training, we visualize the predicted hardening curves along with the experimental data. The
+solid black line shows the ground truth, red crosses the noisy training data,</p>
+<p>We also evaluate the models beyond the training range (<span class="math notranslate nohighlight">\(p &gt; 5.10^{-2}\)</span>) in blue to test their
+extrapolation capability. This is important for constitutive modeling since we often need to
+predict material behavior beyond the calibrated strain range.</p>
+<p>Typically, the phenomenological <code class="docutils literal notranslate"><span class="pre">SumExp</span></code> model performs well within the training range but may
+struggle when generalizing outside the training region. We can check that tuning the
+hyperparameter <span class="math notranslate nohighlight">\(\gamma\)</span> or increasing the number of terms does not yield much better results. In
+this case, it is preferable to use a relatively small number <span class="math notranslate nohighlight">\(N\)</span> of terms in the expansion.</p>
+<p>Conversely, the ICNN-based model can learn more flexible shapes while still guaranteeing monotonic
+hardening, thanks to its convexity constraint. As a result, it performs relatively well outside
+the training range in general.</p>
 </section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
