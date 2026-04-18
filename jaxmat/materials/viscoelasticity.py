@@ -37,14 +37,15 @@ class StandardLinearSolid(jm.SmallStrainBehavior):
 
     elasticity: jm.AbstractLinearElastic
     """Elastic model for the purely elastic branch."""
-    maxwell_stiffness: jm.AbstractLinearElastic
-    """Elastic model representing the spring in the Maxwell branch."""
+    maxwell_stiffness: jm.LinearElasticIsotropic
+    """Isotropic elastic model representing the spring in the Maxwell branch."""
     maxwell_viscosity: float = enforce_dtype()
     r"""Viscosity $\eta$ of the dashpot in the Maxwell branch."""
     internal_type = SLSState
     """Internal state containing the viscous strain."""
 
     @eqx.filter_jit
+    @eqx.debug.assert_max_traces(max_traces=1)
     def constitutive_update(self, eps, state, dt):
         eps_old = state.strain
         epsv_old = state.internal.epsv
@@ -114,6 +115,8 @@ class GeneralizedMaxwell(jm.SmallStrainBehavior):
     def make_internal_state(self):
         return GeneralizedMaxwellState(Nbranch=len(self.relaxation_times))
 
+    @eqx.filter_jit
+    @eqx.debug.assert_max_traces(max_traces=1)
     def constitutive_update(self, eps, state, dt):
         sigv_old = state.internal.sigv
         eps_old = state.strain
