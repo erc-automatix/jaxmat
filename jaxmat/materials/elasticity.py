@@ -40,7 +40,7 @@ class AbstractLinearElastic(eqx.Module):
         eps: SymmetricTensor2
             Strain tensor
         """
-        return 0.5 * jnp.trace(eps @ (self.C @ eps))
+        return 0.5 * eps.double_contract(self.C @ eps)
 
 
 class LinearElastic(AbstractLinearElastic):
@@ -194,6 +194,8 @@ class ElasticBehavior(SmallStrainBehavior):
     elasticity: eqx.Module
     """The corresponding linear elastic model."""
 
+    @eqx.filter_jit
+    @eqx.debug.assert_max_traces(max_traces=1)
     def constitutive_update(self, eps, state, dt):
         sig = self.elasticity.C @ eps
         new_state = state.update(strain=eps, stress=sig)
