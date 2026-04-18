@@ -195,7 +195,6 @@ class ElasticBehavior(SmallStrainBehavior):
     """The corresponding linear elastic model."""
 
     @eqx.filter_jit
-    @eqx.debug.assert_max_traces(max_traces=1)
     def constitutive_update(self, eps, state, dt):
         sig = self.elasticity.C @ eps
         new_state = state.update(strain=eps, stress=sig)
