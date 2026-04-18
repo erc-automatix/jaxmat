@@ -50,6 +50,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["jaxmat*", "demos*", "tests*"]
 
 [tool.ruff]
 line-length = 100
