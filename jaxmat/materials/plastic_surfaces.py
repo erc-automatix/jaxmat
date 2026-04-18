@@ -131,7 +131,6 @@ class Tresca(AbstractPlasticSurface):
     @safe_zero
     def __call__(self, sig):
         sI = eigenvalues(sig)
-        jax.debug.print("{}", sI)
         return jnp.maximum(
             jnp.abs(sI[0] - sI[1]),
             jnp.maximum(jnp.abs(sI[0] - sI[2]), jnp.abs(sI[2] - sI[1])),

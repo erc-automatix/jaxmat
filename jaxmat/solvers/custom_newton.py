@@ -63,6 +63,5 @@ def newton_solve_jittable(
     x0_vec = jnp.concatenate([jnp.ravel(leaf) for leaf in flat_leaves])
     init_state = (0, x0_vec, fx0, jnp.zeros_like(x0_vec), aux0)
     _, x_final, _, _, aux_final = lax.while_loop(cond_fun, body_fun, init_state)
-    # jax.debug.print("Converged in {} iterations", iters)
     result = vec_to_pytree(x_final)
     return (result, aux_final) if has_aux else result
