@@ -39,6 +39,7 @@ optional = [
 tests = [
     "matplotlib",
     "pytest",
+    "scipy"
 ]
 
 [build-system]
