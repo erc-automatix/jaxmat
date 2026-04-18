@@ -32,6 +32,8 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
     """von Mises plastic surface."""
     internal_type = InternalState
 
+    @eqx.filter_jit
+    @eqx.debug.assert_max_traces(max_traces=1)
     def constitutive_update(self, F, state, dt):
         F_old = state.F
         isv_old = state.internal

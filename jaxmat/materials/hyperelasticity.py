@@ -30,6 +30,8 @@ class HyperelasticPotential(eqx.Module):
 class Hyperelasticity(FiniteStrainBehavior):
     potential: HyperelasticPotential
 
+    @eqx.filter_jit
+    @eqx.debug.assert_max_traces(max_traces=1)
     def constitutive_update(self, F, state, dt):
         PK1 = self.potential.PK1(F)
         new_state = state.update(PK1=PK1, F=F)
