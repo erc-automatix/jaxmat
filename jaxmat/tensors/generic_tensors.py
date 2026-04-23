@@ -741,6 +741,9 @@ class _AbstractTensor4(Tensor):
     def __repr__(self):
         return f"{type(self).__name__}(shape={self._array.shape})"
 
+    def __getitem__(self, idx):
+        return self.tensor[idx]
+
 
 class Tensor4(_AbstractTensor4):
     r"""

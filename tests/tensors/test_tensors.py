@@ -56,6 +56,7 @@ def test_tensor_shapes(cls: Tensor2 | SymmetricTensor2):
 
 def _tensor2_init(tensor_type, T_, T_vect_):
     T = tensor_type(tensor=T_)
+    assert jnp.isclose(T[0, 1], T_[0, 1])  # test items
     assert jnp.allclose(T, T_)
     assert jnp.allclose(T.array, T_vect_)
     T2 = tensor_type(array=T_vect_)
@@ -125,9 +126,7 @@ def test_symmetries():
     gamma = 0.75
     Id = SymmetricTensor2.identity()
     print(type(Id))
-    F = Tensor2(
-        tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64)
-    )
+    F = Tensor2(tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64))
     f1 = F - Id
     f2 = Id + F
     g1 = F @ Id
@@ -162,9 +161,7 @@ def test_operations_with_ndarrays():
 def test_stretch_tensor():
     gamma = 0.75
     Id = SymmetricTensor2.identity()
-    F = Id + Tensor2(
-        tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64)
-    )
+    F = Id + Tensor2(tensor=jnp.array([[0, gamma, 0], [0, 0, 0], [0, 0, 0]], dtype=jnp.float64))
     R, U = jax.jit(polar)(F)
     C = (F.T @ F).sym
     B = (F @ F.T).sym
@@ -184,6 +181,7 @@ def test_tensor4_init():
     A = Tensor2(tensor=a)
     T_ = jnp.outer(A.array, A.array)
     T = Tensor4(array=T_)
+    assert T[0, 1, 0, 1] == a[0, 1] ** 2
     assert jnp.allclose(T, jnp.einsum("ij,kl->ijkl", a, a))
     assert jnp.allclose((T @ T), A.double_contract(A) * T)
     a = 0.5 * (a + a.T)
@@ -207,9 +205,7 @@ def test_tensor4_identities():
     id_ = jnp.eye(3)
     Id_ = jnp.einsum("ik,jl->ijkl", id_, id_)
     assert jnp.allclose(Id, Id_)
-    Ids_ = 0.5 * (
-        jnp.einsum("ik,jl->ijkl", id_, id_) + jnp.einsum("il,jk->ijkl", id_, id_)
-    )
+    Ids_ = 0.5 * (jnp.einsum("ik,jl->ijkl", id_, id_) + jnp.einsum("il,jk->ijkl", id_, id_))
     assert jnp.allclose(Ids, Ids_)
 
     key = jax.random.PRNGKey(0)
@@ -276,9 +272,7 @@ def test_isotropic_elasticity():
             [lmbda, lmbda, lmbda + 2 * mu],
         ]
     )
-    C_ = jax.scipy.linalg.block_diag(
-        C_plane, *([jnp.full((1, 1), fill_value=2 * mu)] * 3)
-    )
+    C_ = jax.scipy.linalg.block_diag(C_plane, *([jnp.full((1, 1), fill_value=2 * mu)] * 3))
     assert jnp.allclose(C.array, C_)
 
     C_ = SymmetricTensor4(array=C.array)

@@ -177,7 +177,7 @@ for i, gamma in enumerate(gamma_list):
     new_eps = SymmetricTensor2(tensor=new_eps)
     dt = 0.0
     Ctang_arr, new_state = tangent_operator(new_eps, state, dt)
-    Ctang = SymmetricTensor4(array=Ctang_arr)
+    Ctang = SymmetricTensor4(array=Ctang_arr.array)
     state = new_state
     new_stress = state.stress
     tau = tau.at[i].set(new_stress[0, 1])
