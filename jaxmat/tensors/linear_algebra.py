@@ -285,6 +285,8 @@ def eig33_HA(A, rtol=1e-16) -> tuple[jax.Array, jax.Array]:
 
 @partial(jax.jit, static_argnums=1)
 def eig33(A, rtol=1e-16):
+    norm_A = jnp.linalg.norm(A)
+
     def J2s(A):
         d0 = A[0, 0] - A[1, 1]
         d1 = A[0, 0] - A[2, 2]
@@ -356,9 +358,9 @@ def eig33(A, rtol=1e-16):
 
         return lax.cond(j2 < rtol * normA, branch_near_iso, branch_general, operand=None)
 
-    eigendyads, eigvals = jax.jacfwd(compute_eigvals, has_aux=True)(A)
+    eigendyads, eigvals = jax.jacfwd(compute_eigvals, has_aux=True)(A / norm_A)
     order = jnp.argsort(eigvals)
-    eigvals = eigvals[order]
+    eigvals = norm_A * eigvals[order]
     eigendyads = eigendyads[order]
     eigendyads = 0.5 * (eigendyads + jnp.swapaxes(eigendyads, -1, -2))
     return eigvals, eigendyads

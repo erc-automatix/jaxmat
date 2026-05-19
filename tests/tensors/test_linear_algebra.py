@@ -30,12 +30,8 @@ batch_eigvals = jax.jit(jax.vmap(eig33))
 
 
 diags_rand = jnp.array(np.random.default_rng().random((3, 3)))
-diags_two = jnp.array(
-    [[1, -0.5 + eps / 2, -0.5 - eps / 2] for eps in np.logspace(-3, -15, num=10)]
-)
-diags_two = jnp.array(
-    [[1, -0.5 + eps / 2, -0.5 - eps / 2] for eps in np.logspace(-3, -15, num=10)]
-)
+diags_two = jnp.array([[1, -0.5 + eps / 2, -0.5 - eps / 2] for eps in np.logspace(-3, -15, num=10)])
+diags_two = jnp.array([[1, -0.5 + eps / 2, -0.5 - eps / 2] for eps in np.logspace(-3, -15, num=10)])
 diags_three = jnp.array([[1, 1, 1]])  # , [0, 0, 0]])
 diags = np.vstack((diags_rand, diags_two, diags_three))
 
@@ -106,3 +102,14 @@ def test_inv33():
         iA = jax.jit(inv33)(A)
         iA_ = jnp.linalg.inv(A)
         assert jnp.allclose(iA, iA_)
+
+
+def test_positive_part_tensor(rotations):
+    diag = jnp.asarray([2.99999907618e-4, -1.499999988237e-4, 0.0])
+    A_batch = batch_build_A(diag, rotations)
+    for A in A_batch:
+        A_pos = isotropic_function(lambda x: jnp.maximum(x, 0.0), A)
+        A_neg = isotropic_function(lambda x: jnp.minimum(x, 0.0), A)
+        assert jnp.all(eig33(A_pos)[0] >= -1e-16)
+        assert jnp.allclose(A_pos + A_neg, A)
+        assert jnp.isclose(jnp.tensordot(A_pos, A_neg), 0.0)
