@@ -1,10 +1,16 @@
 import equinox as eqx
 import jax.numpy as jnp
+import json
+import pathlib
+
+from typing import Callable
 
 
 def default_value(value, dtype=jnp.float64, **kwargs):
     """Initialize and convert a field with default `value` of imposed `dtype`."""
-    return eqx.field(converter=lambda x: jnp.asarray(x, dtype=dtype), default=value, **kwargs)
+    return eqx.field(
+        converter=lambda x: jnp.asarray(x, dtype=dtype), default=value, **kwargs
+    )
 
 
 def enforce_dtype(dtype=jnp.float64, **kwargs):
@@ -34,7 +40,9 @@ def partition_by_node_names(model, freeze_names):
             return _rgetattr(m, name)
 
         # move out of trainable
-        trainable = eqx.tree_at(sel, trainable, replace=None, is_leaf=lambda x: x is None)
+        trainable = eqx.tree_at(
+            sel, trainable, replace=None, is_leaf=lambda x: x is None
+        )
         # copy original value into static
         static = eqx.tree_at(
             sel, static, replace=_rgetattr(model, name), is_leaf=lambda x: x is None
@@ -72,7 +80,9 @@ def print_eqx_fields(obj, fields=None, indent=0):
             # Extract subfields relevant to this nested module (if any)
             subfields = None
             if fields is not None:
-                subfields = [f[len(k) + 1 :] for f in fields if f.startswith(f"{k}.")] or None
+                subfields = [
+                    f[len(k) + 1 :] for f in fields if f.startswith(f"{k}.")
+                ] or None
 
             if isinstance(v, eqx.Module):
                 print(f"{pad}  {k}:")
@@ -84,3 +94,46 @@ def print_eqx_fields(obj, fields=None, indent=0):
             print(f"{pad}[{i}]: {v}")
     else:
         print(f"{pad}{obj}")
+
+
+def save_model(
+    filename: str | pathlib.Path,
+    model: eqx.Module,
+    hyperparameters: dict | None = None,
+) -> None:
+    """
+    Serialize and save an Equinox Module in a file.
+
+    Args:
+        filename: Path of the file to save the module.
+        model: Model to save.
+        hyperparameters: Hyperparameters of the model, that is parameters that
+                         describe the shape of the associated PyTree.
+    """
+    with open(filename, "wb") as file:
+        if hyperparameters is not None:
+            hyperparam_str = json.dumps(hyperparameters)
+            file.write((hyperparam_str + "\n").encode())
+        eqx.tree_serialise_leaves(file, model)
+
+
+def load_model(
+    filename: str | pathlib.Path, skeleton: eqx.Module | Callable
+) -> eqx.Module:
+    """
+    Load a serialized model saved with save_model.
+
+    Args:
+        filename: Path of the file to save the module.
+        skeleton: Either an equinox module with the same shape as the PyTree
+                  to deserialize, or a function that takes hyperparameters and
+                  create such a module
+    """
+    with open(filename, "rb") as file:
+        model: eqx.Module
+        if isinstance(skeleton, eqx.Module):
+            model = skeleton
+        else:
+            hyperparameters = json.loads(file.readline().decode())
+            model = skeleton(**hyperparameters)
+        return eqx.tree_deserialise_leaves(file, model)
