@@ -40,6 +40,8 @@ from .viscoplastic_flows import (
 )
 from .viscoplasticity import ArmstrongFrederickViscoplasticity, GenericViscoplasticity
 
+from .porosity import StaticJohnsonPorosity, DynamicJohnsonPorosity
+
 __all__ = [
     "AbstractKinematicHardening",
     "AbstractLinearElastic",
@@ -75,4 +77,7 @@ __all__ = [
     "safe_zero",
     "vonMises",
     "vonMisesIsotropicHardening",
+    "StaticJohnsonPorosity", 
+    "DynamicJohnsonPorosity",
+
 ]
