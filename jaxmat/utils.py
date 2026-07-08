@@ -79,7 +79,7 @@ def print_eqx_fields(obj, fields=None, indent=0):
                 print_eqx_fields(v, fields=subfields, indent=indent + 4)
             else:
                 print(f"{pad}  {k} = {v}")
-    elif isinstance(obj, (list, tuple)):
+    elif isinstance(obj, (list | tuple)):
         for i, v in enumerate(obj):
             print(f"{pad}[{i}]: {v}")
     else:
