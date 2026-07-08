@@ -68,16 +68,18 @@ class GeneralizedMaxwellState(AbstractState):
     Stores the internal viscous strains and stresses for each Maxwell branch.
     """
 
-    epsv: SymmetricTensor2 = eqx.field(init=False)
+    epsv: SymmetricTensor2 = eqx.field(default=None)
     r"""Viscous strains $\beps^\text{v}_i$ for each Maxwell branch."""
-    sigv: SymmetricTensor2 = eqx.field(init=False)
+    sigv: SymmetricTensor2 = eqx.field(default=None)
     r"""Viscoelastic stresses $\bsig^\text{v}_i$ for each Maxwell branch."""
     Nbranch: int = eqx.field(static=True, default=1)
     """Number of Maxwell branches."""
 
     def __post_init__(self):
-        self.epsv = make_batched(SymmetricTensor2(), self.Nbranch)
-        self.sigv = make_batched(SymmetricTensor2(), self.Nbranch)
+        if self.epsv is None:
+            object.__setattr__(self, "epsv", make_batched(SymmetricTensor2(), self.Nbranch))
+        if self.sigv is None:
+            object.__setattr__(self, "sigv", make_batched(SymmetricTensor2(), self.Nbranch))
 
 
 class GeneralizedMaxwell(jm.SmallStrainBehavior):

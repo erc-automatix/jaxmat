@@ -125,11 +125,12 @@ class GenericInternalState(AbstractState):
     """Plastic strain tensor"""
     nX: int = eqx.field(static=True, default=1)
     """Number of kinematic hardening mechanisms."""
-    X: SymmetricTensor2 = eqx.field(init=False)
+    X: SymmetricTensor2 = eqx.field(default=False)
     """Backstress tensors"""
 
     def __post_init__(self):
-        self.X = make_batched(SymmetricTensor2(), self.nX)
+        if self.X is None:
+            object.__setattr__(self, "X", make_batched(SymmetricTensor2(), self.nX))
 
 
 class GenericViscoplasticity(SmallStrainBehavior):

@@ -142,12 +142,13 @@ from jaxmat.tensors.utils import FischerBurmeister as FB
 
 
 class InternalState(AbstractState):
-    p: float = eqx.field(init=False)
+    p: jax.Array = eqx.field(default=None)
     epsp: SymmetricTensor2 = SymmetricTensor2()
     n_surf: int = eqx.field(static=True, default=1)
 
     def __post_init__(self):
-        self.p = jnp.zeros((self.n_surf,))
+        if self.p is None:
+            object.__setattr__(self, "p", jnp.zeros((self.n_surf,)))
 
 
 # %% [markdown]

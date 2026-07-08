@@ -142,13 +142,14 @@ class GeneralHardeningInternalState(AbstractState):
     """Cumulated plastic strain"""
     epsp: SymmetricTensor2 = eqx.field(default_factory=lambda: SymmetricTensor2())
     """Plastic strain tensor"""
-    alpha: SymmetricTensor2 = eqx.field(init=False)
+    alpha: SymmetricTensor2 = eqx.field(default=None)
     r"""Kinematic hardening variables $\balpha_i$."""
     nvar: int = eqx.field(static=True, default=1)
     """Number of kinematic hardening variables."""
 
     def __post_init__(self):
-        self.alpha = make_batched(SymmetricTensor2(), self.nvar)
+        if self.alpha is None:
+            object.__setattr__(self, "alpha", make_batched(SymmetricTensor2(), self.nvar))
 
 
 class GeneralHardening(SmallStrainBehavior):
