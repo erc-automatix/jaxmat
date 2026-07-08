@@ -13,11 +13,15 @@ keywords = ["material science", "machine learning", "material modeling", "solid 
 requires-python = ">=3.11"
 dependencies = [
     "jax>=0.6.1",
-    "optax",
-    "equinox",
-    "optimistix",
-    "lineax"
+    "optax>=0.2",
+    "equinox>=0.11",
+    "optimistix>=0.1.0",
+    "lineax>=0.0.7",
+    "diffrax>=0.7",        
+    "paramax>=0.0.5",      
 ]
+
+
 [project.urls]
 Homepage = "https://erc-automatix.github.io/jaxmat/"
 Repository = "https://github.com/erc-automatix/jaxmat"
@@ -25,6 +29,7 @@ Documentation = "https://erc-automatix.github.io/jaxmat/"
 
 [project.optional-dependencies]
 docs = [
+    "matplotlib>=3.8",
     "jupytext",
     "jupyter_book<2",
     "sphinx_autodoc_typehints",
@@ -33,12 +38,9 @@ docs = [
 gpu = [
     "jax[cuda12]>=0.6.1",
 ]
-optional = [
-    "diffrax",
-]
-tests = [
-    "matplotlib",
-    "pytest",
+test = [
+    "matplotlib>=3.8",
+    "pytest>=8.0",
     "scipy"
 ]
 
