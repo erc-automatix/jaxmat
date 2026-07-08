@@ -1,70 +1,46 @@
 from collections.abc import Callable
 
+import equinox as eqx
 import lineax as lx
 import optimistix as optx
 from jaxtyping import PyTree, Scalar
-from optimistix import max_norm
+
+_DEFAULT_LS = lx.AutoLinearSolver(well_posed=True)
 
 
-class GaussNewtonTrustRegion(optx.GaussNewton):
-    """Gauss-Newton Trust Region method.
+def GaussNewtonTrustRegion(
+    rtol: float,
+    atol: float,
+    norm: Callable[[PyTree], Scalar] = optx.max_norm,
+    linear_solver: lx.AbstractLinearSolver = _DEFAULT_LS,
+) -> optx.AbstractLeastSquaresSolver:
+    """Gauss-Newton descent globalised with a classical trust region."""
+    base = optx.GaussNewton(rtol=rtol, atol=atol, norm=norm, linear_solver=linear_solver)
+    return eqx.tree_at(lambda s: s.search, base, optx.ClassicalTrustRegion())
 
-    For solving nonlinear least-squares problems with a trust region search.
+
+def NewtonTrustRegion(
+    rtol: float,
+    atol: float,
+    norm: Callable[[PyTree], Scalar] = optx.max_norm,
+    linear_solver: lx.AbstractLinearSolver = _DEFAULT_LS,
+) -> optx.AbstractLeastSquaresSolver:
+    """Full Newton descent globalised with a classical trust region.
+
+    Derived from `optimistix.LevenbergMarquardt` but using a full Newton descent
+    instead of the damped one.
     """
-
-    def __init__(
-        self,
-        rtol: float,
-        atol: float,
-        norm: Callable[[PyTree], Scalar] = max_norm,
-        linear_solver: lx.AbstractLinearSolver = lx.AutoLinearSolver(well_posed=None),
-        verbose: frozenset[str] = frozenset(),
-    ):
-        self.rtol = rtol
-        self.atol = atol
-        self.norm = norm
-        self.descent = optx.NewtonDescent(linear_solver=linear_solver)
-        self.search = optx.ClassicalTrustRegion()
-        self.verbose = verbose
+    base = optx.LevenbergMarquardt(rtol=rtol, atol=atol, norm=norm)
+    base = eqx.tree_at(lambda s: s.descent, base, optx.NewtonDescent(linear_solver=linear_solver))
+    return eqx.tree_at(lambda s: s.search, base, optx.ClassicalTrustRegion())
 
 
-class NewtonTrustRegion(optx.LevenbergMarquardt):
-    """Newton Trust Region method.
-
-    For solving nonlinear least-squares problems with a trust region search.
-
-    Notes
-    -----
-    This algorithm is derived from `optx.LevenbergMarquardt` using a full
-    Newton descent instead of a damped one.
-    """
-
-    def __init__(
-        self,
-        rtol: float,
-        atol: float,
-        norm: Callable[[PyTree], Scalar] = max_norm,
-        linear_solver: lx.AbstractLinearSolver = lx.AutoLinearSolver(well_posed=None),
-        verbose: frozenset[str] = frozenset(),
-    ):
-        self.rtol = rtol
-        self.atol = atol
-        self.norm = norm
-        self.descent = optx.NewtonDescent(linear_solver=linear_solver)
-        self.search = optx.ClassicalTrustRegion()
-        self.verbose = verbose
-
-
-class BFGSLinearTrustRegion(optx.AbstractBFGS):
-    """BFGS algorithm with trust region.
-
-    For solving minimisation problems with a linear trust region search.
-    """
-
-    rtol: float
-    atol: float
-    norm: Callable = optx.max_norm
-    use_inverse: bool = True
-    search: optx.AbstractSearch = optx.LinearTrustRegion()
-    descent: optx.AbstractDescent = optx.NewtonDescent()
-    verbose: frozenset[str] = frozenset()
+def BFGSLinearTrustRegion(
+    rtol: float,
+    atol: float,
+    norm: Callable[[PyTree], Scalar] = optx.max_norm,
+    use_inverse: bool = True,
+) -> optx.AbstractMinimiser:
+    """BFGS quasi-Newton descent globalised with a linear trust region."""
+    base = optx.BFGS(rtol=rtol, atol=atol, norm=norm, use_inverse=use_inverse)
+    return eqx.tree_at(lambda s: s.search, base, optx.LinearTrustRegion())
