@@ -234,7 +234,6 @@ class FreeEnergy(eqx.Module):
     viscous_model: list[jm.AbstractLinearElastic]
 
     def __call__(self, eps, isv):
-
         alpha = isv.alpha
         psi_el = 0.5 * jnp.trace(eps @ (self.elasticity.C @ eps))
 

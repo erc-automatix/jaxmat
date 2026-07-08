@@ -203,7 +203,6 @@ class GreenViscoPlasticity(jm.SmallStrainBehavior):
             return sig_old + self.elasticity.C @ (deps - depsvp)
 
         def solve_state(deps, epsvp_old):
-
             def residual(depsvp, args):
                 sig = eval_stress(deps, depsvp)
                 overstress = self.plastic_surface(sig) - self.yield_stress

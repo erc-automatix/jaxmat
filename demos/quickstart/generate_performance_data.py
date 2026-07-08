@@ -17,7 +17,6 @@ jax.config.update("jax_platform_name", platform)
 
 
 def test_FeFp_elastoplasticity(material, with_jac=False, Nbatch=1, Nsteps=20):
-
     state = material.init_state(Nbatch)
 
     # force jitting
