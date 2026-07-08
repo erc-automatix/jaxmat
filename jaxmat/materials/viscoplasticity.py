@@ -27,9 +27,7 @@ class AFInternalState(AbstractState):
     """Cumulated plastic strain"""
     epsp: SymmetricTensor2 = eqx.field(default_factory=lambda: SymmetricTensor2())
     """Plastic strain tensor"""
-    X: SymmetricTensor2 = eqx.field(
-        default_factory=lambda: make_batched(SymmetricTensor2(), 2)
-    )
+    X: SymmetricTensor2 = eqx.field(default_factory=lambda: make_batched(SymmetricTensor2(), 2))
     """Backstress tensors"""
 
 
@@ -106,9 +104,7 @@ class ArmstrongFrederickViscoplasticity(SmallStrainBehavior):
                 return res, y
 
             dy0 = tree_zeros_like(isv_old)
-            sol = optx.root_find(
-                residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint
-            )
+            sol = optx.root_find(residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint)
             dy = sol.value
             y = sol.aux
             sig = eval_stress(deps, dy)
@@ -185,9 +181,7 @@ class GenericViscoplasticity(SmallStrainBehavior):
                 return res, y
 
             dy0 = tree_zeros_like(isv_old)
-            sol = optx.root_find(
-                residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint
-            )
+            sol = optx.root_find(residual, self.solver, dy0, has_aux=True, adjoint=self.adjoint)
             dy = sol.value
             y = sol.aux
             sig = eval_stress(deps, dy)

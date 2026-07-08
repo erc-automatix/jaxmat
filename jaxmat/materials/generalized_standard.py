@@ -61,8 +61,10 @@ class GeneralizedStandardMaterial(jm.SmallStrainBehavior):
     r"""Module defining the Helmholtz free energy $\Psi(\beps,\balpha)"""
     dissipation_potential: eqx.Module
     r"""Module defining the dissipation pseudo-potential $\Phi(\dot\balpha)$"""
-    minimisation_solver = NewtonTrustRegion(
-        rtol=1e-6, atol=1e-6, linear_solver=lx.AutoLinearSolver(well_posed=False)
+    minimisation_solver: eqx.Module = eqx.field(
+        default_factory=lambda: NewtonTrustRegion(
+            rtol=1e-6, atol=1e-6, linear_solver=lx.AutoLinearSolver(well_posed=False)
+        )
     )
     """Minimisation solver used to minimize the incremental potential."""
 
@@ -92,6 +94,7 @@ class GeneralizedStandardMaterial(jm.SmallStrainBehavior):
         diss_eng = dt * self.dissipation_potential(isv_dot)
         return free_eng + diss_eng
 
+    @eqx.filter_jit
     def constitutive_update(self, eps, state, dt):
         isv_old = state.internal
         d_isv0 = tree_zeros_like(isv_old)

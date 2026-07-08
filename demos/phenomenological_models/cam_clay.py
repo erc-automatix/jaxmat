@@ -215,7 +215,6 @@ class ModifiedCamClay(jm.SmallStrainBehavior):
             return sig_old + self.elasticity.C @ (deps - depsp)
 
         def solve_state(deps, epsp_old):
-
             def residual(dy, args):
                 dlamb, depsp = dy
                 sig = eval_stress(deps, depsp)
@@ -234,7 +233,7 @@ class ModifiedCamClay(jm.SmallStrainBehavior):
                 has_aux=True,
                 adjoint=self.adjoint,
             )
-            dlamb, depsp = sol.value
+            _, depsp = sol.value
             epsp = sol.aux
             sig = eval_stress(deps, depsp)
             return sig, epsp

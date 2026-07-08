@@ -54,9 +54,7 @@ for _name in dir(solvers):
 @pytest.mark.parametrize("name", list(LEAST_SQUARES))
 def test_least_squares_solver_runs(name):
     solver = LEAST_SQUARES[name](rtol=1e-8, atol=1e-8)
-    sol = optx.least_squares(
-        _sq_residual, solver, jnp.array([0.0]), max_steps=100, throw=False
-    )
+    sol = optx.least_squares(_sq_residual, solver, jnp.array([0.0]), max_steps=100, throw=False)
     assert jnp.isfinite(sol.value).all()
     assert float(jnp.abs(sol.value[0] - 3.0)) < 1e-4
 
@@ -64,9 +62,7 @@ def test_least_squares_solver_runs(name):
 @pytest.mark.parametrize("name", list(MINIMISERS))
 def test_minimiser_solver_runs(name):
     solver = MINIMISERS[name](rtol=1e-8, atol=1e-8)
-    sol = optx.minimise(
-        _quadratic_min, solver, jnp.array([0.0]), max_steps=200, throw=False
-    )
+    sol = optx.minimise(_quadratic_min, solver, jnp.array([0.0]), max_steps=200, throw=False)
     assert jnp.isfinite(sol.value).all()
     assert float(jnp.abs(sol.value[0] - 3.0)) < 1e-3
 

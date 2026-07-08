@@ -106,7 +106,7 @@ def random_eps_batch():
 
 
 def _kelvin_identity(n=6):
-    """Identity in Kelvin-Mandel space (n×n)."""
+    """Identity in Kelvin-Mandel space (nxn)."""
     return jnp.eye(n)
 
 
@@ -122,17 +122,14 @@ def _is_positive_definite(M):
 
 
 def test_isotropic_shear_modulus(isotropic):
-    """μ = E / (2(1+ν))."""
     assert jnp.isclose(isotropic.mu, E / (2 * (1 + nu)), rtol=1e-10)
 
 
 def test_isotropic_bulk_modulus(isotropic):
-    """κ = E / (3(1-2ν))."""
     assert jnp.isclose(isotropic.kappa, E / (3 * (1 - 2 * nu)), rtol=1e-10)
 
 
 def test_isotropic_lame_modulus(isotropic):
-    """λ = E ν / ((1+ν)(1-2ν))."""
     lmbda_expected = E * nu / ((1 + nu) * (1 - 2 * nu))
     assert jnp.isclose(isotropic.lmbda, lmbda_expected, rtol=1e-10)
 
@@ -154,11 +151,10 @@ def test_isotropic_compliance_roundtrip(isotropic):
 
 
 def test_isotropic_uniaxial_stress(isotropic):
-    """Uniaxial strain ε₁₁=ε → σ₁₁ = λ ε (1-2ν)/(1-ν)·E·... use closed form."""
+    """Uniaxial strain closed form."""
     eps_val = 1e-3
     eps = SymmetricTensor2(tensor=jnp.diag(jnp.array([eps_val, 0.0, 0.0])))
     sig = isotropic.C @ eps
-    # σ = C:ε → σ₁₁ = (λ + 2μ) ε₁₁
     lam, mu = isotropic.lmbda, isotropic.mu
     expected_11 = (lam + 2 * mu) * eps_val
     expected_22 = lam * eps_val
@@ -168,7 +164,7 @@ def test_isotropic_uniaxial_stress(isotropic):
 
 
 def test_isotropic_hydrostatic_stress(isotropic):
-    """Hydrostatic strain ε = δ I → σ = 3κ δ I."""
+    """Hydrostatic strain test."""
     delta = 1e-3
     eps = SymmetricTensor2(tensor=delta * jnp.eye(3))
     sig = isotropic.C @ eps
@@ -176,7 +172,7 @@ def test_isotropic_hydrostatic_stress(isotropic):
 
 
 def test_isotropic_shear_stress(isotropic):
-    """Pure shear ε₁₂ = γ/2 → σ₁₂ = μ γ."""
+    """Pure shear test."""
     gamma = 1e-3
     eps = SymmetricTensor2(tensor=jnp.array([[0, gamma / 2, 0], [gamma / 2, 0, 0], [0, 0, 0]]))
     sig = isotropic.C @ eps
@@ -406,7 +402,7 @@ def test_generic_elastic_strain_energy(isotropic):
 
 @pytest.mark.parametrize("elasticity_name", ["isotropic", "transverse_isotropic", "orthotropic"])
 def test_elastic_behavior_stress_equals_C_eps(elasticity_name, request, random_eps):
-    """constitutive_update must return σ = C:ε for all elastic models."""
+    """constitutive_update must return sig = C:eps for all elastic models."""
     elas = request.getfixturevalue(elasticity_name)
     mat = jm.ElasticBehavior(elasticity=elas)
     st = mat.init_state()
@@ -427,7 +423,7 @@ def test_elastic_behavior_state_strain_updated(elasticity_name, request, random_
 
 @pytest.mark.parametrize("elasticity_name", ["isotropic", "transverse_isotropic", "orthotropic"])
 def test_elastic_behavior_state_stress_updated(elasticity_name, request, random_eps):
-    """new_state.stress must equal σ returned by constitutive_update."""
+    """new_state.stress must equal returned by constitutive_update."""
     elas = request.getfixturevalue(elasticity_name)
     mat = jm.ElasticBehavior(elasticity=elas)
     st = mat.init_state()
@@ -446,7 +442,7 @@ def test_elastic_behavior_zero_strain_zero_stress(isotropic):
 
 def test_elastic_behavior_consistent_tangent_equals_C(isotropic, random_eps):
     """
-    ∂σ/∂ε (consistent tangent) must equal C for a linear elastic model.
+    ∂sig11ε (consistent tangent) must equal C for a linear elastic model.
     Computed via jax.jacfwd through constitutive_update.
     """
     mat = jm.ElasticBehavior(elasticity=isotropic)
@@ -475,7 +471,7 @@ def test_elastic_behavior_tangent_finite_for_anisotropic(orthotropic, random_eps
 
 
 def test_elastic_behavior_grad_wrt_material_params(random_eps):
-    """Gradient of σ₁₁ w.r.t. Young's modulus must be finite and non-zero."""
+    """Gradient of sig11 w.r.t. Young's modulus must be finite and non-zero."""
     st = jm.ElasticBehavior(elasticity=jm.LinearElasticIsotropic(E=200e3, nu=0.3)).init_state()
 
     def sig11(E):
@@ -489,7 +485,7 @@ def test_elastic_behavior_grad_wrt_material_params(random_eps):
 
 
 def test_elastic_behavior_vmap_batch(isotropic, random_eps_batch):
-    """constitutive_update vmapped over a batch of strains must give σ = C:ε."""
+    """constitutive_update vmapped over a batch of strains must give sig=C:eps."""
     mat = jm.ElasticBehavior(elasticity=isotropic)
     st = mat.init_state()
 
