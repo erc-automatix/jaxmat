@@ -1,0 +1,36 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+        # Guard against dependency drift: test both the lower pinned bound and
+        # the latest release of the solver stack. The 'latest' leg is what would
+        # have caught the optimistix `verbose` breakage.
+        deps: [pinned, latest]
+    name: py${{ matrix.python-version }} / ${{ matrix.deps }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+      - name: Upgrade solver stack (latest leg only)
+        if: matrix.deps == 'latest'
+        run: pip install -U optimistix lineax equinox diffrax
+      - name: Show versions
+        run: pip list | grep -Ei "jax|optimistix|lineax|equinox|diffrax|paramax"
+      - name: Run tests
+        run: pytest tests/ -q --maxfail=5
