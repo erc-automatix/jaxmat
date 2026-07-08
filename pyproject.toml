@@ -41,7 +41,8 @@ gpu = [
 test = [
     "matplotlib>=3.8",
     "pytest>=8.0",
-    "scipy"
+    "scipy",
+    "pre-commit"
 ]
 
 [build-system]
