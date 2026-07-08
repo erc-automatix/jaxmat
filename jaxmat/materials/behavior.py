@@ -16,9 +16,11 @@ class AbstractBehavior(eqx.Module):
     """Abstract base class describing a mechanical behavior."""
 
     """Internal variables state."""
-    solver: optx.AbstractRootFinder = eqx.field(static=True, init=False, default=DEFAULT_SOLVERS[0])
+    solver: optx.AbstractRootFinder = eqx.field(
+        static=True, default=DEFAULT_SOLVERS[0], kw_only=True
+    )
     """Implicit solver."""
-    adjoint: optx.AbstractAdjoint = eqx.field(static=True, init=False, default=DEFAULT_SOLVERS[1])
+    adjoint: optx.AbstractAdjoint = eqx.field(static=True, default=DEFAULT_SOLVERS[1], kw_only=True)
     """Adjoint solver."""
 
     # --- Serializable internal-state class reference ---
