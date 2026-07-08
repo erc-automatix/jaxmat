@@ -213,13 +213,14 @@ def compute_evolution(material, gamma_list, times):
 
 # %%
 class InternalState(AbstractState):
-    alpha: SymmetricTensor2 = eqx.field(init=False)
+    alpha: SymmetricTensor2 = eqx.field(default=None)
     """Viscoelastic strains."""
     Nvar: int = eqx.field(static=True, default=1)
     """Number of viscoelastic variables."""
 
     def __post_init__(self):
-        self.alpha = make_batched(SymmetricTensor2(), self.Nvar)
+        if self.alpha is None:
+            object.__setattr__(self, "alpha", make_batched(SymmetricTensor2(), self.Nvar))
 
 
 # %% [markdown]
