@@ -32,5 +32,7 @@ jobs:
         run: pip install -U optimistix lineax equinox diffrax
       - name: Show versions
         run: pip list | grep -Ei "jax|optimistix|lineax|equinox|diffrax|paramax"
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1
       - name: Run tests
         run: pytest tests/ -q --maxfail=5
