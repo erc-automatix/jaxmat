@@ -160,7 +160,6 @@ import numpy as np
 from jaxmat import get_path
 
 current_path = get_path()
-data = np.loadtxt(current_path / "../demos/_data/Treloar_rubber.csv", skiprows=1, delimiter=",")
 
 colors = {"cpu": "royalblue", "gpu": "crimson"}
 style = {"jac": "-", "no_jac": "--"}
