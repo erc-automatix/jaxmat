@@ -19,6 +19,7 @@ from .hyperelasticity import (
     CompressibleMooneyRivlin,
     CompressibleNeoHookean,
     CompressibleOgden,
+    AnisotropicCompressedPotential,
     Hyperelasticity,
     HyperelasticPotential,
     VolumetricPart,
@@ -39,6 +40,8 @@ from .viscoplastic_flows import (
     VoceHardening,
 )
 from .viscoplasticity import ArmstrongFrederickViscoplasticity, GenericViscoplasticity
+
+from .porosity import StaticJohnsonPorosity, DynamicJohnsonPorosity
 
 __all__ = [
     "AbstractKinematicHardening",
@@ -75,4 +78,7 @@ __all__ = [
     "safe_zero",
     "vonMises",
     "vonMisesIsotropicHardening",
+    "StaticJohnsonPorosity", 
+    "DynamicJohnsonPorosity",
+
 ]
