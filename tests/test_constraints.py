@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import paramax
 import pytest
 
-from jaxmat.constraints import Bounded, Interval, Positive, Scaled, Unconstrained
+from jaxmat.parameters import Bounded, Interval, Positive, Scaled, Unconstrained
 
 jax.config.update("jax_enable_x64", True)
 

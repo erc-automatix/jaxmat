@@ -95,6 +95,7 @@ from optax.tree_utils import tree_zeros_like
 import jaxmat
 import jaxmat.materials as jm
 from jaxmat.loader import ImposedLoading, global_solve
+from jaxmat.parameters import parameter
 from jaxmat.tensors import SymmetricTensor2, dev, safe_sqrt
 from jaxmat.tensors.utils import FischerBurmeister as FB
 
@@ -131,7 +132,7 @@ class InternalState(jaxmat.state.AbstractState):
 
 # %%
 class CamClaySurface(jm.AbstractPlasticSurface):
-    M: float = eqx.field(converter=jnp.asarray)  # critical state line parameter
+    M: float = parameter()  # critical state line parameter
 
     @jm.safe_zero
     def __call__(self, sig, pc):
@@ -149,8 +150,8 @@ class CamClaySurface(jm.AbstractPlasticSurface):
 
 # %%
 class Hardening(eqx.Module):
-    beta: float = eqx.field(converter=jnp.asarray)
-    pc0: float = eqx.field(converter=jnp.asarray)
+    beta: float = parameter()
+    pc0: float = parameter()
 
     def __call__(self, ep):
         return self.pc0 * jnp.exp(-self.beta * ep)

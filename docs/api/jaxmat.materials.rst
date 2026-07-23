@@ -30,6 +30,7 @@ used in behaviors (e.g., elasticity laws, plastic surfaces, or damage laws).
 
    jaxmat.materials.hyperelasticity
    jaxmat.materials.plastic_surfaces
+   jaxmat.materials.thermomechanics
    jaxmat.materials.viscoplastic_flows
 
 Module contents

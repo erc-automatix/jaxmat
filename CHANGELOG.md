@@ -7,26 +7,31 @@ the usual 0.x caveat that minor bumps may include breaking changes).
 
 ## Unreleased
 
+### Deprecated
+
+- `utils.enforce_dtype` is now deprecated and should be replaced with the new `parameter` field converter for parameters.
+- `utils.default_value` is now deprecated and renamed to `utils.initial_value`. To be used only for state variable initialization.
+
 ### Added
 
-- Constrained parameters are introduced using latent representations, relying on [`paramax`](https://github.com/danielward27/paramax). Gradients can be taken with respect to latent representations to remain in the feasible region of the parameter. Currently supports
-`Positive`, `Bounded/Interval`, `Scaled` and `Unconstrained` parameters.
-
-- Temperature-dependent (or more generally input-dependent, eg. humidity, chemical content, etc.) parameters
-are introduced, replacing constants with temperature-dependent expressions (`AbstractParameter` inheriting from `eqx.Module`)
-with their associated material parameters. ``evaluate_parameters(model, T)`` returns a copy of any model in which every
-``AbstractParameter`` field has been replaced by its scalar value ``p.evaluate(T)``.
-`TemperatureDependent` is a wrapper around any `AbstractBehavior` which make its constitutive update accept a
-temperature input alongside the mechanical input in its signature. At each update it materializes the wrapped behavior's parameter
-expressions at the current temperature (via ``evaluate_parameters``) and delegates to the wrapped behavior's own ``constitutive_update``, typically via:
-
-```python
-def constitutive_update(self, inputs, state, dt):
-    mech, T = self._split_inputs(inputs)
-    resolved = evaluate_parameters(self.behavior, T)
-    return resolved.constitutive_update(mech, state, dt)
-```
-Note that **thermal strains are not supported** at the moment.
+- A generic `parameters` module has been added. It contains the following features:
+  * `parameter()`: a field converter to declare parameters, accepting as default values constants, `eqx.Module` or `AbstractParameter`.
+  * Constrained parameters are introduced using latent representations, relying on [`paramax`](https://github.com/danielward27/paramax). Gradients can  be taken with respect to latent representations to remain in the feasible region of the parameter. Currently supports
+  `Positive`, `Bounded/Interval`, `Scaled` and `Unconstrained` parameters.
+  * Temperature-dependent (or more generally input-dependent, eg. humidity, chemical content, etc.) parameters
+  are introduced, replacing constants with temperature-dependent expressions (`AbstractParameter` inheriting from `eqx.Module`)
+  with their associated material parameters. ``evaluate_parameters(model, T)`` returns a copy of any model in which every
+  ``AbstractParameter`` field has been replaced by its scalar value ``p.evaluate(T)``.
+  `TemperatureDependent` is a wrapper around any `AbstractBehavior` which make its constitutive update accept a
+  temperature input alongside the mechanical input in its signature. At each update it materializes the wrapped behavior's parameter
+  expressions at the current temperature (via ``evaluate_parameters``) and delegates to the wrapped behavior's own ``constitutive_update``, typically via:
+  ```python
+  def constitutive_update(self, inputs, state, dt):
+      mech, T = self._split_inputs(inputs)
+      resolved = evaluate_parameters(self.behavior, T)
+      return resolved.constitutive_update(mech, state, dt)
+  ```
+  Note that **thermal strains are not supported** at the moment.
 
 ## v0.0.4 - 2026-07-08
 

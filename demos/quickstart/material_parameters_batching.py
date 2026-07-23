@@ -41,17 +41,8 @@ from jaxmat.tensors import SymmetricTensor2
 jax.config.update("jax_platform_name", "cpu")
 
 
-class VoceHardening(eqx.Module):
-    sig0: float = eqx.field(converter=jnp.asarray)
-    sigu: float = eqx.field(converter=jnp.asarray)
-    b: float = eqx.field(converter=jnp.asarray)
-
-    def __call__(self, p):
-        return self.sig0 + (self.sigu - self.sig0) * (1 - jnp.exp(-self.b * p))
-
-
 elasticity = jm.LinearElasticIsotropic(E=200e3, nu=0.25)
-hardening = VoceHardening(sig0=350.0, sigu=500.0, b=1e3)
+hardening = jm.VoceHardening(sig0=350.0, sigu=500.0, b=1e3)
 
 material = jm.vonMisesIsotropicHardening(elasticity=elasticity, yield_stress=hardening)
 

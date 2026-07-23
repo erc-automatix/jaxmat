@@ -5,12 +5,12 @@ import jax
 import jax.numpy as jnp
 import jax.scipy as jsc
 
+from jaxmat.parameters import parameter
 from jaxmat.tensors import (
     IsotropicTensor4,
     SymmetricTensor4,
     TransverseIsotropicTensor4,
 )
-from jaxmat.utils import enforce_dtype
 
 from .behavior import SmallStrainBehavior
 
@@ -58,9 +58,9 @@ class LinearElastic(AbstractLinearElastic):
 class LinearElasticIsotropic(AbstractLinearElastic):
     """An isotropic linear elastic model."""
 
-    E: float = enforce_dtype()
+    E: float = parameter()
     r"""Young modulus $E$"""
-    nu: float = enforce_dtype()
+    nu: float = parameter()
     r"""Poisson ratio $\nu$"""
 
     @property
@@ -104,16 +104,16 @@ class LinearElasticIsotropic(AbstractLinearElastic):
 class LinearElasticTransverseIsotropic(AbstractLinearElastic):
     """A transversely isotropic linear elastic model."""
 
-    axis: jax.Array = enforce_dtype()
-    EL: float = enforce_dtype()
+    axis: jax.Array = parameter()
+    EL: float = parameter()
     r"""Longitudinal Young modulus $E_{L}$"""
-    ET: float = enforce_dtype()
+    ET: float = parameter()
     r"""Transverse Young modulus $E_{T}$"""
-    nuL: float = enforce_dtype()
+    nuL: float = parameter()
     r"""Longitudinal Poisson ratio $\nu_{L}$"""
-    nuT: float = enforce_dtype()
+    nuT: float = parameter()
     r"""Transverse Poisson ratio $\nu_{T}$"""
-    muL: float = enforce_dtype()
+    muL: float = parameter()
     r"""Longitudinal shear modulus $\mu_{L}$"""
 
     @property
@@ -140,23 +140,23 @@ class LinearElasticTransverseIsotropic(AbstractLinearElastic):
 class LinearElasticOrthotropic(AbstractLinearElastic):
     """An orthotropic linear elastic model."""
 
-    EL: float = enforce_dtype()
+    EL: float = parameter()
     r"""Longitudinal Young modulus $E_{L}$"""
-    ET: float = enforce_dtype()
+    ET: float = parameter()
     r"""Transverse Young modulus $E_{T}$"""
-    EN: float = enforce_dtype()
+    EN: float = parameter()
     r"""Normal Young modulus $E_{N}$"""
-    nuLT: float = enforce_dtype()
+    nuLT: float = parameter()
     r"""Longitudinal-transverse Poisson ratio $\nu_{LT}$"""
-    nuLN: float = enforce_dtype()
+    nuLN: float = parameter()
     r"""Longitudinal-normal Poisson ratio $\nu_{LN}$"""
-    nuTN: float = enforce_dtype()
+    nuTN: float = parameter()
     r"""Transverse-normal Poisson ratio $\nu_{TN}$"""
-    muLT: float = enforce_dtype()
+    muLT: float = parameter()
     r"""Longitudinal-transverse shear modulus $\mu_{LT}$"""
-    muLN: float = enforce_dtype()
+    muLN: float = parameter()
     r"""Longitudinal-normal shear modulus $\mu_{LN}$"""
-    muTN: float = enforce_dtype()
+    muTN: float = parameter()
     r"""Transverse-normal shear modulus $\mu_{TN}$"""
 
     @property

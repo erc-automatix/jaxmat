@@ -31,6 +31,7 @@ from .plastic_surfaces import (
     safe_zero,
     vonMises,
 )
+from .thermomechanics import TemperatureDependent
 from .viscoelasticity import GeneralizedMaxwell, StandardLinearSolid
 from .viscoplastic_flows import (
     AbstractKinematicHardening,
@@ -69,6 +70,7 @@ __all__ = [
     "NortonFlow",
     "SmallStrainBehavior",
     "StandardLinearSolid",
+    "TemperatureDependent",
     "Tresca",
     "VoceHardening",
     "VolumetricPart",

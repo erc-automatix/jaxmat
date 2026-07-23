@@ -4,6 +4,7 @@ import equinox as eqx
 import jax
 import jax.numpy as jnp
 
+from jaxmat.parameters import parameter
 from jaxmat.tensors import eigenvalues
 from jaxmat.tensors.linear_algebra import det33, principal_invariants
 
@@ -54,9 +55,7 @@ class Hyperelasticity(FiniteStrainBehavior):
 
 
 class VolumetricPart(eqx.Module):
-    r"""Volumetric part $\psi_\text{vol}(J)$ of the hyperelastic potential."""
-
-    beta: float = 2.0
+    beta: float = parameter(default=2.0)
 
     def __call__(self, J):
         return 1 / self.beta**2 * (J ** (self.beta) - self.beta * jnp.log(J) - 1)
@@ -68,8 +67,8 @@ class SquaredVolumetric(eqx.Module):
 
 
 class CompressibleNeoHookean(HyperelasticPotential):
-    mu: float
-    kappa: float
+    mu: float = parameter()
+    kappa: float = parameter()
     volumetric: eqx.Module = VolumetricPart()
 
     def __call__(self, F):
@@ -80,9 +79,9 @@ class CompressibleNeoHookean(HyperelasticPotential):
 
 
 class CompressibleMooneyRivlin(HyperelasticPotential):
-    c1: float
-    c2: float
-    kappa: float
+    c1: float = parameter()
+    c2: float = parameter()
+    kappa: float = parameter()
     volumetric: eqx.Module = VolumetricPart()
 
     def __call__(self, F):
@@ -97,10 +96,10 @@ class CompressibleMooneyRivlin(HyperelasticPotential):
 
 
 class CompressibleGhentMooneyRivlin(HyperelasticPotential):
-    c1: float
-    c2: float
-    Jm: float
-    kappa: float
+    c1: float = parameter()
+    c2: float = parameter()
+    Jm: float = parameter()
+    kappa: float = parameter()
     volumetric: eqx.Module = VolumetricPart()
 
     def __call__(self, F):

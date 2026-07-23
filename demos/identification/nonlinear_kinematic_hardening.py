@@ -42,7 +42,7 @@ import optimistix as optx
 
 import jaxmat.materials as jm
 from jaxmat.tensors import SymmetricTensor2
-from jaxmat.utils import default_value, partition_by_node_names, print_eqx_fields
+from jaxmat.utils import initial_value, partition_by_node_names, print_eqx_fields
 
 jax.config.update("jax_platform_name", "cpu")
 
@@ -159,7 +159,7 @@ plastic_surface = PlasticSurface()
 
 class CombinedHardening(eqx.Module):
     isotropic: eqx.Module
-    H: float = default_value(0.0)
+    H: float = initial_value(0.0)
 
     def dalpha(self, alpha, p):
         """Linear kinematic hardening rule"""

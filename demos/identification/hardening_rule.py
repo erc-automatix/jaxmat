@@ -56,6 +56,7 @@ import numpy as np
 import optimistix as optx
 
 from jaxmat.nn.icnn import ICNN
+from jaxmat.parameters import parameter
 
 jax.config.update("jax_platform_name", "cpu")
 
@@ -119,9 +120,9 @@ plt.show()
 
 # %%
 class SumExpHardening(eqx.Module):
-    sig0: float = eqx.field(converter=jnp.asarray)
-    dsigu: jax.Array = eqx.field(converter=jnp.asarray)
-    b: jax.Array = eqx.field(converter=jnp.asarray)
+    sig0: float = parameter()
+    dsigu: jax.Array = parameter()
+    b: jax.Array = parameter()
 
     def __call__(self, p):
         return self.sig0 + jnp.sum(self.dsigu * (1 - jnp.exp(-self.b * p)))

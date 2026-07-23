@@ -31,7 +31,9 @@ parts:
       sections:
         - file: demos/neural_network_models/hyperelastic_PANN.ipynb
         - file: demos/neural_network_models/neural_GSM.ipynb
-
+    - file: multiphysics.md
+      sections:
+        - file: demos/multiphysics/temperature_dependent_viscoelasticity.ipynb
   - caption: General resources 
     chapters:
       - file: concepts.md
@@ -39,7 +41,6 @@ parts:
       - file: sharp_bits.md
   - caption: API
     chapters:
-      - file: api/jaxmat.constraints.rst
       - file: api/jaxmat.loader.rst
       - file: api/jaxmat.materials.rst
       - file: api/jaxmat.nn.rst

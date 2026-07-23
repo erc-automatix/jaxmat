@@ -5,7 +5,7 @@ from jaxmat.state import AbstractState
 from jaxmat.tensors import SymmetricTensor2, Tensor2, dev, safe_fun, tr
 from jaxmat.tensors.linear_algebra import det33 as det
 from jaxmat.tensors.utils import FischerBurmeister as FB
-from jaxmat.utils import default_value
+from jaxmat.utils import initial_value
 
 from .behavior import FiniteStrainBehavior
 from .elasticity import LinearElasticIsotropic
@@ -15,7 +15,7 @@ from .plastic_surfaces import AbstractPlasticSurface, vonMises
 class InternalState(AbstractState):
     """Internal state for :class:`FeFpJ2Plasticity`."""
 
-    p: float = default_value(0.0)
+    p: float = initial_value(0.0)
     """Cumulated plastic strain $p$."""
     be_bar: SymmetricTensor2 = SymmetricTensor2.identity()
     r"""Isochoric elastic left Cauchy-Green strain $\bar{\bb}^\text{e}$."""

@@ -4,9 +4,9 @@ import equinox as eqx
 import jax
 import jax.numpy as jnp
 
+from jaxmat.parameters import parameter
 from jaxmat.tensors import SymmetricTensor2, dev, eigenvalues
 from jaxmat.tensors.utils import safe_norm, safe_sqrt
-from jaxmat.utils import default_value, enforce_dtype
 
 
 def safe_zero(method):
@@ -82,7 +82,7 @@ class DruckerPrager(AbstractPlasticSurface):
         Pressure sensitivity parameter
     """
 
-    alpha: float = enforce_dtype()
+    alpha: float = parameter()
 
     @safe_zero
     def __call__(self, sig):
@@ -107,7 +107,7 @@ class Hosford(AbstractPlasticSurface):
         Hosford shape parameter
     """
 
-    a: float = default_value(2.0)
+    a: float = parameter(default=2.0)
 
     @safe_zero
     def __call__(self, sig):

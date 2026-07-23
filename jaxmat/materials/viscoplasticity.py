@@ -8,7 +8,7 @@ from jaxmat.state import (
     make_batched,
 )
 from jaxmat.tensors import SymmetricTensor2, dev
-from jaxmat.utils import default_value
+from jaxmat.utils import initial_value
 
 from .behavior import SmallStrainBehavior
 from .elasticity import LinearElasticIsotropic
@@ -23,7 +23,7 @@ from .viscoplastic_flows import (
 class AFInternalState(AbstractState):
     """Internal state for the Armstrong-Frederick model"""
 
-    p: float = default_value(0.0)
+    p: float = initial_value(0.0)
     """Cumulated plastic strain"""
     epsp: SymmetricTensor2 = eqx.field(default_factory=lambda: SymmetricTensor2())
     """Plastic strain tensor"""
@@ -119,7 +119,7 @@ class ArmstrongFrederickViscoplasticity(SmallStrainBehavior):
 class GenericInternalState(AbstractState):
     """Internal state for the generic elastoviscoplastic model."""
 
-    p: float = default_value(0.0)
+    p: float = initial_value(0.0)
     """Cumulated plastic strain"""
     epsp: SymmetricTensor2 = eqx.field(default_factory=lambda: SymmetricTensor2())
     """Plastic strain tensor"""

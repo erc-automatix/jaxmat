@@ -13,7 +13,7 @@ import equinox as eqx
 import jax
 import jax.numpy as jnp
 
-from jaxmat.utils import enforce_dtype
+from .generic_parameters import parameter
 
 DEFAULT_TEMPERATURE = 273.15
 
@@ -42,18 +42,24 @@ class AbstractParameter(eqx.Module):
 class Constant(AbstractParameter):
     """A constant value (explicitly temperature-independent)."""
 
-    value: jax.Array = enforce_dtype()
+    value: jax.Array = parameter()
 
     def evaluate(self, T):
         return self.value
 
 
 class Affine(AbstractParameter):
-    r"""Linear law $$p(T) = p_{ref} + s\,(T - T_{ref}).$$"""
+    r"""Linear law
 
-    ref: jax.Array = enforce_dtype()
-    slope: jax.Array = enforce_dtype()
-    T_ref: jax.Array = enforce_dtype(default=DEFAULT_TEMPERATURE)
+    $$p(T) = p_{\textrm{ref}} + s (T-T_{\textrm{ref}})$$
+    """
+
+    ref: jax.Array = parameter()
+    r"""Reference value $p_{\textrm{ref}}$"""
+    slope: jax.Array = parameter()
+    r"""Slope $s$"""
+    T_ref: jax.Array = parameter(default=DEFAULT_TEMPERATURE)
+    r"""Reference temperature $T_{\textrm{ref}}$"""
 
     def evaluate(self, T):
         return self.ref + self.slope * (T - self.T_ref)
@@ -63,12 +69,12 @@ class Polynomial(AbstractParameter):
     r"""
     Polynomial law
 
-    $$p(T) = \sum_k c_k (T - T_{ref})^k$$
+    $$p(T) = \sum_k c_k (T - T_{\textrm{ref}})^k$$
+    """
 
-    (``coeffs`` are ordered from low to high order)."""
-
-    coeffs: jax.Array = enforce_dtype()
-    T_ref: jax.Array = enforce_dtype(default=DEFAULT_TEMPERATURE)
+    coeffs: jax.Array = parameter()
+    """Polynomial coefficients, ordered from low to high order."""
+    T_ref: jax.Array = parameter(default=DEFAULT_TEMPERATURE)
 
     def evaluate(self, T):
         return jnp.polyval(self.coeffs[::-1], T - self.T_ref)
@@ -80,12 +86,12 @@ class Arrhenius(AbstractParameter):
     $$p(T) = A\,\exp(-Q / (R\,T))$$
     """
 
-    A: jax.Array = enforce_dtype()
+    A: jax.Array = parameter()
     """Arrhenius factor."""
-    Q: jax.Array = enforce_dtype()
+    Q: jax.Array = parameter()
     """Activation energy"""
-    R: jax.Array = enforce_dtype(static=True, default=8.314462618)
-    r"""Universal gas constant $R=8.314462618 \text{J}.\text{K}^{-1}.\text{mol}^{-1}."""
+    R: jax.Array = parameter(default=8.314462618)
+    r"""Universal gas constant $R=8.314462618 \textrm{J}.\textrm{K}^{-1}.\textrm{mol}^{-1}."""
 
     def evaluate(self, T):
         return self.A * jnp.exp(-self.Q / (self.R * T))
@@ -117,7 +123,7 @@ def evaluate_parameters(model, T):
 
     .. code-block:: python
 
-       isothermal = evaluate_parameters(model, T_fixed)
+        isothermal = evaluate_parameters(model, T_fixed)
     """
     if T is None:
         if has_parameter_dependence(model):

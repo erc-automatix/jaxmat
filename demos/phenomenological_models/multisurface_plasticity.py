@@ -136,6 +136,7 @@ from jaxmat.materials.elasticity import LinearElasticIsotropic
 from jaxmat.materials.plastic_surfaces import (
     AbstractPlasticSurface,
 )
+from jaxmat.parameters import parameter
 from jaxmat.state import AbstractState
 from jaxmat.tensors import SymmetricTensor2, pq_invariants
 from jaxmat.tensors.utils import FischerBurmeister as FB
@@ -244,7 +245,7 @@ class MultiSurfacePlasticity(SmallStrainBehavior):
 
 # %%
 class YieldStress(eqx.Module):
-    sig0: float = eqx.field(converter=jnp.asarray)
+    sig0: float = parameter()
 
     def __call__(self, p):
         return self.sig0
@@ -265,8 +266,8 @@ class YieldStress(eqx.Module):
 
 # %%
 class EllipticCap(jm.AbstractPlasticSurface):
-    M: float = eqx.field(converter=jnp.asarray)
-    p0: float = eqx.field(converter=jnp.asarray, default=0.0)
+    M: float = parameter()
+    p0: float = parameter(default=0.0)
 
     @jm.safe_zero
     def __call__(self, sig):

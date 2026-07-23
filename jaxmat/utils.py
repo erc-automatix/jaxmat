@@ -1,28 +1,53 @@
+import warnings
+
 import equinox as eqx
 import jax.numpy as jnp
 
 
-def default_value(value, dtype=jnp.float64, **kwargs):
-    """Initialize and convert a field with default `value` of imposed `dtype`."""
-    return eqx.field(converter=lambda x: jnp.asarray(x, dtype=dtype), default=value, **kwargs)
+def initial_value(default, *, dtype=jnp.float64, **kwargs):
+    """Declare an *internal-state* initial value.
 
-
-def enforce_dtype(dtype=jnp.float64, **kwargs):
-    """Coerce a field to a strongly-typed array of the given ``dtype``.
-
-    Two values pass through untouched: ``None`` (so a field can be optional) and
-    an ``eqx.Module`` (e.g. a temperature-dependent parameter *expression*, to be
-    materialized later via ``evaluate_parameters``). Everything else is cast, which
-    also normalizes weak/strong/float32 inputs to a single dtype (avoiding jit
-    retracing).
+    Cast to ``dtype`` like :func:`parameter`, but deliberately **not**
+    parameter-capable: internal-state fields (accumulated plastic strain, viscous
+    strain, back-stresses, ...) hold plain numerical data, never a material law.
+    Passing a parameter/module here is a modelling error and is rejected.
     """
 
     def convert(x):
-        if x is None or isinstance(x, eqx.Module):
-            return x
+        if isinstance(x, eqx.Module):
+            raise TypeError(
+                "initial_value() fields hold plain internal-state data, not an "
+                "AbstractParameter or module. Use parameter() for input-dependent "
+                "coefficients, or default_factory for structured state."
+            )
         return jnp.asarray(x, dtype=dtype)
 
-    return eqx.field(converter=convert, **kwargs)
+    return eqx.field(converter=convert, default=default, **kwargs)
+
+
+def enforce_dtype(dtype=jnp.float64, **kwargs):
+    from .parameters import parameter
+
+    warnings.warn(
+        "'enforce_dtype' is deprecated and will be removed in v1.1. Use 'parameter()' instead "
+        "to coerce dtypes, pass default values, etc.",
+        FutureWarning,
+        stacklevel=2,
+    )
+    """Deprecated alias for :func:`parameter` (coefficient field)."""
+    return parameter(dtype=dtype, **kwargs)
+
+
+def default_value(value, dtype=jnp.float64, **kwargs):
+    """Deprecated alias for :func:`initial_value` (internal-state field)."""
+
+    warnings.warn(
+        "'default_value' is deprecated and will be removed in v1.1. Use 'initial_value' instead for"
+        " state variable initialization and 'parameter' for physical parameters.",
+        FutureWarning,
+        stacklevel=2,
+    )
+    return initial_value(value, dtype=dtype, **kwargs)
 
 
 def _rgetattr(obj, attr):
@@ -34,7 +59,7 @@ def _rgetattr(obj, attr):
 
 def partition_by_node_names(model, freeze_names):
     """
-    Partition an ``euinox`` model into (trainable, static) where
+    Partition an ``equinox`` model into (trainable, static) where
     attributes listed in `freeze_names` are frozen (moved to static).
     """
 

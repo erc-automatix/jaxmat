@@ -10,7 +10,7 @@ from jaxmat.state import (
     make_batched,
 )
 from jaxmat.tensors import SymmetricTensor2, Tensor
-from jaxmat.utils import default_value
+from jaxmat.utils import initial_value
 
 
 class MyState(SmallStrainState):
@@ -18,7 +18,7 @@ class MyState(SmallStrainState):
 
 
 class OtherState(SmallStrainState):
-    float_attribute: float = default_value(0.0)
+    float_attribute: float = initial_value(0.0)
     array_attribute: jax.Array = eqx.field(default_factory=lambda: jnp.ones((3,)))
     tensor_attribute: SymmetricTensor2 = SymmetricTensor2()
 

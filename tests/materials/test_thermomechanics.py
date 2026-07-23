@@ -15,9 +15,9 @@ from jaxmat.parameters import (
     Polynomial,
     evaluate_parameters,
     has_parameter_dependence,
+    parameter,
 )
 from jaxmat.tensors import SymmetricTensor2
-from jaxmat.utils import enforce_dtype
 
 jax.config.update("jax_enable_x64", True)
 
@@ -49,7 +49,7 @@ class TestExpressions:
 
     def test_expression(self):
         class Law(eqx.Module):
-            a: jax.Array = enforce_dtype()
+            a: jax.Array = parameter()
 
             def __call__(self, T):
                 return self.a * jnp.sqrt(T)

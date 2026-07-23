@@ -1,4 +1,4 @@
-"""Temperature-dependent behaviors, added by composition.
+r"""Temperature-dependent behaviors, added by composition.
 
 ``TemperatureDependent`` wraps *any* existing behavior and makes it consume a
 temperature input alongside the mechanical input, without modifying the wrapped
@@ -6,16 +6,15 @@ behavior. At each update it materializes the wrapped behavior's parameter
 expressions at the current temperature (via ``evaluate_parameters``) and delegates
 to the wrapped behavior's own ``constitutive_update``.
 
-Inputs are ``(mechanical_input, T)`` -- temperature is treated as an input known at
-t_{n+1}. If ``default_temperature`` is set, a bare mechanical input is also accepted
+Inputs are ``(mechanical_input, T)`` where temperature $T$ is treated as an input known at
+$t_{n+1}$. If ``default_temperature`` is set, a bare mechanical input is also accepted
 (useful for isothermal drivers that do not thread ``T``).
 """
 
 import equinox as eqx
 import jax.numpy as jnp
 
-from jaxmat.parameters import evaluate_parameters
-from jaxmat.utils import enforce_dtype
+from jaxmat.parameters import evaluate_parameters, parameter
 
 from .behavior import AbstractBehavior
 
@@ -25,7 +24,7 @@ class TemperatureDependent(AbstractBehavior):
 
     behavior: AbstractBehavior
     """The wrapped behavior, whose parameters may be temperature expressions."""
-    default_temperature: jnp.ndarray = enforce_dtype(default=None)
+    default_temperature: jnp.ndarray = parameter(default=None)
     """Optional fallback temperature used when the input carries no ``T``."""
 
     def make_internal_state(self):

@@ -4,10 +4,11 @@ import jax.numpy as jnp
 import optimistix as optx
 from optax.tree_utils import tree_add, tree_zeros_like
 
+from jaxmat.parameters import parameter
 from jaxmat.state import AbstractState, make_batched
 from jaxmat.tensors import SymmetricTensor2, dev
 from jaxmat.tensors.utils import FischerBurmeister as FB
-from jaxmat.utils import default_value, enforce_dtype
+from jaxmat.utils import initial_value
 
 from .behavior import SmallStrainBehavior
 from .elasticity import AbstractLinearElastic, LinearElasticIsotropic
@@ -23,7 +24,7 @@ class InternalState(AbstractState):
     (:class:`vonMisesIsotropicHardening`, :class:`GeneralIsotropicHardening`).
     """
 
-    p: jax.Array = default_value(0.0)
+    p: jax.Array = initial_value(0.0)
     """Cumulated plastic strain"""
     epsp: SymmetricTensor2 = eqx.field(default_factory=lambda: SymmetricTensor2())
     """Plastic strain tensor"""
@@ -138,7 +139,7 @@ class GeneralIsotropicHardening(SmallStrainBehavior):
 class GeneralHardeningInternalState(AbstractState):
     """Internal state for the :class:`GeneralHardening` model."""
 
-    p: float = default_value(0.0)
+    p: float = initial_value(0.0)
     """Cumulated plastic strain"""
     epsp: SymmetricTensor2 = eqx.field(default_factory=lambda: SymmetricTensor2())
     """Plastic strain tensor"""
@@ -165,7 +166,7 @@ class GeneralHardening(SmallStrainBehavior):
 
     elasticity: AbstractLinearElastic
     """Linear elastic model."""
-    yield_stress: float = enforce_dtype()
+    yield_stress: float = parameter()
     """Initial yield stress."""
     plastic_surface: AbstractPlasticSurface
     """Generic plastic surface."""

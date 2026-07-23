@@ -71,6 +71,7 @@ import optimistix as optx
 import jaxmat
 import jaxmat.materials as jm
 from jaxmat.loader import ImposedLoading, global_solve
+from jaxmat.parameters import parameter
 from jaxmat.tensors import SymmetricTensor2, dev
 
 jax.config.update("jax_platform_name", "cpu")
@@ -125,7 +126,7 @@ def safe_zero(method):
 
 
 class GreenYieldSurface(eqx.Module):
-    A: float = eqx.field(converter=jnp.asarray)
+    A: float = parameter()
 
     @safe_zero
     def __call__(self, sig):
@@ -146,8 +147,8 @@ class GreenYieldSurface(eqx.Module):
 
 # %%
 class NortonFlow(eqx.Module):
-    K: float = eqx.field(converter=jnp.asarray)
-    m: float = eqx.field(converter=jnp.asarray)
+    K: float = parameter()
+    m: float = parameter()
 
     def __call__(self, overstress):
         return jnp.maximum(overstress / self.K, 0) ** self.m
@@ -185,7 +186,7 @@ class NortonFlow(eqx.Module):
 # %%
 class GreenViscoPlasticity(jm.SmallStrainBehavior):
     elasticity: jm.LinearElasticIsotropic
-    yield_stress: float = eqx.field(converter=jnp.asarray)
+    yield_stress: float = parameter()
     plastic_surface: GreenYieldSurface
     viscoplastic_flow: NortonFlow
     internal_type = InternalState
