@@ -5,7 +5,7 @@ from jaxmat.state import AbstractState
 from jaxmat.tensors import SymmetricTensor2, Tensor2, dev, safe_fun, tr
 from jaxmat.tensors.linear_algebra import det33 as det
 from jaxmat.tensors.utils import FischerBurmeister as FB
-from jaxmat.utils import initial_value
+from jaxmat.utils import assert_max_traces, initial_value
 
 from .behavior import FiniteStrainBehavior
 from .elasticity import LinearElasticIsotropic
@@ -33,7 +33,7 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
     internal_type = InternalState
 
     @eqx.filter_jit
-    @eqx.debug.assert_max_traces(max_traces=1)
+    @assert_max_traces(max_traces=1)
     def constitutive_update(self, F, state, dt):
         F_old = state.F
         isv_old = state.internal

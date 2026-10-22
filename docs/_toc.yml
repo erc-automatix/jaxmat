@@ -41,6 +41,7 @@ parts:
       - file: sharp_bits.md
   - caption: API
     chapters:
+      - file: api/jaxmat.config.rst
       - file: api/jaxmat.loader.rst
       - file: api/jaxmat.materials.rst
       - file: api/jaxmat.nn.rst

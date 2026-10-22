@@ -8,7 +8,7 @@ from jaxmat.parameters import parameter
 from jaxmat.state import AbstractState, make_batched
 from jaxmat.tensors import SymmetricTensor2, dev
 from jaxmat.tensors.utils import FischerBurmeister as FB
-from jaxmat.utils import initial_value
+from jaxmat.utils import assert_max_traces, initial_value
 
 from .behavior import SmallStrainBehavior
 from .elasticity import AbstractLinearElastic, LinearElasticIsotropic
@@ -47,7 +47,7 @@ class vonMisesIsotropicHardening(SmallStrainBehavior):
     internal_type = InternalState
 
     @eqx.filter_jit
-    @eqx.debug.assert_max_traces(max_traces=1)
+    @assert_max_traces(max_traces=1)
     def constitutive_update(self, eps, state, dt):
         eps_old = state.strain
         deps = eps - eps_old
@@ -103,7 +103,7 @@ class GeneralIsotropicHardening(SmallStrainBehavior):
     internal_type = InternalState
 
     @eqx.filter_jit
-    @eqx.debug.assert_max_traces(max_traces=1)
+    @assert_max_traces(max_traces=1)
     def constitutive_update(self, eps, state, dt):
         eps_old = state.strain
         deps = eps - eps_old
@@ -190,7 +190,7 @@ class GeneralHardening(SmallStrainBehavior):
         return GeneralHardeningInternalState(nvar=self.nvar)
 
     @eqx.filter_jit
-    @eqx.debug.assert_max_traces(max_traces=1)
+    @assert_max_traces(max_traces=1)
     def constitutive_update(self, eps, state, dt):
         eps_old = state.strain
         deps = eps - eps_old

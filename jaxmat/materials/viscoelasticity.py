@@ -6,6 +6,7 @@ import jaxmat.materials as jm
 from jaxmat.parameters import parameter
 from jaxmat.state import AbstractState, make_batched
 from jaxmat.tensors import SymmetricTensor2
+from jaxmat.utils import assert_max_traces
 
 
 class SLSState(AbstractState):
@@ -45,7 +46,7 @@ class StandardLinearSolid(jm.SmallStrainBehavior):
     """Internal state containing the viscous strain."""
 
     @eqx.filter_jit
-    @eqx.debug.assert_max_traces(max_traces=1)
+    @assert_max_traces(max_traces=1)
     def constitutive_update(self, eps, state, dt):
         eps_old = state.strain
         epsv_old = state.internal.epsv
@@ -120,7 +121,7 @@ class GeneralizedMaxwell(jm.SmallStrainBehavior):
         return GeneralizedMaxwellState(Nbranch=self.Nbranch)
 
     @eqx.filter_jit
-    @eqx.debug.assert_max_traces(max_traces=1)
+    @assert_max_traces(max_traces=1)
     def constitutive_update(self, eps, state, dt):
         sigv_old = state.internal.sigv
         eps_old = state.strain

@@ -7,6 +7,7 @@ import jax.numpy as jnp
 from jaxmat.parameters import parameter
 from jaxmat.tensors import eigenvalues
 from jaxmat.tensors.linear_algebra import det33, principal_invariants
+from jaxmat.utils import assert_max_traces
 
 from .behavior import FiniteStrainBehavior
 
@@ -47,7 +48,7 @@ class Hyperelasticity(FiniteStrainBehavior):
     potential: HyperelasticPotential
 
     @eqx.filter_jit
-    @eqx.debug.assert_max_traces(max_traces=1)
+    @assert_max_traces(max_traces=1)
     def constitutive_update(self, F, state, dt):
         PK1 = self.potential.PK1(F)
         new_state = state.update(PK1=PK1, F=F)

@@ -36,6 +36,26 @@ strongly depends on the hardware device, the used batch size  and the
 computational intensity of the material model, see the [](demos/performance.md)
 demo for more details.
 
+### Checking for retracing
+
+Each new trace of a jitted function means a new compilation, so retracing a
+constitutive update at every call (e.g. because an input changes dtype or
+structure from one call to the next) can dominate run times. To catch this while
+developing, `jaxmat` behaviors assert that their `constitutive_update` is traced
+only once. The check is off by default and is switched on with:
+
+```{code-block} python
+jaxmat.config.update("check_max_traces", True)
+```
+
+or temporarily with `jaxmat.config.override(check_max_traces=True)`, or with the
+`JAXMAT_CHECK_MAX_TRACES=1` environment variable. The trace count is shared by all
+instances of a behavior class: two materials of the same class whose static
+structure differs (e.g. different hardening laws), or a behavior wrapped inside
+another one, retrace legitimately, which is why the check is not on by default.
+Your own behaviors can use the same switch by decorating their update with
+`jaxmat.utils.assert_max_traces`, placed inside `eqx.filter_jit`.
+
 ## On Automatic Vectorization
 
 `jaxmat` relies heavily on **batched constitutive updates**. Instead of

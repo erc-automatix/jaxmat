@@ -3,6 +3,8 @@ from pathlib import Path
 
 import jax
 
+from . import config as config
+
 __version__ = version("jaxmat")
 
 jax.config.update("jax_enable_x64", True)  # use double-precision

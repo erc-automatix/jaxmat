@@ -14,6 +14,10 @@ the usual 0.x caveat that minor bumps may include breaking changes).
 - `FischerBurmeister` used a floored square root (`safe_sqrt`), which made the complementarity residual linear within `sqrt(x**2 + y**2) < 1e-8`. Near the yield onset (`|f| < 1e-8 E`) the return mapping of the `FB`-based behaviors then returned a negative `dp` on the elastic side and a wrong implicit gradient. The square root is now exact, with a zero gradient at the origin.
 - `vonMisesIsotropicHardening` starts its Newton solve from the linearized return mapping instead of `dp = 0`: just past the onset `dp` is below the solver's `atol` and the first step was accepted unconverged, giving a wrong implicit gradient. The new start also needs fewer Newton iterations.
 
+### Changed
+
+- The trace-count assertion on the `constitutive_update` of library behaviors is now off by default and controlled by the new `jaxmat.config` module: `jaxmat.config.update("check_max_traces", True)`, the `jaxmat.config.override(check_max_traces=True)` context manager, or the `JAXMAT_CHECK_MAX_TRACES=1` environment variable. Its counter is shared by all instances of a behavior class, so it used to reject legitimate retracing, e.g. two `vonMisesIsotropicHardening` materials with different hardening laws in the same process. Own behaviors can use the same switch with `jaxmat.utils.assert_max_traces` in place of `eqx.debug.assert_max_traces` (#55).
+
 ### Deprecated
 
 - `utils.enforce_dtype` is now deprecated and should be replaced with the new `parameter` field converter for parameters.

@@ -1,7 +1,41 @@
+import functools
 import warnings
 
 import equinox as eqx
 import jax.numpy as jnp
+
+from jaxmat import config
+
+
+def assert_max_traces(max_traces: int = 1):
+    """Decorator asserting that a function is traced at most ``max_traces`` times, only when
+    the ``check_max_traces`` option of :mod:`jaxmat.config` is on (it is off by default).
+
+    It is :func:`equinox.debug.assert_max_traces` behind a switch, and is placed the same
+    way, inside the JIT wrapper:
+
+    .. code-block:: python
+
+        @eqx.filter_jit
+        @assert_max_traces(max_traces=1)
+        def constitutive_update(self, eps, state, dt): ...
+
+    The option is read at trace time, so it can be switched at any point. Only traces
+    happening while it is on are counted, and the count is shared by all instances.
+    """
+
+    def decorator(fn):
+        checked = eqx.debug.assert_max_traces(fn, max_traces=max_traces)
+
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            if config.check_max_traces:
+                return checked(*args, **kwargs)
+            return fn(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def initial_value(default, *, dtype=jnp.float64, **kwargs):
