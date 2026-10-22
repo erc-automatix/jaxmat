@@ -34,6 +34,7 @@ parts:
     - file: multiphysics.md
       sections:
         - file: demos/multiphysics/temperature_dependent_viscoelasticity.ipynb
+        - file: demos/multiphysics/poroelastic_consolidation.ipynb
   - caption: General resources 
     chapters:
       - file: concepts.md

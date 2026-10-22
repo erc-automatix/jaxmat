@@ -23,6 +23,7 @@ from .hyperelasticity import (
     HyperelasticPotential,
     VolumetricPart,
 )
+from .multiphysics import MultiphysicsBehavior
 from .plastic_surfaces import (
     AbstractPlasticSurface,
     DruckerPrager,
@@ -67,6 +68,7 @@ __all__ = [
     "LinearElasticIsotropic",
     "LinearElasticOrthotropic",
     "LinearElasticTransverseIsotropic",
+    "MultiphysicsBehavior",
     "NortonFlow",
     "SmallStrainBehavior",
     "StandardLinearSolid",

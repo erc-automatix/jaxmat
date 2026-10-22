@@ -44,6 +44,8 @@ the usual 0.x caveat that minor bumps may include breaking changes).
   ```
   Note that **thermal strains are not supported** at the moment.
 
+- Generic multiphysics behaviors. `jaxmat.state.make_physics` declares the gradients (inputs), fluxes (outputs) and external variables of a behavior and generates the matching state class, cached so that equal declarations give the same class. A `MultiphysicsBehavior` sets `physics` and implements `response(x, state, dt) -> (fluxes, internal)`: inputs and fluxes are tuples (or dicts) in declaration order, every variable is recorded in the new state, parameters are resolved at the declared external variables, and `tangent` returns the consistent tangent blocks. The library fixes no multiphysics declaration: the new poroelastic consolidation demo declares its own.
+
 ## v0.0.4 - 2026-07-08
 
 ### Fixed
