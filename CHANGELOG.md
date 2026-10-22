@@ -33,6 +33,11 @@ the usual 0.x caveat that minor bumps may include breaking changes).
   ```
   Note that **thermal strains are not supported** at the moment.
 
+### Fixed
+
+- `FeFpJ2Plasticity` was bugged: not objective trial state, total deformation gradient not updated in final state
+  and shear components of the plastic flow were doubled because of bad tensor conversion after scalar multiply.
+
 ## v0.0.4 - 2026-07-08
 
 ### Fixed

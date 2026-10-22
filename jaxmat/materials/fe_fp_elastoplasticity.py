@@ -45,11 +45,11 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
             # relative strain and elastic predictor
             f = F @ F_old.inv
             f_bar = f * safe_fun(lambda J: J ** (-1 / 3), det(f))
-            be_bar_trial = (f_bar.T @ be_bar_old @ f_bar).sym
+            be_bar_trial = (f_bar @ be_bar_old @ f_bar.T).sym
 
             def residual(dy, args):
                 dp, be_bar = dy
-                s = self.elasticity.mu * dev(be_bar)
+                s = dev(be_bar) * self.elasticity.mu
                 yield_criterion = self.plastic_surface(s) - self.yield_stress(p_old + dp)
                 n = self.plastic_surface.normal(s)
                 res = (
@@ -70,10 +70,10 @@ class FeFpJ2Plasticity(FiniteStrainBehavior):
         dp, be_bar = dy
         y = isv_old.update(p=isv_old.p + dp, be_bar=be_bar)
 
-        s = self.elasticity.mu * dev(be_bar)
+        s = dev(be_bar) * self.elasticity.mu
         J = det(F)
         tau = s + self.elasticity.kappa / 2 * (J**2 - 1) * Id
         P = Tensor2(tensor=tau @ (F.T).inv)
 
-        new_state = state.update(PK1=P, internal=y)
+        new_state = state.update(F=F, PK1=P, internal=y)
         return P, new_state
