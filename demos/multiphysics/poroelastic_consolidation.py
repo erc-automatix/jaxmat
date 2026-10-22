@@ -10,7 +10,7 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.18.1
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: jaxmat-env
 #     language: python
 #     name: python3
 # ---
@@ -37,8 +37,8 @@
 # variation of fluid content, the behavior is:
 #
 # $$
-# (\bsig,\ \zeta), \text{new state} \;=\;
-# \texttt{constitutive_update}\big((\beps,\ p),\ \text{state},\ \mathrm{d}t\big).
+# (\bsig,\ \zeta), \text{new state} \;=\; \texttt{constitutive_update}\big((\beps,\ p),\
+# \text{state},\ \mathrm{d}t\big).
 # $$
 #
 # For linear isotropic (Biot) poroelasticity these read
@@ -55,6 +55,14 @@
 # fluid content. The cross terms $-b\,p\,\bI$ and $b\,\mathrm{tr}\,\beps$ are the
 # hydro-mechanical coupling. The two physics decouple only in the case $b=0$.
 #
+# In `jaxmat`, such a behavior starts by declaring the variables it exchanges with
+# `make_physics`: the *gradients* $(\beps, p)$ given as inputs, and their conjugate *fluxes*
+# $(\bsig, \zeta)$ computed by the behavior. The declaration generates the corresponding state
+# class, so that a `MultiphysicsBehavior` only implements the constitutive relations, in its
+# `response` method. Packing the inputs and outputs and storing them in the new state are done
+# automatically. The names and conventions are those of the formulation at hand: here the
+# pore pressure is `p` and its conjugate flux the fluid content `zeta`.
+#
 # Here, we will focus on a fully coupled treatment of consolidation: the multiphysics
 # `constitutive_update` is evaluated at every spatial node for both $\beps$ and $p$
 # and the coupled displacement-pressure system is solved as such.
@@ -69,30 +77,41 @@ import matplotlib.pyplot as plt
 import optimistix as optx
 from matplotlib import cm
 
+import jaxmat.materials as jm
+from jaxmat.parameters import parameter
+from jaxmat.state import make_physics
 from jaxmat.tensors import IsotropicTensor4, SymmetricTensor2
 
-
 # %%
-class PoroElastic(eqx.Module):
+POROMECHANICS = make_physics(
+    "Poromechanics",
+    gradients={"strain": SymmetricTensor2, "p": 0.0},
+    fluxes={"stress": SymmetricTensor2, "zeta": 0.0},
+)
+
+
+class PoroElastic(jm.MultiphysicsBehavior):
     """Linear isotropic Biot poroelasticity: (eps, p) -> (sigma, zeta)."""
 
-    K: float  # drained bulk modulus
-    mu: float  # shear modulus
-    b: float  # Biot coefficient
-    M: float  # Biot modulus
+    physics = POROMECHANICS
+    K: jax.Array = parameter()  # drained bulk modulus
+    mu: jax.Array = parameter()  # shear modulus
+    b: jax.Array = parameter()  # Biot coefficient
+    M: jax.Array = parameter()  # Biot modulus
 
     @property
     def C(self):
         return IsotropicTensor4(kappa=self.K, mu=self.mu)
 
-    def constitutive_update(self, inputs, state=None, dt=1.0):
-        eps, p = inputs
-        sig = self.C @ eps - self.b * p * SymmetricTensor2.identity()
-        zeta = self.b * eps.tr + p / self.M
-        return (sig, zeta), state
+    def response(self, x, state, dt):
+        sig = self.C @ x.strain - self.b * x.p * SymmetricTensor2.identity()
+        zeta = self.b * x.strain.tr + x.p / self.M
+        return (sig, zeta), None  # no internal state variables
 
 
 mat = PoroElastic(K=10e3, mu=6e3, b=0.9, M=8e3)  # MPa
+# The behavior is linear, without internal variables: the same initial state serves everywhere.
+state0 = mat.init_state()
 E_oed = mat.K + 4 * mat.mu / 3  # oedometer modulus (for reference/validation only)
 
 # %% [markdown]
@@ -144,7 +163,7 @@ def grad_z(f):
 def constitutive_update_1D(eps_zz, p):
     """Evaluate the multiphysics behavior (eps, p) -> (sigma_zz, zeta) at a given node."""
     eps = SymmetricTensor2(array=jnp.array([0.0, 0.0, eps_zz, 0.0, 0.0, 0.0]))
-    (sig, zeta), _ = mat.constitutive_update((eps, p))
+    (sig, zeta), _ = mat.constitutive_update((eps, p), state0, 1.0)
     return sig.tensor[2, 2], zeta
 
 
@@ -212,7 +231,7 @@ def recover_up(zeta):
 
 # %%
 def vector_field(t, zeta, args):
-    _u, p = recover_up(zeta)
+    _, p = recover_up(zeta)
     lap = jnp.zeros(N)
     lap = lap.at[1:-1].set((p[:-2] - 2 * p[1:-1] + p[2:]) / dz**2)
     lap = lap.at[-1].set((2 * p[-2] - 2 * p[-1]) / dz**2)  # impermeable bottom
@@ -301,7 +320,7 @@ plt.xlabel("normalized excess pore pressure $p/p_0$")
 plt.ylabel("depth $z/H$ (0 = drained)")
 plt.title("Pore-pressure dissipation")
 plt.gca().invert_yaxis()
-plt.legend(bbox_to_anchor=(1.4, 0.85))
+plt.legend()
 plt.show()
 
 # %% [markdown]
