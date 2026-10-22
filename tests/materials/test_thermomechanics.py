@@ -16,6 +16,7 @@ from jaxmat.parameters import (
     evaluate_parameters,
     has_parameter_dependence,
     parameter,
+    parameter_dependencies,
 )
 from jaxmat.tensors import SymmetricTensor2
 
@@ -82,6 +83,50 @@ class TestEvaluateParameters:
     def test_none_errors_with_expressions(self):
         with pytest.raises(ValueError):
             evaluate_parameters(LinearElasticIsotropic(E=Affine(ref=1.0, slope=1.0), nu=0.3), None)
+
+
+class TestExternalVariables:
+    """Parameters may depend on any named external variable, temperature by default."""
+
+    def test_default_is_temperature(self):
+        assert Affine(ref=1.0, slope=1.0).variables == ("T",)
+        el = LinearElasticIsotropic(E=Affine(ref=210e3, slope=-50.0, T_ref=293.0), nu=0.3)
+        assert parameter_dependencies(el) == {"T"}
+        assert float(evaluate_parameters(el, T=500.0).E) == pytest.approx(199650.0)
+
+    def test_other_variable(self):
+        el = LinearElasticIsotropic(
+            E=Affine(ref=20e3, slope=-5e3, T_ref=0.0, depends_on="phi"), nu=0.3
+        )
+        assert parameter_dependencies(el) == {"phi"}
+        assert float(evaluate_parameters(el, phi=0.2).E) == pytest.approx(19e3)
+        with pytest.raises(ValueError, match="phi"):
+            evaluate_parameters(el, 300.0)  # temperature alone is not enough
+
+    def test_several_variables(self):
+        class Law(eqx.Module):
+            a: jax.Array = parameter()
+
+            def __call__(self, T, phi):
+                return self.a * (1 - phi) * T
+
+        el = LinearElasticIsotropic(
+            E=Expression(fn=Law(a=2.0), depends_on=("T", "phi")),
+            nu=Affine(ref=0.3, slope=0.1, T_ref=0.0, depends_on="phi"),
+        )
+        assert parameter_dependencies(el) == {"T", "phi"}
+        res = evaluate_parameters(el, 300.0, phi=0.5)
+        assert float(res.E) == pytest.approx(300.0) and float(res.nu) == pytest.approx(0.35)
+        with pytest.raises(ValueError):
+            evaluate_parameters(el, 300.0, T=300.0, phi=0.5)  # T given twice
+
+    def test_wrapper_reports_missing_variable(self):
+        el = LinearElasticIsotropic(
+            E=Affine(ref=20e3, slope=-5e3, T_ref=0.0, depends_on="phi"), nu=0.3
+        )
+        beh = TemperatureDependent(ElasticBehavior(elasticity=el))
+        with pytest.raises(ValueError, match="phi"):
+            beh.constitutive_update((_eps(), 300.0), beh.init_state(), 1.0)
 
 
 class TestUnresolvedFailsClearly:

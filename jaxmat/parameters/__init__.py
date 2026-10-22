@@ -9,6 +9,7 @@ from .temperature_dependent import (
     Polynomial,
     evaluate_parameters,
     has_parameter_dependence,
+    parameter_dependencies,
 )
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     "evaluate_parameters",
     "has_parameter_dependence",
     "parameter",
+    "parameter_dependencies",
 ]
