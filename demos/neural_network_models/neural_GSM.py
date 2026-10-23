@@ -146,6 +146,7 @@ viscous_model = jm.LinearElasticIsotropic(E1, jnp.full_like(E1, fill_value=nu))
 
 material = jm.GeneralizedMaxwell(
     elasticity=elasticity,
+    Nbranch=len(tau),
     viscous_branches=viscous_model,
     relaxation_times=tau,
 )
