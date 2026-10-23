@@ -168,10 +168,10 @@ class AbstractStructuredTensor4(eqx.Module):
 
     .. math::
 
-        \mathbb{C} = \sum_{\alpha=1}^n c_\alpha \mathbb{P}_\alpha
+        \mathbb{C} = \sum_{\alpha=1}^n c_{\alpha} \mathbb{P}_{\alpha}
 
-    where $\mathbb{P}_\alpha$ are the basis projectors (stored in ``_basis_arrays``)
-    and $c_\alpha$ are the coefficients (stored in ``_coeffs``).
+    where $\mathbb{P}_{\alpha}$ are the basis projectors (stored in ``_basis_arrays``)
+    and $c_{\alpha}$ are the coefficients (stored in ``_coeffs``).
 
     Subclasses must implement
     -------------------------
@@ -221,7 +221,7 @@ class AbstractStructuredTensor4(eqx.Module):
     @property
     def coeffs(self) -> jax.Array:
         r"""
-        Expansion coefficients $c_\alpha$ in the symmetry projector basis.
+        Expansion coefficients $c_{\alpha}$ in the symmetry projector basis.
 
         Returns
         -------
@@ -235,7 +235,7 @@ class AbstractStructuredTensor4(eqx.Module):
         r"""
         Materialised $(6, 6)$ Kelvin matrix.
 
-        Computed as $\sum_\alpha c_\alpha \{P_\alpha\}$ via a single
+        Computed as $\sum_{\alpha} c_{\alpha} \{P_{\alpha}\}$ via a single
         ``tensordot`` with the precomputed basis stack.  Supports arbitrary
         batch dimensions in ``_coeffs``.
 
@@ -261,7 +261,7 @@ class AbstractStructuredTensor4(eqx.Module):
         r"""
         Full fourth-order contraction $\mathbb{C}::\mathbb{D} = C_{ijkl}D_{ijkl}$.
 
-        Computed analytically as $\sum_\alpha c_\alpha (\mathbb{P}_\alpha :: \mathbb{D})$
+        Computed analytically as $\sum_{\alpha} c_{\alpha} (\mathbb{P}_{\alpha} :: \mathbb{D})$
         without materialising the full $(6,6)$ matrix.
 
         Parameters
@@ -569,7 +569,7 @@ class CubicTensor4(AbstractStructuredTensor4):
         Inverse $\mathbb{C}^{-1}$.
 
         Because the three projectors are mutually orthogonal, the inverse
-        is coefficient-wise: $c_\alpha^{-1}$ for each $\alpha$.
+        is coefficient-wise: $c_{\alpha}^{-1}$ for each $\alpha$.
 
         Returns
         -------
@@ -624,7 +624,7 @@ class TransverseIsotropicTensor4(AbstractStructuredTensor4):
 
     .. math::
 
-        \mathbb{C} = \sum_{\alpha=1}^6 c_\alpha \mathbb{P}_\alpha
+        \mathbb{C} = \sum_{\alpha=1}^6 c_{\alpha} \mathbb{P}_{\alpha}
 
     Parameters
     ----------

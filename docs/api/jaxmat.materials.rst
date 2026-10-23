@@ -14,6 +14,7 @@ These modules define various *material behaviors* and state update rules.
    jaxmat.materials.elasticity
    jaxmat.materials.elastoplasticity
    jaxmat.materials.fe_fp_elastoplasticity
+   jaxmat.materials.multiphysics
    jaxmat.materials.viscoplasticity
    jaxmat.materials.viscoelasticity
    jaxmat.materials.generalized_standard

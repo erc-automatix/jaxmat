@@ -33,7 +33,7 @@ traced code remains valid.
 As in JAX, `jaxmat` supports device-portable batched constitutive updates;
 users may run the same code on CPU or GPU. The observed performance will
 strongly depends on the hardware device, the used batch size  and the
-computational intensity of the material model, see the [](demos/performance.md)
+computational intensity of the material model, see the [](demos/quickstart/performance)
 demo for more details.
 
 ### Checking for retracing
