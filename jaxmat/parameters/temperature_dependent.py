@@ -77,7 +77,7 @@ class Affine(AbstractParameter):
     r"""Reference value $p_{\textrm{ref}}$"""
     slope: jax.Array = parameter()
     r"""Slope $s$"""
-    T_ref: jax.Array = parameter(default=DEFAULT_TEMPERATURE)
+    T_ref: jax.Array = parameter(static=True, default=DEFAULT_TEMPERATURE)
     r"""Reference temperature $T_{\textrm{ref}}$"""
 
     def evaluate(self, T):
@@ -93,7 +93,7 @@ class Polynomial(AbstractParameter):
 
     coeffs: jax.Array = parameter()
     """Polynomial coefficients, ordered from low to high order."""
-    T_ref: jax.Array = parameter(default=DEFAULT_TEMPERATURE)
+    T_ref: jax.Array = parameter(static=True, default=DEFAULT_TEMPERATURE)
 
     def evaluate(self, T):
         return jnp.polyval(self.coeffs[::-1], T - self.T_ref)
@@ -109,7 +109,7 @@ class Arrhenius(AbstractParameter):
     """Arrhenius factor."""
     Q: jax.Array = parameter()
     """Activation energy"""
-    R: jax.Array = parameter(default=8.314462618)
+    R: jax.Array = parameter(static=True, default=8.314462618)
     r"""Universal gas constant $R=8.314462618 \textrm{J}.\textrm{K}^{-1}.\textrm{mol}^{-1}."""
 
     def evaluate(self, T):
