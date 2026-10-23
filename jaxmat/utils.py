@@ -63,7 +63,7 @@ def enforce_dtype(dtype=jnp.float64, **kwargs):
     from .parameters import parameter
 
     warnings.warn(
-        "'enforce_dtype' is deprecated and will be removed in v1.1. Use 'parameter()' instead "
+        "'enforce_dtype' is deprecated and will be removed in v0.2. Use 'parameter()' instead "
         "to coerce dtypes, pass default values, etc.",
         FutureWarning,
         stacklevel=2,
@@ -76,7 +76,7 @@ def default_value(value, dtype=jnp.float64, **kwargs):
     """Deprecated alias for :func:`initial_value` (internal-state field)."""
 
     warnings.warn(
-        "'default_value' is deprecated and will be removed in v1.1. Use 'initial_value' instead for"
+        "'default_value' is deprecated and will be removed in v0.2. Use 'initial_value' instead for"
         " state variable initialization and 'parameter' for physical parameters.",
         FutureWarning,
         stacklevel=2,
