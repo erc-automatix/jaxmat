@@ -26,6 +26,12 @@ authors:
     affiliation: >-
       "Department of Engineering, University of Luxembourg"
     orcid: 'https://orcid.org/0000-0001-7216-861X'
+  - given-names: Ludovic
+    family-names: Druette 
+    email: ludovic.druette@edf.fr
+    affiliation: >-
+      "EDF Lab Paris-Saclay"
+    orcid: 'https://orcid.org/0000-0001-7216-861X'
 repository-code: 'https://github.com/erc-automatix/jaxmat'
 url: 'https://erc-automatix.github.io/jaxmat/'
 abstract: >-
@@ -43,5 +49,5 @@ keywords:
   - constitutive models
   - solid mechanics
   - neural networks
-license: LGPL-3.0+
-version: 0.0.3
+license: LGPL-3.0-or-later
+version: 0.1

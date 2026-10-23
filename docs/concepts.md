@@ -110,7 +110,7 @@ as follows:
 
 For more details on the various discretization strategies and solving schemes,
 we refer to {cite:p}`simo2006computational` and the [material models
-gallery](models).
+gallery](api/jaxmat.materials.rst).
 
 ## Consistent tangent operator
 

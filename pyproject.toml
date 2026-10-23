@@ -1,23 +1,23 @@
 [project]
 name = "jaxmat"
-version = "0.0.4"
+version = "0.1"
 description = "Automated material constitutive modeling in JAX"
 readme = "README.md"
 authors = [
     { name = "Jeremy Bleyer", email = "jeremy.bleyer@enpc.fr" },
     { name = "Paul Bouteiller", email = "paul.bouteiller@cea.fr" },
-    { name = "Jack S. Hale", email = "jack.hale@uni.lu" }
+    { name = "Jack S. Hale", email = "jack.hale@uni.lu" },
+    { name = "Ludovic Druette", email = "ludovic.druette@edf.fr" }
 ]
-license = { text = "LGPL-3.0" }
+license = "LGPL-3.0-or-later"
 keywords = ["material science", "machine learning", "material modeling", "solid mechanics", "automatic differentiation"]
 requires-python = ">=3.11"
 dependencies = [
     "jax>=0.6.1",
-    "optax>=0.2",
-    "equinox>=0.11",
+    "optax>=0.2.5",
+    "equinox>=0.12.2",
     "optimistix>=0.1.0",
-    "lineax>=0.0.7",
-    "diffrax>=0.7",        
+    "lineax>=0.1.0",    
     "paramax>=0.0.5",      
 ]
 
@@ -33,7 +33,8 @@ docs = [
     "jupytext",
     "jupyter_book<2",
     "sphinx_autodoc_typehints",
-    "sphinx_math_dollar"
+    "sphinx_math_dollar",
+    "diffrax>=0.7",    
 ]
 gpu = [
     "jax[cuda12]>=0.6.1",
@@ -54,7 +55,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["jaxmat*", "demos*", "tests*"]
+include = ["jaxmat*"]
 
 [tool.ruff]
 line-length = 100
