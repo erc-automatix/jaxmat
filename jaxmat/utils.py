@@ -3,6 +3,7 @@ import json
 import pathlib
 import warnings
 from collections.abc import Callable
+from importlib.metadata import version
 
 import equinox as eqx
 import jax.numpy as jnp
@@ -165,6 +166,13 @@ def print_eqx_fields(obj, fields=None, indent=0):
         print(f"{pad}{obj}")
 
 
+_FILE_FORMAT = 1
+
+
+def _model_name(model):
+    return type(model).__qualname__
+
+
 def save_model(
     filename: str | pathlib.Path,
     model: eqx.Module,
@@ -173,34 +181,67 @@ def save_model(
     """
     Serialize and save an Equinox Module in a file.
 
-    Args:
-        filename: Path of the file to save the module.
-        model: Model to save.
-        hyperparameters: Hyperparameters of the model, that is parameters that
-                         describe the shape of the associated PyTree.
+    The file starts with a one-line JSON header (file format, jaxmat version, model class and
+    ``hyperparameters``), followed by the array and number leaves of the model, written with
+    :func:`equinox.tree_serialise_leaves`. Only these leaves are saved: the structure of the
+    model, its static fields (e.g. solvers) and functions (e.g. the transforms of constrained
+    parameters) come from the template given to :func:`load_model`.
+
+    Parameters
+    ----------
+    filename: str or pathlib.Path
+        Path of the file to save the module.
+    model: eqx.Module
+        Model to save, e.g. a calibrated material or a material state.
+    hyperparameters: dict, optional
+        Hyperparameters of the model, that is parameters that describe the shape of the
+        associated PyTree (e.g. a number of branches or layers). They must be JSON
+        serializable, and are passed to the factory given to :func:`load_model`.
     """
+    header = {
+        "format": _FILE_FORMAT,
+        "jaxmat": version("jaxmat"),
+        "model": _model_name(model),
+        "hyperparameters": hyperparameters,
+    }
     with open(filename, "wb") as file:
-        if hyperparameters is not None:
-            hyperparam_str = json.dumps(hyperparameters)
-            file.write((hyperparam_str + "\n").encode())
+        file.write((json.dumps(header) + "\n").encode())
         eqx.tree_serialise_leaves(file, model)
 
 
 def load_model(filename: str | pathlib.Path, skeleton: eqx.Module | Callable) -> eqx.Module:
     """
-    Load a serialized model saved with save_model.
+    Load a serialized model saved with :func:`save_model`.
 
-    Args:
-        filename: Path of the file to save the module.
-        skeleton: Either an equinox module with the same shape as the PyTree
-                  to deserialize, or a function that takes hyperparameters and
-                  create such a module
+    Parameters
+    ----------
+    filename: str or pathlib.Path
+        Path of the file to load the module from.
+    skeleton: eqx.Module or Callable
+        Either an equinox module with the same structure as the saved model, whose leaf
+        values are replaced by the saved ones, or a function that takes the saved
+        hyperparameters as keyword arguments and creates such a module.
+
+    Raises
+    ------
+    ValueError
+        If the file was not written by :func:`save_model`, or if it holds a model of another
+        class than ``skeleton``.
     """
     with open(filename, "rb") as file:
-        model: eqx.Module
+        try:
+            header = json.loads(file.readline())
+        except ValueError:  # not text, or not JSON
+            header = None
+        if not isinstance(header, dict) or "model" not in header:
+            raise ValueError(f"{filename} is not a model file written by save_model.")
         if isinstance(skeleton, eqx.Module):
             model = skeleton
         else:
-            hyperparameters = json.loads(file.readline().decode())
-            model = skeleton(**hyperparameters)
+            model = skeleton(**(header["hyperparameters"] or {}))
+        if header["model"] != _model_name(model):
+            raise ValueError(
+                f"{filename} holds a {header['model']} model, but the template is a "
+                f"{_model_name(model)}."
+            )
         return eqx.tree_deserialise_leaves(file, model)

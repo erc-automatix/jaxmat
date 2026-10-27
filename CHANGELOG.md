@@ -29,6 +29,8 @@ the usual 0.x caveat that minor bumps may include breaking changes).
 
 ### Added
 
+- `utils.save_model` and `utils.load_model` save a model (e.g. a calibrated material) or a material state to a file and load it back. Leaves are written with `equinox.tree_serialise_leaves` after a one-line JSON header (jaxmat version, model class, optional hyperparameters). Loading takes either a template module of the same structure, or a factory called with the saved hyperparameters; a file of another model class or not written by `save_model` raises a clear error.
+
 - A generic `parameters` module has been added. It contains the following features:
   * `parameter()`: a field converter to declare parameters, accepting as default values constants, `eqx.Module` or `AbstractParameter`.
   * Constrained parameters are introduced using latent representations, relying on [`paramax`](https://github.com/danielward27/paramax). Gradients can  be taken with respect to latent representations to remain in the feasible region of the parameter. Currently supports
