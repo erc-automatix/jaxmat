@@ -50,6 +50,8 @@ the usual 0.x caveat that minor bumps may include breaking changes).
 
 - Generic multiphysics behaviors. `jaxmat.state.make_physics` declares the gradients (inputs), fluxes (outputs) and external variables of a behavior and generates the matching state class, cached so that equal declarations give the same class. A `MultiphysicsBehavior` sets `physics` and implements `response(x, state, dt) -> (fluxes, internal)`: inputs and fluxes are tuples (or dicts) in declaration order, every variable is recorded in the new state, parameters are resolved at the declared external variables, and `tangent` returns the consistent tangent blocks. The library fixes no multiphysics declaration: the new poroelastic consolidation demo declares its own.
 
+- `LogarithmicStrain` turns any small-strain behavior into a finite-strain one in the logarithmic strain space (Miehe, Apel & Lambrecht, 2002). The small-strain behavior runs unchanged on the Hencky strain `E = log(C)/2`, and its stress `T` is pulled back as `S = 2 T : dE/dC`, `P = F S`, the derivative of the tensor logarithm being obtained by automatic differentiation. The resulting behavior is objective, works with any internal variables and with anisotropic models, and its consistent tangent follows by AD. Usage: `jm.LogarithmicStrain(small_strain_behavior)`; the state is a `LogarithmicStrainState` where `state.internal` holds the internal variables of the small-strain behavior, as when it is used directly, and `state.log_strain`, `state.log_stress` are `E` and `T`.
+
 ## v0.0.4 - 2026-07-08
 
 ### Fixed
