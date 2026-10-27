@@ -1,5 +1,8 @@
 import functools
+import json
+import pathlib
 import warnings
+from collections.abc import Callable
 
 import equinox as eqx
 import jax.numpy as jnp
@@ -160,3 +163,44 @@ def print_eqx_fields(obj, fields=None, indent=0):
             print(f"{pad}[{i}]: {v}")
     else:
         print(f"{pad}{obj}")
+
+
+def save_model(
+    filename: str | pathlib.Path,
+    model: eqx.Module,
+    hyperparameters: dict | None = None,
+) -> None:
+    """
+    Serialize and save an Equinox Module in a file.
+
+    Args:
+        filename: Path of the file to save the module.
+        model: Model to save.
+        hyperparameters: Hyperparameters of the model, that is parameters that
+                         describe the shape of the associated PyTree.
+    """
+    with open(filename, "wb") as file:
+        if hyperparameters is not None:
+            hyperparam_str = json.dumps(hyperparameters)
+            file.write((hyperparam_str + "\n").encode())
+        eqx.tree_serialise_leaves(file, model)
+
+
+def load_model(filename: str | pathlib.Path, skeleton: eqx.Module | Callable) -> eqx.Module:
+    """
+    Load a serialized model saved with save_model.
+
+    Args:
+        filename: Path of the file to save the module.
+        skeleton: Either an equinox module with the same shape as the PyTree
+                  to deserialize, or a function that takes hyperparameters and
+                  create such a module
+    """
+    with open(filename, "rb") as file:
+        model: eqx.Module
+        if isinstance(skeleton, eqx.Module):
+            model = skeleton
+        else:
+            hyperparameters = json.loads(file.readline().decode())
+            model = skeleton(**hyperparameters)
+        return eqx.tree_deserialise_leaves(file, model)
