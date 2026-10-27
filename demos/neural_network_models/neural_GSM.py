@@ -146,6 +146,7 @@ viscous_model = jm.LinearElasticIsotropic(E1, jnp.full_like(E1, fill_value=nu))
 
 material = jm.GeneralizedMaxwell(
     elasticity=elasticity,
+    Nbranch=len(tau),
     viscous_branches=viscous_model,
     relaxation_times=tau,
 )
@@ -339,7 +340,7 @@ plt.semilogx(
     sig_init[:, 0, 1],
     "-k",
     alpha=0.75,
-    label=rf"Initialization $N_\textrm{{var}}={Nvar}$",
+    label=rf"Initialization $N_\text{{var}}={Nvar}$",
 )
 plt.xlabel("Time $t$")
 plt.ylabel(r"Shear stress $\sigma_{xy}$ [MPa]")
@@ -461,7 +462,7 @@ for gsm, Nvar in zip(gsm_list, Nvar_list):
         "-",
         color="royalblue",
         alpha=0.75,
-        label=rf"Trained $N_\textrm{{var}}={Nvar}$",
+        label=rf"Trained $N_\text{{var}}={Nvar}$",
     )
     plt.xlabel("Time $t$ [s]")
     plt.ylabel(r"Shear stress $\sigma_{xy}$ [MPa]")
@@ -484,7 +485,10 @@ for Nmax in Nmax_list:
     viscous_model = jm.LinearElasticIsotropic(E1_, jnp.full_like(E1_, fill_value=nu))
     maxwell_list.append(
         jm.GeneralizedMaxwell(
-            elasticity=elasticity, viscous_branches=viscous_model, relaxation_times=tau_
+            elasticity=elasticity,
+            Nbranch=Nmax,
+            viscous_branches=viscous_model,
+            relaxation_times=tau_,
         )
     )
 
