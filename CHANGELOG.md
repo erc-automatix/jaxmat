@@ -31,7 +31,7 @@ the usual 0.x caveat that minor bumps may include breaking changes).
 
 - `utils.print_eqx_fields` takes a `format` option: a format specification such as `".3e"`, a dict of them per field (nested for sub-modules), or a list per element of a list or tuple. It applies to numbers and numeric arrays only, other values being printed as they are.
 
-- `utils.save_model` and `utils.load_model` save a model (e.g. a calibrated material) or a material state to a file and load it back. Leaves are written with `equinox.tree_serialise_leaves` after a one-line JSON header (jaxmat version, model class, optional hyperparameters). Loading takes either a template module of the same structure, or a factory called with the saved hyperparameters; a file of another model class or not written by `save_model` raises a clear error.
+- `utils.save_model` and `utils.load_model` save a model (e.g. a calibrated material) or a material state to a file and load it back. Leaves are written with `equinox.tree_serialise_leaves` after a one-line JSON header (jaxmat version, model class, optional hyperparameters, paths of the saved leaves). Loading takes either a template module of the same structure, or a factory called with the saved hyperparameters; a file of another model class, of another structure (e.g. saved with constrained parameters unwrapped by `paramax.unwrap`) or not written by `save_model` raises a clear error. Constrained parameters are saved with their latent values.
 
 - A generic `parameters` module has been added. It contains the following features:
   * `parameter()`: a field converter to declare parameters, accepting as default values constants, `eqx.Module` or `AbstractParameter`.

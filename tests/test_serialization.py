@@ -7,7 +7,7 @@ import paramax
 import pytest
 
 import jaxmat.materials as jm
-from jaxmat.parameters import Affine, Positive, parameter
+from jaxmat.parameters import Affine, Interval, Positive, Scaled, Unconstrained, parameter
 from jaxmat.tensors import SymmetricTensor2
 from jaxmat.utils import load_model, save_model
 
@@ -79,17 +79,47 @@ def test_material_round_trip(tmp_path, model, template):
     assert eqx.tree_equal(load_model(tmp_path / "material.eqx", template), model)
 
 
+class Constrained(eqx.Module):
+    E: jax.Array = Positive()
+    nu: jax.Array = Interval(-1.0, 0.5)
+    sig0: jax.Array = Scaled(ref=100.0)
+    a: jax.Array = Unconstrained()
+
+
+VALUES = dict(E=210e3, nu=0.3, sig0=251.25, a=-1.5)
+TEMPLATE = dict(E=1.0, nu=0.0, sig0=1.0, a=0.0)
+
+
 def test_constrained_parameters_round_trip(tmp_path):
-    """Constrained parameters are saved in their latent form and recovered exactly."""
+    """Constrained parameters are saved in their latent form and recovered exactly. The
+    transforms come from the template (Interval and Scaled build a new function for each
+    instance, so only the arrays compare equal)."""
+    model = Constrained(**VALUES)
+    save_model(tmp_path / "law.eqx", model)
+    loaded = load_model(tmp_path / "law.eqx", Constrained(**TEMPLATE))
+    assert eqx.tree_equal(eqx.filter(loaded, eqx.is_array), eqx.filter(model, eqx.is_array))
+    physical = paramax.unwrap(loaded)
+    for name, value in VALUES.items():
+        assert float(getattr(physical, name)) == pytest.approx(value, rel=1e-14)
 
-    class Hardening(eqx.Module):
-        sig0: jax.Array = Positive()
-        H: jax.Array = Positive()
 
-    save_model(tmp_path / "law.eqx", Hardening(sig0=251.25, H=1234.5))
-    loaded = paramax.unwrap(load_model(tmp_path / "law.eqx", Hardening(sig0=1.0, H=1.0)))
-    assert float(loaded.sig0) == pytest.approx(251.25, rel=1e-14)
-    assert float(loaded.H) == pytest.approx(1234.5, rel=1e-14)
+def test_unwrapped_model_into_constrained_template_raises(tmp_path):
+    """A model saved with unwrapped parameters has the same class and number of leaves as the
+    constrained template: without a structure check, physical values would be read as latent
+    ones."""
+    save_model(tmp_path / "law.eqx", paramax.unwrap(Constrained(**VALUES)))
+    with pytest.raises(ValueError, match=r"leaf 0 is \.E in the file and \.E\.args\[0\]"):
+        load_model(tmp_path / "law.eqx", Constrained(**TEMPLATE))
+
+
+def test_other_structure_raises(tmp_path):
+    """A constant replaced by a temperature law changes the leaves: clear error."""
+    save_model(tmp_path / "material.eqx", jm.TemperatureDependent(von_mises()))
+    with pytest.raises(ValueError, match="does not match the structure"):
+        load_model(
+            tmp_path / "material.eqx",
+            jm.TemperatureDependent(von_mises(sig0=Affine(ref=0.0, slope=0.0))),
+        )
 
 
 def test_batched_state_round_trip(tmp_path):

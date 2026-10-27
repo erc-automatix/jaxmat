@@ -224,6 +224,12 @@ def _model_name(model):
     return type(model).__qualname__
 
 
+def _saved_leaf_paths(model):
+    """Paths of the leaves written by ``eqx.tree_serialise_leaves`` (arrays and numbers)."""
+    leaves, _ = jax.tree_util.tree_flatten_with_path(model)
+    return [jax.tree_util.keystr(path) for path, leaf in leaves if eqx.is_array_like(leaf)]
+
+
 def save_model(
     filename: str | pathlib.Path,
     model: eqx.Module,
@@ -232,11 +238,12 @@ def save_model(
     """
     Serialize and save an Equinox Module in a file.
 
-    The file starts with a one-line JSON header (file format, jaxmat version, model class and
-    ``hyperparameters``), followed by the array and number leaves of the model, written with
-    :func:`equinox.tree_serialise_leaves`. Only these leaves are saved: the structure of the
-    model, its static fields (e.g. solvers) and functions (e.g. the transforms of constrained
-    parameters) come from the template given to :func:`load_model`.
+    The file starts with a one-line JSON header (file format, jaxmat version, model class,
+    ``hyperparameters`` and paths of the saved leaves), followed by the array and number leaves
+    of the model, written with :func:`equinox.tree_serialise_leaves`. Only these leaves are
+    saved: the structure of the model, its static fields (e.g. solvers) and functions (e.g.
+    the transforms of constrained parameters) come from the template given to
+    :func:`load_model`. Constrained parameters are saved with their latent values.
 
     Parameters
     ----------
@@ -254,6 +261,7 @@ def save_model(
         "jaxmat": version("jaxmat"),
         "model": _model_name(model),
         "hyperparameters": hyperparameters,
+        "leaves": _saved_leaf_paths(model),
     }
     with open(filename, "wb") as file:
         file.write((json.dumps(header) + "\n").encode())
@@ -276,8 +284,9 @@ def load_model(filename: str | pathlib.Path, skeleton: eqx.Module | Callable) ->
     Raises
     ------
     ValueError
-        If the file was not written by :func:`save_model`, or if it holds a model of another
-        class than ``skeleton``.
+        If the file was not written by :func:`save_model`, if it holds a model of another
+        class than ``skeleton``, or if its leaves do not match those of the template, e.g. a
+        model saved with constrained parameters unwrapped by ``paramax.unwrap``.
     """
     with open(filename, "rb") as file:
         try:
@@ -294,5 +303,19 @@ def load_model(filename: str | pathlib.Path, skeleton: eqx.Module | Callable) ->
             raise ValueError(
                 f"{filename} holds a {header['model']} model, but the template is a "
                 f"{_model_name(model)}."
+            )
+        saved, expected = header["leaves"], _saved_leaf_paths(model)
+        if saved != expected:
+            # first differing leaf, or the first leaf missing on one side
+            i = next(
+                (i for i, (a, b) in enumerate(zip(saved, expected)) if a != b),
+                min(len(saved), len(expected)),
+            )
+            in_file = saved[i] if i < len(saved) else "absent"
+            in_template = expected[i] if i < len(expected) else "absent"
+            raise ValueError(
+                f"{filename} does not match the structure of the template: leaf {i} is "
+                f"{in_file} in the file and {in_template} in the template. Was the model saved "
+                "in another form, e.g. with constrained parameters unwrapped by paramax.unwrap?"
             )
         return eqx.tree_deserialise_leaves(file, model)
