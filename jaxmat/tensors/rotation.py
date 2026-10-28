@@ -108,10 +108,17 @@ def from_euler_bunge(phi1, Phi, phi2):
     """
     Construct rotation matrix/matrices from Bunge Euler angles (ZXZ convention).
 
-    The rotation is defined as:
+    The rotation is the active rotation, composed of the active rotations
+    :math:`R_z, R_x` about the axes (as returned by :func:`from_axis_angle`):
 
     .. math::
         R = R_z(\\phi_1) R_x(\\Phi) R_z(\\phi_2)
+
+    It maps the sample axes onto the crystal axes: its columns are the crystal axes in the
+    sample frame, a vector of crystal components :math:`v_c` has the sample components
+    :math:`R v_c`, and a tensor ``T`` given in the crystal axes is expressed in the sample
+    axes by ``T.rotate(R)``. It is the transpose of the Bunge orientation matrix
+    :math:`g = R^T` (rows are the crystal axes), which converts sample to crystal components.
 
     Parameters
     ----------
@@ -134,13 +141,13 @@ def from_euler_bunge(phi1, Phi, phi2):
     R = jnp.stack(
         [
             c1 * c2 - s1 * s2 * c,
-            s1 * c2 + c1 * s2 * c,
-            s2 * s,
             -c1 * s2 - s1 * c2 * c,
-            -s1 * s2 + c1 * c2 * c,
-            c2 * s,
             s1 * s,
+            s1 * c2 + c1 * s2 * c,
+            -s1 * s2 + c1 * c2 * c,
             -c1 * s,
+            s2 * s,
+            c2 * s,
             c,
         ],
         axis=-1,
