@@ -38,12 +38,22 @@ from .utils import safe_norm, safe_sqrt
 
 def _dim(A) -> int:
     r"""Spatial dimension of a square matrix $\mathbf{A}$, inferred from its shape."""
-    return jnp.asarray(A).shape[0]
+    return jnp.asarray(A).shape[-1]
 
 
 def _tr(A) -> jax.Array:
-    r"""Trace $\operatorname{tr}(\mathbf{A}) = A_{ii}$."""
-    return jnp.trace(A)
+    r"""Trace $\operatorname{tr}(\mathbf{A}) = A_{ii}$, of a matrix or a batch of matrices."""
+    return jnp.trace(A, axis1=-2, axis2=-1)
+
+
+def _batched(fun, A):
+    """Apply ``fun``, a function of a single (3, 3) matrix, to ``A`` of shape (..., 3, 3)."""
+    A = jnp.asarray(A)
+    if A.ndim == 2:
+        return fun(A)
+    batch_shape = A.shape[:-2]
+    out = jax.vmap(fun)(A.reshape((-1, 3, 3)))
+    return jax.tree.map(lambda x: x.reshape(batch_shape + x.shape[1:]), out)
 
 
 def _dev(A) -> jax.Array:
@@ -54,7 +64,7 @@ def _dev(A) -> jax.Array:
         \frac{1}{d}\operatorname{tr}(\mathbf{A})\,\mathbf{I}
     """
     d = _dim(A)
-    return A - _tr(A) / d * jnp.eye(d)
+    return A - (_tr(A) / d)[..., None, None] * jnp.eye(d)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -71,16 +81,17 @@ def det33(A) -> jax.Array:
 
     Parameters
     ----------
-    A : array_like, shape (3, 3)
+    A : array_like, shape (..., 3, 3)
 
     Returns
     -------
     jax.Array
-        Scalar determinant.
+        Determinant, shape (...).
     """
-    a11, a12, a13 = A[0, 0], A[0, 1], A[0, 2]
-    a21, a22, a23 = A[1, 0], A[1, 1], A[1, 2]
-    a31, a32, a33 = A[2, 0], A[2, 1], A[2, 2]
+    A = jnp.asarray(A)
+    a11, a12, a13 = A[..., 0, 0], A[..., 0, 1], A[..., 0, 2]
+    a21, a22, a23 = A[..., 1, 0], A[..., 1, 1], A[..., 1, 2]
+    a31, a32, a33 = A[..., 2, 0], A[..., 2, 1], A[..., 2, 2]
     return (
         a11 * (a22 * a33 - a23 * a32)
         - a12 * (a21 * a33 - a23 * a31)
@@ -98,29 +109,37 @@ def inv33(A) -> jax.Array:
 
     Parameters
     ----------
-    A : array_like, shape (3, 3)
+    A : array_like, shape (..., 3, 3)
 
     Returns
     -------
     jax.Array
-        Shape (3, 3).
+        Shape (..., 3, 3).
     """
-    a11, a12, a13 = A[0, 0], A[0, 1], A[0, 2]
-    a21, a22, a23 = A[1, 0], A[1, 1], A[1, 2]
-    a31, a32, a33 = A[2, 0], A[2, 1], A[2, 2]
-    cof = jnp.array(
+    A = jnp.asarray(A)
+    a11, a12, a13 = A[..., 0, 0], A[..., 0, 1], A[..., 0, 2]
+    a21, a22, a23 = A[..., 1, 0], A[..., 1, 1], A[..., 1, 2]
+    a31, a32, a33 = A[..., 2, 0], A[..., 2, 1], A[..., 2, 2]
+    cof = jnp.stack(
         [
-            [a22 * a33 - a23 * a32, a13 * a32 - a12 * a33, a12 * a23 - a13 * a22],
-            [a23 * a31 - a21 * a33, a11 * a33 - a13 * a31, a13 * a21 - a11 * a23],
-            [a21 * a32 - a22 * a31, a12 * a31 - a11 * a32, a11 * a22 - a12 * a21],
-        ]
-    )
+            a22 * a33 - a23 * a32,
+            a13 * a32 - a12 * a33,
+            a12 * a23 - a13 * a22,
+            a23 * a31 - a21 * a33,
+            a11 * a33 - a13 * a31,
+            a13 * a21 - a11 * a23,
+            a21 * a32 - a22 * a31,
+            a12 * a31 - a11 * a32,
+            a11 * a22 - a12 * a21,
+        ],
+        axis=-1,
+    ).reshape((*A.shape[:-2], 3, 3))
     det = (
         a11 * (a22 * a33 - a23 * a32)
         - a12 * (a21 * a33 - a23 * a31)
         + a13 * (a21 * a32 - a22 * a31)
     )
-    return cof / det
+    return cof / det[..., None, None]
 
 
 def principal_invariants(A) -> tuple[jax.Array, jax.Array, jax.Array]:
@@ -143,8 +162,9 @@ def principal_invariants(A) -> tuple[jax.Array, jax.Array, jax.Array]:
     I1, I2, I3 : jax.Array
         Three scalar invariants.
     """
-    i1 = jnp.trace(A)
-    i2 = (jnp.trace(A) ** 2 - jnp.trace(A @ A)) / 2
+    A = jnp.asarray(A)
+    i1 = _tr(A)
+    i2 = (i1**2 - _tr(A @ A)) / 2
     i3 = det33(A)
     return i1, i2, i3
 
@@ -166,9 +186,10 @@ def main_invariants(A) -> tuple[jax.Array, jax.Array, jax.Array]:
     J1, J2, J3 : jax.Array
         Three scalar invariants.
     """
-    j1 = jnp.trace(A)
-    j2 = jnp.trace(A @ A)
-    j3 = jnp.trace(A @ A @ A)
+    A = jnp.asarray(A)
+    j1 = _tr(A)
+    j2 = _tr(A @ A)
+    j3 = _tr(A @ A @ A)
     return j1, j2, j3
 
 
@@ -197,9 +218,10 @@ def pq_invariants(sig) -> tuple[jax.Array, jax.Array]:
     q : jax.Array
         Von Mises equivalent stress.
     """
-    p = -jnp.trace(sig) / 3
+    sig = jnp.asarray(sig)
+    p = -_tr(sig) / 3
     s = _dev(sig)
-    q = safe_sqrt(3.0 / 2.0 * jnp.vdot(s, s))
+    q = safe_sqrt(3.0 / 2.0 * jnp.sum(s * s, axis=(-2, -1)))
     return p, q
 
 
@@ -288,6 +310,30 @@ def eig33_HA(A, rtol=1e-16) -> tuple[jax.Array, jax.Array]:
 
 @partial(jax.jit, static_argnums=1)
 def eig33(A, rtol=1e-16):
+    r"""
+    Eigenvalues and eigenprojectors of a real symmetric $3 \times 3$ matrix, or of a batch.
+
+    Closed-form expressions, scaled by the norm of $\mathbf{A}$. The eigenprojectors
+    $\mathbf{n}_i \otimes \mathbf{n}_i = \partial\lambda_i/\partial\mathbf{A}$ are obtained by
+    forward differentiation of the eigenvalues. Within a repeated eigenvalue (relative gap
+    below about 1e-8) they are not individual projectors, only their sum is.
+
+    Parameters
+    ----------
+    A : array_like, shape (..., 3, 3)
+    rtol : float, optional
+        Relative tolerance of the isotropic case.
+
+    Returns
+    -------
+    eigvals : jax.Array, shape (..., 3)
+        Eigenvalues in ascending order.
+    eigendyads : jax.Array, shape (..., 3, 3, 3)
+    """
+    return _batched(partial(_eig33, rtol=rtol), A)
+
+
+def _eig33(A, rtol=1e-16):
     norm_A = safe_norm(A)
 
     def J2s(A):
@@ -624,7 +670,7 @@ def isotropic_function(fun, A, *args) -> jax.Array:
     jax.Array
         Shape (3, 3).
     """
-    return _isotropic_function(fun, jnp.asarray(A), *args)
+    return _batched(lambda A_: _isotropic_function(fun, A_, *args), A)
 
 
 # -- scalar symmetric functions of the eigenvalues ----------------------------
@@ -715,7 +761,7 @@ def eigenvalue_function(fun, A, *args) -> jax.Array:
     jax.Array
         Scalar.
     """
-    return _eigenvalue_function(fun, jnp.asarray(A), *args)
+    return _batched(lambda A_: _eigenvalue_function(fun, A_, *args), A)
 
 
 def sqrtm(A) -> jax.Array:
@@ -743,7 +789,7 @@ def sqrtm(A) -> jax.Array:
         Simo, J. C., & Hughes, T. J. R. (1998). *Computational Inelasticity*.
         Springer. p. 244.
     """
-    return _sqrtm(jnp.asarray(A))[0]
+    return _batched(_sqrtm, A)[0]
 
 
 def inv_sqrtm(A) -> jax.Array:
@@ -770,7 +816,7 @@ def inv_sqrtm(A) -> jax.Array:
         Simo, J. C., & Hughes, T. J. R. (1998). *Computational Inelasticity*.
         Springer. p. 244.
     """
-    return _sqrtm(jnp.asarray(A))[1]
+    return _batched(_sqrtm, A)[1]
 
 
 def expm(A) -> jax.Array:
@@ -789,7 +835,7 @@ def expm(A) -> jax.Array:
     jax.Array
         Shape (3, 3).
     """
-    return _isotropic_function(jnp.exp, jnp.asarray(A))
+    return _batched(partial(_isotropic_function, jnp.exp), A)
 
 
 def logm(A) -> jax.Array:
@@ -810,7 +856,7 @@ def logm(A) -> jax.Array:
     jax.Array
         Shape (3, 3).
     """
-    return _isotropic_function(jnp.log, jnp.asarray(A))
+    return _batched(partial(_isotropic_function, jnp.log), A)
 
 
 def powm(A, m) -> jax.Array:
@@ -831,4 +877,4 @@ def powm(A, m) -> jax.Array:
     jax.Array
         Shape (3, 3).
     """
-    return _isotropic_function(jnp.power, jnp.asarray(A), m)
+    return _batched(lambda A_: _isotropic_function(jnp.power, A_, m), A)

@@ -49,6 +49,7 @@ from jaxmat.tensors.generic_tensors import (
     SymmetricTensor2,
     SymmetricTensor4,
     _array4,
+    _scalar,
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -275,7 +276,7 @@ class AbstractStructuredTensor4(eqx.Module):
             Scalar (or batch of scalars).
         """
         D = _array4(other)
-        PD = jnp.einsum("pij,ij->p", self._basis_arrays, D)  # (n,)
+        PD = jnp.einsum("pij,...ij->...p", self._basis_arrays, D)  # (..., n)
         return jnp.sum(self._coeffs * PD, axis=-1)
 
     def rotate(self, R: jax.Array) -> SymmetricTensor4:
@@ -314,7 +315,7 @@ class AbstractStructuredTensor4(eqx.Module):
         coefficient-space formula is available.
         """
         if isinstance(other, SymmetricTensor2):
-            return SymmetricTensor2(array=self.array @ other._array)
+            return SymmetricTensor2(array=jnp.einsum("...ij,...j->...i", self.array, other._array))
         return SymmetricTensor4(array=self.array @ _array4(other))
 
     def __rmatmul__(self, other):
@@ -325,15 +326,15 @@ class AbstractStructuredTensor4(eqx.Module):
 
     def __mul__(self, other):
         r"""Scalar multiplication $\alpha \mathbb{C}$; stays in the same symmetry class."""
-        return self._rebuild(jnp.asarray(other) * self._coeffs)
+        return self._rebuild(_scalar(other, 1) * self._coeffs)
 
     def __rmul__(self, other):
         r"""Scalar multiplication $\alpha \mathbb{C}$; stays in the same symmetry class."""
-        return self._rebuild(jnp.asarray(other) * self._coeffs)
+        return self._rebuild(_scalar(other, 1) * self._coeffs)
 
     def __truediv__(self, other):
         r"""Scalar division $\mathbb{C} / \alpha$; stays in the same symmetry class."""
-        return self._rebuild(self._coeffs / jnp.asarray(other))
+        return self._rebuild(self._coeffs / _scalar(other, 1))
 
     def __neg__(self):
         r"""Negation $-\mathbb{C}$; stays in the same symmetry class."""

@@ -91,6 +91,13 @@ def _raw_array(arg):
     return arg._array if hasattr(arg, "_array") else jnp.asarray(arg)
 
 
+def _scalar(other, storage_ndim: int) -> jax.Array:
+    """A scalar or a batch of scalars, shape ``(...)``, broadcast against the storage axes of
+    a tensor: a batch of tensors is multiplied by a batch of scalars, not componentwise."""
+    s = jnp.asarray(other)
+    return s.reshape(s.shape + (1,) * storage_ndim)
+
+
 def _sym2_to_full9(s: "SymmetricTensor2") -> jax.Array:
     """
     Convert a :class:`SymmetricTensor2` Kelvin array to the full 9-component
@@ -106,6 +113,12 @@ def _sym2_to_full9(s: "SymmetricTensor2") -> jax.Array:
         Shape ``(..., 9)``.
     """
     return (s._array / _S2_W)[..., _S2_TO_FULL9_IDX]
+
+
+def _kelvin_matvec(matrix, vector) -> jax.Array:
+    """Kelvin matrix times Kelvin vector, broadcasting batches of both (``@`` would take a
+    batch of vectors for a matrix)."""
+    return jnp.einsum("...ij,...j->...i", matrix, vector)
 
 
 def _array4(obj) -> jax.Array:
@@ -168,7 +181,10 @@ class Tensor2(Tensor):
     given the tensor is initialized to zero.
 
     Batch dimensions precede the storage dimension: a batch of $N$ tensors
-    has ``array.shape == (N, 9)`` and ``tensor.shape == (N, 3, 3)``.
+    has ``array.shape == (N, 9)`` and ``tensor.shape == (N, 3, 3)``. Multiplying (or
+    dividing) by an array of shape ``(N,)`` scales each tensor of the batch by its scalar.
+    Write the tensor on the left (``T * s``): with a JAX array on the left, ``s * T``, JAX
+    converts the tensor to a dense array first.
 
     The ``@`` operator performs **dense matrix composition**
     $(\mathbf{T} \cdot \mathbf{S})_{ik} = T_{ij} S_{jk}$ and always
@@ -334,8 +350,8 @@ class Tensor2(Tensor):
 
         Parameters
         ----------
-        R : array_like, shape (3, 3)
-            Orthogonal rotation matrix.
+        R : array_like, shape (..., 3, 3)
+            Orthogonal rotation matrix, or a batch of them.
 
         Returns
         -------
@@ -434,13 +450,13 @@ class Tensor2(Tensor):
         return type(self)(array=arr - self._array)
 
     def __mul__(self, other):
-        return type(self)(array=jnp.asarray(other) * self._array)
+        return type(self)(array=_scalar(other, 1) * self._array)
 
     def __rmul__(self, other):
-        return type(self)(array=jnp.asarray(other) * self._array)
+        return type(self)(array=_scalar(other, 1) * self._array)
 
     def __truediv__(self, other):
-        return type(self)(array=self._array / jnp.asarray(other))
+        return type(self)(array=self._array / _scalar(other, 1))
 
     def __neg__(self):
         return type(self)(array=-self._array)
@@ -702,16 +718,15 @@ class _AbstractTensor4(Tensor):
 
         Parameters
         ----------
-        R : array_like, shape (3, 3)
-            Orthogonal rotation matrix.
+        R : array_like, shape (..., 3, 3)
+            Orthogonal rotation matrix, or a batch of them.
 
         Returns
         -------
         Same type as ``self``.
         """
-        T = self.tensor
-        for ax in range(4):
-            T = jnp.moveaxis(jnp.tensordot(R, T, (1, ax)), 0, ax)
+        R = jnp.asarray(R)
+        T = jnp.einsum("...ia,...jb,...kc,...ld,...abcd->...ijkl", R, R, R, R, self.tensor)
         return type(self)(tensor=T)
 
     def __add__(self, other):
@@ -727,13 +742,13 @@ class _AbstractTensor4(Tensor):
         return type(self)(array=_array4(other) - self._array)
 
     def __mul__(self, other):
-        return type(self)(array=jnp.asarray(other) * self._array)
+        return type(self)(array=_scalar(other, 2) * self._array)
 
     def __rmul__(self, other):
-        return type(self)(array=jnp.asarray(other) * self._array)
+        return type(self)(array=_scalar(other, 2) * self._array)
 
     def __truediv__(self, other):
-        return type(self)(array=self._array / jnp.asarray(other))
+        return type(self)(array=self._array / _scalar(other, 2))
 
     def __neg__(self):
         return type(self)(array=-self._array)
@@ -800,9 +815,9 @@ class Tensor4(_AbstractTensor4):
         - ``@`` :class:`Tensor4` → :class:`Tensor4`.
         """
         if isinstance(other, SymmetricTensor2):
-            return Tensor2(array=self._array @ _sym2_to_full9(other))
+            return Tensor2(array=_kelvin_matvec(self._array, _sym2_to_full9(other)))
         if isinstance(other, Tensor2):
-            return Tensor2(array=self._array @ other._array)
+            return Tensor2(array=_kelvin_matvec(self._array, other._array))
         if isinstance(other, Tensor4):
             return Tensor4(array=self._array @ other._array)
         return NotImplemented
@@ -895,12 +910,12 @@ class SymmetricTensor4(_AbstractTensor4):
         - ``@`` :class:`SymmetricTensor4` → $(6,6)@(6,6)$ → :class:`SymmetricTensor4`.
         """
         if isinstance(other, SymmetricTensor2):
-            return SymmetricTensor2(array=self._array @ other._array)
+            return SymmetricTensor2(array=_kelvin_matvec(self._array, other._array))
         if isinstance(other, SymmetricTensor4):
             return SymmetricTensor4(array=self._array @ other._array)
         other_arr = _array4(other)
         if other_arr.shape[-1] == 6:
-            return SymmetricTensor2(array=self._array @ other_arr)
+            return SymmetricTensor2(array=_kelvin_matvec(self._array, other_arr))
         if other_arr.shape[-2:] == (6, 6):
             return SymmetricTensor4(array=self._array @ other_arr)
         return NotImplemented

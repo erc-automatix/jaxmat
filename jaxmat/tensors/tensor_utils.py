@@ -21,7 +21,7 @@ import jax
 import jax.numpy as jnp
 
 from jaxmat.tensors.generic_tensors import SymmetricTensor2, Tensor2
-from jaxmat.tensors.linear_algebra import _sqrtm, eig33
+from jaxmat.tensors.linear_algebra import _batched, _sqrtm, eig33
 from jaxmat.tensors.utils import safe_sqrt
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -171,8 +171,8 @@ def axl(A: Tensor2) -> jax.Array:
     jax.Array
         Shape ``(..., 3)``.
     """
-    W = A.skw
-    return jnp.array([-W[1, 2], W[0, 2], -W[0, 1]])
+    W = A.skw.tensor
+    return jnp.stack([-W[..., 1, 2], W[..., 0, 2], -W[..., 0, 1]], axis=-1)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -203,7 +203,7 @@ def polar(F: Tensor2, mode: str = "RU") -> tuple:
         (left stretch).
     """
     C = (F.T @ F).sym
-    U_dense, U_inv_dense = _sqrtm(jnp.asarray(C))
+    U_dense, U_inv_dense = _batched(_sqrtm, C)
     U = SymmetricTensor2(tensor=U_dense)
     R = F @ Tensor2(tensor=U_inv_dense)
     if mode == "RU":
@@ -273,5 +273,5 @@ def _eigenvalues_jvp(primals, tangents):
     (sig,) = primals
     (dsig,) = tangents
     eigvals, eigendyads = eig33(jnp.asarray(sig))
-    deig = jnp.tensordot(eigendyads, jnp.asarray(dsig), axes=([-2, -1], [-2, -1]))
+    deig = jnp.einsum("...aij,...ij->...a", eigendyads, jnp.asarray(dsig))
     return eigvals, deig
