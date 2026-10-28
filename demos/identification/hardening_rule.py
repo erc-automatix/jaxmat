@@ -108,11 +108,10 @@ plt.show()
 # - Neural Network Model based on Input-Convex Neural Networks (ICNN):
 # This model enforces convexity of the potential by construction, guaranteeing a monotonic hardening
 # behavior. The yield stress is defined as the gradient of the convex potential output by the ICNN,
-# see also [](../neural_network_models/hyperelastic_PANN).
-#
-# Both models are implemented as `equinox.Module`s, allowing them to be handled as JAX PyTrees and
-# trained with differentiable solvers.
-#
+# see also [](../neural_network_models/hyperelastic_PANN). As the ICNN is initialized for inputs
+# and outputs of order one, the plastic strain and the yield stress are normalized by the orders of
+# magnitude of the data, $p_\text{ref} = 5\cdot 10^{-2}$ and $\sigma_\text{ref} = 10^3$ MPa, so that
+# $\sigma_Y(p) = \sigma_\text{ref}\, f'(p/p_\text{ref})$ with $f$ the ICNN.
 #
 # Both models are implemented as `equinox.Module`s, allowing them to be handled as JAX PyTrees and
 # trained with differentiable solvers.
@@ -136,9 +135,12 @@ sumexp_hardening = SumExpHardening(
 )
 
 
+p_ref, sig_ref = 5e-2, 1e3  # orders of magnitude of the data
+
+
 class HardeningICNN(ICNN):
     def __call__(self, p):
-        return jax.grad(super().__call__)(p)
+        return sig_ref * jax.grad(super().__call__)(p / p_ref)
 
 
 icnn_hardening = HardeningICNN(0, [N], key)
@@ -214,7 +216,7 @@ for hardening in [sumexp_hardening, icnn_hardening]:
         args=(training_data, gamma),
         has_aux=True,
         throw=False,
-        max_steps=1000,
+        max_steps=5000,
     )
     trained_hardening = sol.value
     sig_hat = sol.aux
@@ -250,8 +252,9 @@ for hardening in [sumexp_hardening, icnn_hardening]:
 # this case, it is preferable to use a relatively small number $N$ of terms in the expansion.
 #
 # Conversely, the ICNN-based model can learn more flexible shapes while still guaranteeing monotonic
-# hardening, thanks to its convexity constraint. As a result, it performs relatively well outside
-# the training range in general.
+# hardening, thanks to its convexity constraint, including outside the training range. Its
+# extrapolation saturates however: the softplus potential is asymptotically linear, so that its
+# derivative, the yield stress, is bounded, as for a Voce law.
 #
 # ## References
 #

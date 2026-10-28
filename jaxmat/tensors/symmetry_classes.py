@@ -17,7 +17,8 @@ All shared behaviour lives in :class:`AbstractStructuredTensor4`:
 
 Each subclass provides only:
 
-- ``__init__``  (parameter parsing and ``_basis_arrays`` assignment)
+- ``__init__``  (parameter parsing)
+- ``_basis_arrays`` property — the basis projectors, a constant (not a pytree leaf)
 - :meth:`_rebuild` — factory for a new same-type instance with updated coefficients
 - :attr:`inv` — class-specific inversion
 - ``__matmul__`` override for same-class composition (coefficient-space algebra)
@@ -41,14 +42,15 @@ Transverse isotropic    6         Walpole     2x2 block + scalar pairs
 
 from __future__ import annotations
 
-import equinox as eqx
 import jax
 import jax.numpy as jnp
 
 from jaxmat.tensors.generic_tensors import (
     SymmetricTensor2,
     SymmetricTensor4,
+    Tensor,
     _array4,
+    _scalar,
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -155,23 +157,29 @@ _CUB_BASIS = jnp.stack([P.array for P in _cubic_projectors()], axis=0)  # (3, 6,
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-class AbstractStructuredTensor4(eqx.Module):
+class AbstractStructuredTensor4(Tensor):
     r"""
     Abstract base for symmetry-reduced fourth-rank tensors.
 
     Concrete subclasses store a coefficient vector
-    ``_coeffs`` of shape ``(..., n)`` (the unique JAX leaf) and a
-    precomputed basis stack ``_basis_arrays`` of shape ``(n, 6, 6)`` (static).
-    Every shared operation is derived from these two objects alone.
+    ``_coeffs`` of shape ``(..., n)`` (the unique JAX leaf, with the symmetry axis of
+    transversely isotropic tensors) and provide the basis stack ``_basis_arrays`` of shape
+    ``(n, 6, 6)``, a constant that is not part of the pytree (it is neither differentiated,
+    trained, batched nor saved). Every shared operation is derived from these two objects.
+
+    They are :class:`~jaxmat.tensors.Tensor` objects of rank 4 and interoperate with
+    :class:`~jaxmat.tensors.SymmetricTensor4` and with each other (``@``, ``+``, ``-``,
+    :meth:`fourth_contract`), through their materialised Kelvin matrix when needed;
+    ``jnp.asarray(C)`` gives the dense ``(3, 3, 3, 3)`` tensor.
 
     The tensor is represented as
 
     .. math::
 
-        \mathbb{C} = \sum_{\alpha=1}^n c_\alpha \mathbb{P}_\alpha
+        \mathbb{C} = \sum_{\alpha=1}^n c_{\alpha} \mathbb{P}_{\alpha}
 
-    where $\mathbb{P}_\alpha$ are the basis projectors (stored in ``_basis_arrays``)
-    and $c_\alpha$ are the coefficients (stored in ``_coeffs``).
+    where $\mathbb{P}_{\alpha}$ are the basis projectors (stored in ``_basis_arrays``)
+    and $c_{\alpha}$ are the coefficients (stored in ``_coeffs``).
 
     Subclasses must implement
     -------------------------
@@ -182,11 +190,24 @@ class AbstractStructuredTensor4(eqx.Module):
     """
 
     _coeffs: jax.Array  # shape (..., n) — the unique JAX leaf
-    _basis_arrays: (
-        jax.Array
-    )  # shape (n, 6, 6) — precomputed constant, frozen by module immutability
+
+    dim = 3
+    """Spatial dimension."""
+    rank = 4
+    """Tensor rank."""
+    base_tensor_shape = (3, 3, 3, 3)
+    """Shape of the base (unbatched) dense tensor."""
+    array_rank = 2
+    """Number of storage dimensions of the materialised Kelvin matrix."""
+    base_array_shape = (6, 6)
+    """Shape of the base (unbatched) materialised Kelvin matrix."""
 
     # ── abstract interface ─────────────────────────────────────────────────────
+
+    @property
+    def _basis_arrays(self) -> jax.Array:
+        """Basis projectors as Kelvin matrices, shape ``(n, 6, 6)``."""
+        raise NotImplementedError
 
     def _rebuild(self, new_coeffs: jax.Array) -> AbstractStructuredTensor4:
         """
@@ -221,7 +242,7 @@ class AbstractStructuredTensor4(eqx.Module):
     @property
     def coeffs(self) -> jax.Array:
         r"""
-        Expansion coefficients $c_\alpha$ in the symmetry projector basis.
+        Expansion coefficients $c_{\alpha}$ in the symmetry projector basis.
 
         Returns
         -------
@@ -235,7 +256,7 @@ class AbstractStructuredTensor4(eqx.Module):
         r"""
         Materialised $(6, 6)$ Kelvin matrix.
 
-        Computed as $\sum_\alpha c_\alpha \{P_\alpha\}$ via a single
+        Computed as $\sum_{\alpha} c_{\alpha} \{P_{\alpha}\}$ via a single
         ``tensordot`` with the precomputed basis stack.  Supports arbitrary
         batch dimensions in ``_coeffs``.
 
@@ -245,6 +266,30 @@ class AbstractStructuredTensor4(eqx.Module):
             Shape ``(..., 6, 6)``.
         """
         return jnp.tensordot(self._coeffs, self._basis_arrays, axes=([-1], [0]))
+
+    @property
+    def _array(self) -> jax.Array:
+        """Materialised Kelvin matrix, under the name used by the generic rank-4 code."""
+        return self.array
+
+    @property
+    def tensor(self) -> jax.Array:
+        """Dense tensor, shape ``(..., 3, 3, 3, 3)``."""
+        return self.to_symmetric().tensor
+
+    @property
+    def shape(self) -> tuple:
+        """Shape of the materialised Kelvin matrix ``(..., 6, 6)``."""
+        return self._coeffs.shape[:-1] + self.base_array_shape
+
+    @property
+    def batch_shape(self) -> tuple:
+        """Leading batch dimensions ``(...)``."""
+        return self._coeffs.shape[:-1]
+
+    def __jax_array__(self):
+        """Allow ``jnp.asarray(C)`` to return the dense (3, 3, 3, 3) tensor."""
+        return self.tensor
 
     def to_symmetric(self) -> SymmetricTensor4:
         r"""
@@ -261,7 +306,7 @@ class AbstractStructuredTensor4(eqx.Module):
         r"""
         Full fourth-order contraction $\mathbb{C}::\mathbb{D} = C_{ijkl}D_{ijkl}$.
 
-        Computed analytically as $\sum_\alpha c_\alpha (\mathbb{P}_\alpha :: \mathbb{D})$
+        Computed analytically as $\sum_{\alpha} c_{\alpha} (\mathbb{P}_{\alpha} :: \mathbb{D})$
         without materialising the full $(6,6)$ matrix.
 
         Parameters
@@ -275,7 +320,7 @@ class AbstractStructuredTensor4(eqx.Module):
             Scalar (or batch of scalars).
         """
         D = _array4(other)
-        PD = jnp.einsum("pij,ij->p", self._basis_arrays, D)  # (n,)
+        PD = jnp.einsum("pij,...ij->...p", self._basis_arrays, D)  # (..., n)
         return jnp.sum(self._coeffs * PD, axis=-1)
 
     def rotate(self, R: jax.Array) -> SymmetricTensor4:
@@ -314,7 +359,7 @@ class AbstractStructuredTensor4(eqx.Module):
         coefficient-space formula is available.
         """
         if isinstance(other, SymmetricTensor2):
-            return SymmetricTensor2(array=self.array @ other._array)
+            return SymmetricTensor2(array=jnp.einsum("...ij,...j->...i", self.array, other._array))
         return SymmetricTensor4(array=self.array @ _array4(other))
 
     def __rmatmul__(self, other):
@@ -325,15 +370,15 @@ class AbstractStructuredTensor4(eqx.Module):
 
     def __mul__(self, other):
         r"""Scalar multiplication $\alpha \mathbb{C}$; stays in the same symmetry class."""
-        return self._rebuild(jnp.asarray(other) * self._coeffs)
+        return self._rebuild(_scalar(other, 1) * self._coeffs)
 
     def __rmul__(self, other):
         r"""Scalar multiplication $\alpha \mathbb{C}$; stays in the same symmetry class."""
-        return self._rebuild(jnp.asarray(other) * self._coeffs)
+        return self._rebuild(_scalar(other, 1) * self._coeffs)
 
     def __truediv__(self, other):
         r"""Scalar division $\mathbb{C} / \alpha$; stays in the same symmetry class."""
-        return self._rebuild(self._coeffs / jnp.asarray(other))
+        return self._rebuild(self._coeffs / _scalar(other, 1))
 
     def __neg__(self):
         r"""Negation $-\mathbb{C}$; stays in the same symmetry class."""
@@ -421,7 +466,10 @@ class IsotropicTensor4(AbstractStructuredTensor4):
                 raise ValueError("Provide either coeffs or (kappa, mu)")
             coeffs = jnp.stack([3.0 * jnp.asarray(kappa), 2.0 * jnp.asarray(mu)], axis=-1)
         object.__setattr__(self, "_coeffs", jnp.asarray(coeffs))
-        object.__setattr__(self, "_basis_arrays", _ISO_BASIS)
+
+    @property
+    def _basis_arrays(self) -> jax.Array:
+        return _ISO_BASIS
 
     def _rebuild(self, new_coeffs: jax.Array) -> IsotropicTensor4:
         return IsotropicTensor4(coeffs=new_coeffs)
@@ -558,7 +606,10 @@ class CubicTensor4(AbstractStructuredTensor4):
                 axis=-1,
             )
         object.__setattr__(self, "_coeffs", jnp.asarray(coeffs))
-        object.__setattr__(self, "_basis_arrays", _CUB_BASIS)
+
+    @property
+    def _basis_arrays(self) -> jax.Array:
+        return _CUB_BASIS
 
     def _rebuild(self, new_coeffs: jax.Array) -> CubicTensor4:
         return CubicTensor4(coeffs=new_coeffs)
@@ -569,7 +620,7 @@ class CubicTensor4(AbstractStructuredTensor4):
         Inverse $\mathbb{C}^{-1}$.
 
         Because the three projectors are mutually orthogonal, the inverse
-        is coefficient-wise: $c_\alpha^{-1}$ for each $\alpha$.
+        is coefficient-wise: $c_{\alpha}^{-1}$ for each $\alpha$.
 
         Returns
         -------
@@ -624,7 +675,7 @@ class TransverseIsotropicTensor4(AbstractStructuredTensor4):
 
     .. math::
 
-        \mathbb{C} = \sum_{\alpha=1}^6 c_\alpha \mathbb{P}_\alpha
+        \mathbb{C} = \sum_{\alpha=1}^6 c_{\alpha} \mathbb{P}_{\alpha}
 
     Parameters
     ----------
@@ -643,12 +694,13 @@ class TransverseIsotropicTensor4(AbstractStructuredTensor4):
 
     def __init__(self, axis: jax.Array, coeffs: jax.Array):
         axis = jnp.asarray(axis) / jnp.linalg.norm(axis)
-        basis = jnp.stack(
-            [P.array for P in _transverse_isotropic_projectors(axis)], axis=0
-        )  # (6, 6, 6)
         object.__setattr__(self, "axis", axis)
         object.__setattr__(self, "_coeffs", jnp.asarray(coeffs))
-        object.__setattr__(self, "_basis_arrays", basis)
+
+    @property
+    def _basis_arrays(self) -> jax.Array:
+        """Walpole basis of the symmetry axis, shape (6, 6, 6)."""
+        return jnp.stack([P.array for P in _transverse_isotropic_projectors(self.axis)], axis=0)
 
     def _rebuild(self, new_coeffs: jax.Array) -> TransverseIsotropicTensor4:
         return TransverseIsotropicTensor4(self.axis, new_coeffs)

@@ -10,6 +10,7 @@ from .generic_tensors import (
 from .linear_algebra import (
     det33,
     eig33,
+    eigenvalue_function,
     expm,
     inv_sqrtm,
     isotropic_function,
@@ -89,6 +90,7 @@ __all__ = [  # noqa: RUF022
     # linear algebra — array-level (accept tensor objects via __jax_array__)
     "det33",
     "eig33",
+    "eigenvalue_function",
     "expm",
     "inv_sqrtm",
     "isotropic_function",
