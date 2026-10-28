@@ -5,8 +5,7 @@ import jax
 import jax.numpy as jnp
 
 from jaxmat.parameters import parameter
-from jaxmat.tensors import eigenvalues
-from jaxmat.tensors.linear_algebra import det33, principal_invariants
+from jaxmat.tensors.linear_algebra import det33, eigenvalue_function, principal_invariants
 from jaxmat.utils import assert_max_traces
 
 from .behavior import FiniteStrainBehavior
@@ -115,6 +114,11 @@ class CompressibleGhentMooneyRivlin(HyperelasticPotential):
         )
 
 
+def _ogden_energy(lambCb, mu, alpha):
+    """Isochoric Ogden energy from the eigenvalues of the isochoric Cauchy-Green tensor."""
+    return jnp.sum(mu / alpha * (jnp.sum(lambCb[:, None] ** (alpha / 2), axis=0) - 3))
+
+
 class CompressibleOgden(HyperelasticPotential):
     mu: jax.Array
     alpha: jax.Array
@@ -125,11 +129,9 @@ class CompressibleOgden(HyperelasticPotential):
         C = F.T @ F
         J = jnp.sqrt(det33(C))
         Cb = J ** (-2 / 3) * C
-        lambCb = eigenvalues(Cb)
-        return self.W_lamb(lambCb) + self.kappa * self.volumetric(J)
+        # through eigenvalue_function, so that the tangent is exact at repeated stretches
+        W = eigenvalue_function(_ogden_energy, Cb, self.mu, self.alpha)
+        return W + self.kappa * self.volumetric(J)
 
     def W_lamb(self, lambCb):
-        alp2 = self.alpha / 2
-        return jnp.sum(
-            self.mu / self.alpha * (lambCb[0] ** alp2 + lambCb[1] ** alp2 + lambCb[2] ** alp2 - 3)
-        )
+        return _ogden_energy(lambCb, self.mu, self.alpha)

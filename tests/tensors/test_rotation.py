@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import pytest
 
 from jaxmat.tensors import (
     IsotropicTensor4,
@@ -7,6 +8,7 @@ from jaxmat.tensors import (
     SymmetricTensor4,
     Tensor2,
     Tensor4,
+    rotation,
 )
 
 
@@ -81,3 +83,35 @@ def test_isotropic_tensor_rotation_invariant():
     C_rot = C.rotate(R)
 
     assert jnp.allclose(C, C_rot, atol=1e-6)
+
+
+@pytest.mark.parametrize("angles", [(0.3, 0.7, -1.1), (1.2, -0.4, 2.5), (0.0, 0.0, 0.9)])
+def test_euler_bunge_is_the_documented_product(angles):
+    """R = Rz(phi1) Rx(Phi) Rz(phi2) with active rotations (it used to be the transpose)."""
+    phi1, Phi, phi2 = angles
+    ez, ex = jnp.array([0.0, 0.0, 1.0]), jnp.array([1.0, 0.0, 0.0])
+    expected = (
+        rotation.from_axis_angle(ez, phi1)
+        @ rotation.from_axis_angle(ex, Phi)
+        @ rotation.from_axis_angle(ez, phi2)
+    )
+    R = rotation.from_euler_bunge(*angles)
+    assert jnp.allclose(R, expected, atol=1e-14)
+    assert jnp.allclose(R @ R.T, jnp.eye(3), atol=1e-14)
+    assert jnp.isclose(jnp.linalg.det(R), 1.0)
+
+
+def test_euler_bunge_crystal_axes():
+    """phi1 = 90 deg: the crystal x axis is the sample y axis, and the stiffness of a crystal
+    is expressed in the sample frame by C.rotate(R)."""
+    R = rotation.from_euler_bunge(jnp.pi / 2, 0.0, 0.0)
+    assert jnp.allclose(R[:, 0], jnp.array([0.0, 1.0, 0.0]), atol=1e-14)
+    e1 = SymmetricTensor2(tensor=jnp.diag(jnp.array([1.0, 0.0, 0.0])))  # uniaxial along x_c
+    assert jnp.allclose(e1.rotate(R).tensor, jnp.diag(jnp.array([0.0, 1.0, 0.0])), atol=1e-14)
+
+
+def test_euler_bunge_batched():
+    phi1, Phi, phi2 = jnp.array([0.1, 0.2]), jnp.array([0.3, 0.4]), jnp.array([0.5, 0.6])
+    R = rotation.from_euler_bunge(phi1, Phi, phi2)
+    assert R.shape == (2, 3, 3)
+    assert jnp.allclose(R[1], rotation.from_euler_bunge(0.2, 0.4, 0.6))

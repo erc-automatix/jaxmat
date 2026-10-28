@@ -19,10 +19,12 @@ post-processing:
 
    $$\bS = 2\,\bT:\frac{\partial\bE}{\partial\bC}, \qquad \bP = \bF\bS$$
 
-The derivative of the tensor logarithm, including at repeated eigenvalues, is obtained by
-automatic differentiation of :func:`~jaxmat.tensors.linear_algebra.logm`, so the
-pull-back holds for anisotropic models as well. As the update only depends on $\bC$, the
-behavior is objective: under a superposed rotation $\bF \to \bQ\bF$, the stress $\bS$ and
+The derivative of the tensor logarithm is obtained by automatic differentiation of
+:func:`~jaxmat.tensors.linear_algebra.logm`, whose first and second derivatives are exact
+also at repeated eigenvalues (e.g. at $\bF = \bI$ or for two equal principal stretches),
+so the pull-back holds for anisotropic models as well and the consistent tangent is exact.
+As the update only depends on $\bC$, the behavior is objective: under a superposed rotation
+$\bF \to \bQ\bF$, the stress $\bS$ and
 the internal variables are unchanged and the Cauchy stress rotates as
 $\bsig \to \bQ\bsig\bQ^\text{T}$. For a hyperelastic small-strain model of energy
 $\psi(\beps)$, the result is the hyperelastic model of energy $\psi(\bE)$.
