@@ -1,3 +1,4 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -57,9 +58,8 @@ def test_eig33_reconstruction_fast(diagonal, rotations):
     # Build batch of symmetric matrices
     A_batch = batch_build_A(diagonal, rotations)  # shape (B, 3, 3)
 
-    # Vectorized eigen-decomposition
-    batch_eig33 = jax.jit(jax.vmap(eig33))
-    eigvals_batch, dyads_batch = batch_eig33(A_batch)
+    # Vectorized eigen-decomposition, compiled once for all the parametrizations
+    eigvals_batch, dyads_batch = batch_eigvals(A_batch)
 
     # Reconstruct all matrices in one shot
     A_reconstructed = jnp.einsum("bi,bijk->bjk", eigvals_batch, dyads_batch)
@@ -226,19 +226,42 @@ def test_eigenvalue_function_derivatives(spectrum):
     assert relative_error(mixed, directional(lambda c_: grad(A, c_), c, 1.0, 1e-5)) < 1e-7
 
 
+# The model tests below evaluate the stress and its derivatives many times: they are jitted
+# once at module level, with the model and the point as arguments, so that all the cases
+# reuse the same compilations (eagerly, the derivative rules are traced at each evaluation).
+
+
+@eqx.filter_jit
+def jacobian_by_differences(fun, model, x, h):
+    """Central finite-difference Jacobian of ``x -> fun(model, x)``, in a single evaluation."""
+    steps = h * jnp.eye(x.size)
+    plus = jax.vmap(lambda dx: fun(model, x + dx))(steps)
+    minus = jax.vmap(lambda dx: fun(model, x - dx))(steps)
+    return ((plus - minus) / (2 * h)).T
+
+
+def ogden_stress(material, F):
+    return material.PK1(Tensor2(tensor=F.reshape(3, 3))).tensor.ravel()
+
+
+ogden_tangent = eqx.filter_jit(jax.jacfwd(ogden_stress, argnums=1))
+
+
 @pytest.mark.parametrize("stretches", [[1.0, 1.0, 1.0], [1.2, 0.95, 0.95], [1.2, 0.95, 0.9]])
 def test_ogden_tangent(stretches):
     """The Ogden tangent at repeated principal stretches (it was off by 1% at F = I)."""
     mu, alpha = jnp.array([4.0, 1.0]), jnp.array([2.0, -2.0])
     material = jm.CompressibleOgden(mu=mu, alpha=alpha, kappa=1e3)
     F = (Q @ jnp.diag(jnp.array(stretches))).ravel()
+    fd = jacobian_by_differences(ogden_stress, material, F, 1e-6)
+    assert relative_error(ogden_tangent(material, F), fd) < 1e-7
 
-    def PK1(F_):
-        return material.PK1(Tensor2(tensor=F_.reshape(3, 3))).tensor.ravel()
 
-    tangent = jax.jacfwd(PK1)(F)
-    fd = jnp.stack([directional(PK1, F, e, 1e-6) for e in jnp.eye(9)], axis=-1)
-    assert relative_error(tangent, fd) < 1e-7
+def hosford_normal(surface, sig):
+    return jax.grad(lambda x: surface(SymmetricTensor2(array=x)))(sig)
+
+
+hosford_normal_derivative = eqx.filter_jit(jax.jacfwd(hosford_normal, argnums=1))
 
 
 @pytest.mark.parametrize("principal", [[300.0, 0.0, 0.0], [300.0, 100.0, -50.0]])
@@ -247,10 +270,5 @@ def test_hosford_normal_derivative(principal):
     equal principal stresses (it was off by 50%)."""
     surface = jm.Hosford(a=8.0)
     sig = SymmetricTensor2(tensor=rotated(principal)).array
-
-    def normal(s):
-        return jax.grad(lambda x: surface(SymmetricTensor2(array=x)))(s)
-
-    derivative = jax.jacfwd(normal)(sig)
-    fd = jnp.stack([directional(normal, sig, e, 1e-4) for e in jnp.eye(6)], axis=-1)
-    assert relative_error(derivative, fd) < 1e-7
+    fd = jacobian_by_differences(hosford_normal, surface, sig, 1e-4)
+    assert relative_error(hosford_normal_derivative(surface, sig), fd) < 1e-7

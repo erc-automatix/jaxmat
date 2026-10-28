@@ -107,15 +107,19 @@ def fit(model, xs, ys, iters=2000, lr=2e-2):
     optimizer = optax.adam(lr)
     state = optimizer.init(eqx.filter(model, eqx.is_inexact_array))
 
-    @eqx.filter_jit
-    def step(model, state):
-        loss, grads = eqx.filter_value_and_grad(lambda m: jnp.mean((m(xs) - ys) ** 2))(model)
-        updates, state = optimizer.update(grads, state, eqx.filter(model, eqx.is_inexact_array))
-        return eqx.apply_updates(model, updates), state, loss
+    params, static = eqx.partition(model, eqx.is_inexact_array)
 
-    for _ in range(iters):
-        model, state, loss = step(model, state)
-    return float(loss)
+    def step(carry, _):
+        params, state = carry
+        loss, grads = jax.value_and_grad(
+            lambda p: jnp.mean((eqx.combine(p, static)(xs) - ys) ** 2)
+        )(params)
+        updates, state = optimizer.update(grads, state, params)
+        return (optax.apply_updates(params, updates), state), loss
+
+    # all the iterations in a single compiled loop, instead of one dispatch per step
+    _, losses = jax.jit(lambda p, s: jax.lax.scan(step, (p, s), length=iters))(params, state)
+    return float(losses[-1])
 
 
 def test_free_inputs_represent_non_monotone_convex_functions():
