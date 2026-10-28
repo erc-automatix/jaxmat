@@ -1,3 +1,4 @@
+import dataclasses
 import functools
 import json
 import pathlib
@@ -9,6 +10,7 @@ import equinox as eqx
 import jax
 import jax.numpy as jnp
 import numpy as np
+import paramax
 
 from jaxmat import config
 
@@ -121,9 +123,35 @@ def partition_by_node_names(model, freeze_names):
     return trainable, static
 
 
+def _format_value(value, spec):
+    """Format a number or a numeric array with ``spec``, anything else with ``str``."""
+    if not spec or isinstance(value, bool | np.bool_):
+        return str(value)
+    if isinstance(value, int | float | complex | np.number):
+        return format(value, spec)
+    if isinstance(value, np.ndarray | jax.Array) and jnp.issubdtype(value.dtype, jnp.number):
+        if value.ndim == 0:
+            return format(value.item(), spec)
+        with np.printoptions(formatter={"all": lambda x: format(x, spec)}):
+            return str(np.asarray(value))
+    return str(value)
+
+
+def _format_sequence(values, spec):
+    """Format a list or tuple, with one ``spec`` for all elements or a list of them."""
+    specs = spec if isinstance(spec, list | tuple) else [spec] * len(values)
+    items = [_format_value(v, s) for v, s in zip(values, specs, strict=True)]
+    if isinstance(values, tuple):
+        return "(" + ", ".join(items) + ("," if len(items) == 1 else "") + ")"
+    return "[" + ", ".join(items) + "]"
+
+
 def print_eqx_fields(obj, fields=None, indent=0, format=""):
     """
     Recursively print fields of an ``equinox`` module or dataclass-like object.
+
+    Constrained parameters (see :mod:`jaxmat.parameters`) are printed with their physical
+    values, not with their latent representation.
 
     Parameters
     ----------
@@ -136,11 +164,12 @@ def print_eqx_fields(obj, fields=None, indent=0, format=""):
     indent: int
         Internal indentation level (used for recursion).
     format: str, dict or list
-        Format specification (syntax of ``str.format``) used to print the values, e.g.
-        ``".3e"``. A dict gives a specification per field name, a list one per element
-        of a list or tuple.
+        Format specification (syntax of ``str.format``) used to print numbers and numeric
+        arrays, e.g. ``".3e"``; other values are printed as they are. A dict gives a
+        specification per field name (for a nested module, a specification or a dict for
+        its own fields), a list one per element of a list or tuple.
     """
-
+    obj = paramax.unwrap(obj)
     pad = " " * indent
 
     # Helper to match top-level field names
@@ -150,33 +179,13 @@ def print_eqx_fields(obj, fields=None, indent=0, format=""):
         # Match if this field or any nested subpath starts with it
         return any(f == field_name or f.startswith(f"{field_name}.") for f in fields)
 
-    def format_list_tupple(to_format: list | tuple, formatter: str | list) -> str:
-        """
-        Format a list or a tuple using formatter. If formatter is a string, the
-        same formatter is used for every element, if it is a list, the
-        formatter can be specified for each element of the list/tuple.
-        """
-        # Define the pair of delimiters
-        start: str
-        end: str
-        if isinstance(to_format, tuple):
-            start, end = "(", ")"
-        else:
-            start, end = "[", "]"
-
-        # Define the template
-        template: str
-        if isinstance(formatter, list | tuple):
-            template = start + ", ".join([f"{{:{f}}}" for f in formatter]) + end
-        else:
-            template = start + ", ".join(len(to_format) * [f"{{:{formatter}}}"]) + end
-
-        return template.format(*to_format)
-
     if isinstance(obj, eqx.Module):
         print(f"{pad}{obj.__class__.__name__}:")
-        for k, v in obj.__dict__.items():
-            if not matches(k):
+        # declared fields, in order: the instance __dict__ of a module rebuilt by a tree map
+        # (e.g. eqx.combine) holds other attributes; init=False fields are class settings
+        for field in dataclasses.fields(obj):
+            k, v = field.name, getattr(obj, field.name)
+            if not field.init or not matches(k):
                 continue  # skip fields not requested
 
             # Extract subfields relevant to this nested module (if any)
@@ -184,37 +193,21 @@ def print_eqx_fields(obj, fields=None, indent=0, format=""):
             if fields is not None:
                 subfields = [f[len(k) + 1 :] for f in fields if f.startswith(f"{k}.")] or None
 
-            v_formatter: str
-            if isinstance(format, dict):
-                if k in format:
-                    v_formatter = format[k]
-                else:
-                    v_formatter = ""
-            else:
-                v_formatter = format
+            spec = format.get(k, "") if isinstance(format, dict) else format
 
             if isinstance(v, eqx.Module):
                 print(f"{pad}  {k}:")
-                print_eqx_fields(v, fields=subfields, indent=indent + 4, format=v_formatter)
+                print_eqx_fields(v, fields=subfields, indent=indent + 4, format=spec)
             elif isinstance(v, list | tuple):
-                print(f"{pad}  {k} = {format_list_tupple(v, v_formatter)}")
-            elif isinstance(v, np.ndarray | jax.Array) and v.shape != ():
-                with np.printoptions(formatter={"all": ("{:" + v_formatter + "}").format}):
-                    print(f"{pad}  {k} = {v}")
+                print(f"{pad}  {k} = {_format_sequence(v, spec)}")
             else:
-                print(f"{pad}  {k} = {v:{v_formatter}}")
+                print(f"{pad}  {k} = {_format_value(v, spec)}")
     elif isinstance(obj, list | tuple):
-        for i, v in enumerate(obj):
-            v_formatter: str
-            if isinstance(format, list | tuple):
-                v_formatter = format[i]
-            else:
-                v_formatter = format
-
-            print(f"{pad}[{i}]: {v:{v_formatter}}")
-
+        specs = format if isinstance(format, list | tuple) else [format] * len(obj)
+        for i, (v, spec) in enumerate(zip(obj, specs, strict=True)):
+            print(f"{pad}[{i}]: {_format_value(v, spec)}")
     else:
-        print(f"{pad}{obj}")
+        print(f"{pad}{_format_value(obj, format if isinstance(format, str) else '')}")
 
 
 _FILE_FORMAT = 1

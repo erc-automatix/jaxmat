@@ -9,6 +9,7 @@ the usual 0.x caveat that minor bumps may include breaking changes).
 
 ### Fixed
 
+- `utils.print_eqx_fields` printed constrained parameters with their latent values (e.g. the logarithm of a `Positive` parameter): they are now printed with their physical values. It also printed spurious `Missing` attributes for modules rebuilt by a tree map, e.g. after `eqx.combine` in a calibration: it now prints the declared fields, in order.
 - `FeFpJ2Plasticity` was bugged: not objective trial state, total deformation gradient not updated in final state
   and shear components of the plastic flow were doubled because of bad tensor conversion after scalar multiply.
 - `FischerBurmeister` used a floored square root (`safe_sqrt`), which made the complementarity residual linear within `sqrt(x**2 + y**2) < 1e-8`. Near the yield onset (`|f| < 1e-8 E`) the return mapping of the `FB`-based behaviors then returned a negative `dp` on the elastic side and a wrong implicit gradient. The square root is now exact, with a zero gradient at the origin.
