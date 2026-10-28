@@ -110,12 +110,16 @@ def _make_imposed_loading(
     for comp, (i, j) in COMPONENTS.items():
         e = kwargs.get(f"{labels[0]}{comp}")
         s = kwargs.get(f"{labels[1]}{comp}")
-        if e is not None:
-            eps_vals = eps_vals.at[:, i, j].set(e)
-            strain_mask = strain_mask.at[:, i, j].set(True)
-        elif s is not None:
-            sig_vals = sig_vals.at[:, i, j].set(s)
-            strain_mask = strain_mask.at[:, i, j].set(False)
+        # symmetric strain and stress: impose (j, i) as well, so that the symmetric tensors
+        # built from these values hold the imposed component
+        ij = [(i, j), (j, i)] if hypothesis == "small_strain" else [(i, j)]
+        for k, m in ij:
+            if e is not None:
+                eps_vals = eps_vals.at[:, k, m].set(e)
+                strain_mask = strain_mask.at[:, k, m].set(True)
+            elif s is not None:
+                sig_vals = sig_vals.at[:, k, m].set(s)
+                strain_mask = strain_mask.at[:, k, m].set(False)
 
     return eps_vals, sig_vals, strain_mask
 

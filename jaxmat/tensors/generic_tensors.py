@@ -497,12 +497,17 @@ class SymmetricTensor2(Tensor2):
     Parameters
     ----------
     tensor : array_like, shape ``(..., 3, 3)``, optional
-        Dense symmetric tensor.
+        Dense tensor, of which the symmetric part is stored.
     array : array_like, shape ``(..., 6)``, optional
         Pre-built Kelvin array.
 
     Notes
     -----
+    Adding or subtracting a dense ``(..., 3, 3)`` array keeps a :class:`SymmetricTensor2`,
+    the symmetric part of the result. To keep a skew-symmetric part, convert the operand to
+    a :class:`Tensor2` first: ``SymmetricTensor2`` combined with ``Tensor2`` gives a
+    ``Tensor2``.
+
     The ``@`` operator returns :class:`Tensor2` because the product of two
     symmetric matrices is not symmetric in general.
 
@@ -522,7 +527,9 @@ class SymmetricTensor2(Tensor2):
         if tensor is not None:
             t = jnp.asarray(tensor)
             _check_trailing(t, (3, 3), "tensor")
-            object.__setattr__(self, "_array", t[..., _S2_I, _S2_J] * _S2_W)
+            # symmetric part: a non-symmetric input must not lose its lower triangle
+            t_sym = 0.5 * (t[..., _S2_I, _S2_J] + t[..., _S2_J, _S2_I])
+            object.__setattr__(self, "_array", t_sym * _S2_W)
         elif array is not None:
             a = _raw_array(array)
             _check_trailing(a, (6,), "array")
