@@ -198,12 +198,16 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
 </ul>
 </details></li>
 </ul>
@@ -215,22 +219,25 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.constraints.html">jaxmat.constraints package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.nn.html">jaxmat.nn module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
@@ -390,7 +397,7 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.generic_tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="n">Tensor2</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.linear_algebra</span><span class="w"> </span><span class="kn">import</span> <span class="n">_sqrtm</span><span class="p">,</span> <span class="n">eig33</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.linear_algebra</span><span class="w"> </span><span class="kn">import</span> <span class="n">_batched</span><span class="p">,</span> <span class="n">_sqrtm</span><span class="p">,</span> <span class="n">eig33</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">safe_sqrt</span>
 
 <span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
@@ -563,8 +570,8 @@ document.write(`
 <span class="sd">    jax.Array</span>
 <span class="sd">        Shape ``(..., 3)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">W</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">skw</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span></div>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">skw</span><span class="o">.</span><span class="n">tensor</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">W</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 
@@ -598,7 +605,7 @@ document.write(`
 <span class="sd">        (left stretch).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">C</span> <span class="o">=</span> <span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">sym</span>
-    <span class="n">U_dense</span><span class="p">,</span> <span class="n">U_inv_dense</span> <span class="o">=</span> <span class="n">_sqrtm</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">C</span><span class="p">))</span>
+    <span class="n">U_dense</span><span class="p">,</span> <span class="n">U_inv_dense</span> <span class="o">=</span> <span class="n">_batched</span><span class="p">(</span><span class="n">_sqrtm</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
     <span class="n">U</span> <span class="o">=</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">U_dense</span><span class="p">)</span>
     <span class="n">R</span> <span class="o">=</span> <span class="n">F</span> <span class="o">@</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">U_inv_dense</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;RU&quot;</span><span class="p">:</span>
@@ -643,6 +650,11 @@ document.write(`
 <span class="sd">    stable custom JVP via the eigenprojectors, correct even for repeated</span>
 <span class="sd">    or near-repeated eigenvalues.</span>
 
+<span class="sd">    Second derivatives of a function of the eigenvalues (e.g. the tangent of an energy or</span>
+<span class="sd">    of a yield function written with them) are not exact at repeated eigenvalues, where</span>
+<span class="sd">    individual eigenvalues are not differentiable twice: write such functions with</span>
+<span class="sd">    :func:`~jaxmat.tensors.linear_algebra.eigenvalue_function` instead.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sig : SymmetricTensor2</span>
@@ -667,7 +679,7 @@ document.write(`
     <span class="p">(</span><span class="n">sig</span><span class="p">,)</span> <span class="o">=</span> <span class="n">primals</span>
     <span class="p">(</span><span class="n">dsig</span><span class="p">,)</span> <span class="o">=</span> <span class="n">tangents</span>
     <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigendyads</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sig</span><span class="p">))</span>
-    <span class="n">deig</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">eigendyads</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dsig</span><span class="p">),</span> <span class="n">axes</span><span class="o">=</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">deig</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...aij,...ij-&gt;...a&quot;</span><span class="p">,</span> <span class="n">eigendyads</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dsig</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">deig</span>
 </pre></div>
 

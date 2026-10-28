@@ -229,6 +229,7 @@
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
@@ -490,6 +491,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.von_mises"><code class="docutils literal notranslate"><span class="pre">von_mises()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.det33"><code class="docutils literal notranslate"><span class="pre">det33()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.eig33"><code class="docutils literal notranslate"><span class="pre">eig33()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.eigenvalue_function"><code class="docutils literal notranslate"><span class="pre">eigenvalue_function()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.expm"><code class="docutils literal notranslate"><span class="pre">expm()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.inv_sqrtm"><code class="docutils literal notranslate"><span class="pre">inv_sqrtm()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.isotropic_function"><code class="docutils literal notranslate"><span class="pre">isotropic_function()</span></code></a></li>
@@ -536,6 +538,7 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.eig33_HA"><code class="docutils literal notranslate"><span class="pre">eig33_HA()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.eig33"><code class="docutils literal notranslate"><span class="pre">eig33()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.isotropic_function"><code class="docutils literal notranslate"><span class="pre">isotropic_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.eigenvalue_function"><code class="docutils literal notranslate"><span class="pre">eigenvalue_function()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.sqrtm"><code class="docutils literal notranslate"><span class="pre">sqrtm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.inv_sqrtm"><code class="docutils literal notranslate"><span class="pre">inv_sqrtm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.expm"><code class="docutils literal notranslate"><span class="pre">expm()</span></code></a></li>
@@ -618,13 +621,17 @@ corresponding tensors: <span class="math notranslate nohighlight">\(\{T\} \cdot 
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tensor</strong> (array_like, shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">3,</span> <span class="pre">3)</span></code>, optional) – Dense symmetric tensor.</p></li>
+<li><p><strong>tensor</strong> (array_like, shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">3,</span> <span class="pre">3)</span></code>, optional) – Dense tensor, of which the symmetric part is stored.</p></li>
 <li><p><strong>array</strong> (array_like, shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">6)</span></code>, optional) – Pre-built Kelvin array.</p></li>
 </ul>
 </dd>
 </dl>
 <div class="admonition-notes admonition">
 <p class="admonition-title">Notes</p>
+<p>Adding or subtracting a dense <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">3,</span> <span class="pre">3)</span></code> array keeps a <a class="reference internal" href="#jaxmat.tensors.SymmetricTensor2" title="jaxmat.tensors.SymmetricTensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code></a>,
+the symmetric part of the result. To keep a skew-symmetric part, convert the operand to
+a <a class="reference internal" href="#jaxmat.tensors.Tensor2" title="jaxmat.tensors.Tensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor2</span></code></a> first: <code class="docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code> combined with <code class="docutils literal notranslate"><span class="pre">Tensor2</span></code> gives a
+<code class="docutils literal notranslate"><span class="pre">Tensor2</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> operator returns <a class="reference internal" href="#jaxmat.tensors.Tensor2" title="jaxmat.tensors.Tensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor2</span></code></a> because the product of two
 symmetric matrices is not symmetric in general.</p>
 <p><a class="reference internal" href="#jaxmat.tensors.SymmetricTensor2.double_contract" title="jaxmat.tensors.SymmetricTensor2.double_contract"><code class="xref py py-meth docutils literal notranslate"><span class="pre">double_contract()</span></code></a> operates directly on the Kelvin arrays
@@ -712,7 +719,10 @@ its <code class="docutils literal notranslate"><span class="pre">_array</span></
 <p>Exactly one of <code class="docutils literal notranslate"><span class="pre">tensor</span></code> or <code class="docutils literal notranslate"><span class="pre">array</span></code> may be provided.  If neither is
 given the tensor is initialized to zero.</p>
 <p>Batch dimensions precede the storage dimension: a batch of <span class="math notranslate nohighlight">\(N\)</span> tensors
-has <code class="docutils literal notranslate"><span class="pre">array.shape</span> <span class="pre">==</span> <span class="pre">(N,</span> <span class="pre">9)</span></code> and <code class="docutils literal notranslate"><span class="pre">tensor.shape</span> <span class="pre">==</span> <span class="pre">(N,</span> <span class="pre">3,</span> <span class="pre">3)</span></code>.</p>
+has <code class="docutils literal notranslate"><span class="pre">array.shape</span> <span class="pre">==</span> <span class="pre">(N,</span> <span class="pre">9)</span></code> and <code class="docutils literal notranslate"><span class="pre">tensor.shape</span> <span class="pre">==</span> <span class="pre">(N,</span> <span class="pre">3,</span> <span class="pre">3)</span></code>. Multiplying (or
+dividing) by an array of shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code> scales each tensor of the batch by its scalar.
+Write the tensor on the left (<code class="docutils literal notranslate"><span class="pre">T</span> <span class="pre">*</span> <span class="pre">s</span></code>): with a JAX array on the left, <code class="docutils literal notranslate"><span class="pre">s</span> <span class="pre">*</span> <span class="pre">T</span></code>, JAX
+converts the tensor to a dense array first.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> operator performs <strong>dense matrix composition</strong>
 <span class="math notranslate nohighlight">\((\mathbf{T} \cdot \mathbf{S})_{ik} = T_{ij} S_{jk}\)</span> and always
 returns a <a class="reference internal" href="#jaxmat.tensors.Tensor2" title="jaxmat.tensors.Tensor2"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor2</span></code></a>, regardless of the symmetry of the operands.
@@ -850,7 +860,7 @@ intermediate is constructed.</p>
 <dd><p>Rotate the tensor: <span class="math notranslate nohighlight">\(\mathbf{R} \mathbf{T} \mathbf{R}^{\mathsf{T}}\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>R</strong> (<em>array_like</em><em>, </em><em>shape</em><em> (</em><em>3</em><em>, </em><em>3</em><em>)</em>) – Orthogonal rotation matrix.</p>
+<dd class="field-odd"><p><strong>R</strong> (<em>array_like</em><em>, </em><em>shape</em><em> (</em><em>...</em><em>, </em><em>3</em><em>, </em><em>3</em><em>)</em>) – Orthogonal rotation matrix, or a batch of them.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#jaxmat.tensors.Tensor2" title="jaxmat.tensors.Tensor2">Tensor2</a></p>
@@ -1532,10 +1542,10 @@ left polar decomposition (<code class="docutils literal notranslate"><span class
 overhead for the fixed-size case.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>A</strong> (<em>array_like</em><em>, </em><em>shape</em><em> (</em><em>3</em><em>, </em><em>3</em><em>)</em>)</p>
+<dd class="field-odd"><p><strong>A</strong> (<em>array_like</em><em>, </em><em>shape</em><em> (</em><em>...</em><em>, </em><em>3</em><em>, </em><em>3</em><em>)</em>)</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Scalar determinant.</p>
+<dd class="field-even"><p>Determinant, shape (…).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>jax.Array</p>
@@ -1546,7 +1556,56 @@ overhead for the fixed-size case.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="jaxmat.tensors.eig33">
 <span class="sig-name descname"><span class="pre">eig33</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-16</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/tensors/linear_algebra.html#eig33"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.tensors.eig33" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Eigenvalues and eigenprojectors of a real symmetric <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix, or of a batch.</p>
+<p>Closed-form expressions, scaled by the norm of <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>. The eigenprojectors
+<span class="math notranslate nohighlight">\(\mathbf{n}_i \otimes \mathbf{n}_i = \partial\lambda_i/\partial\mathbf{A}\)</span> are obtained by
+forward differentiation of the eigenvalues. Within a repeated eigenvalue (relative gap
+below about 1e-8) they are not individual projectors, only their sum is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>array_like</em><em>, </em><em>shape</em><em> (</em><em>...</em><em>, </em><em>3</em><em>, </em><em>3</em><em>)</em>)</p></li>
+<li><p><strong>rtol</strong> (<em>float</em><em>, </em><em>optional</em>) – Relative tolerance of the isotropic case.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>eigvals</strong> (<em>jax.Array, shape (…, 3)</em>) – Eigenvalues in ascending order.</p></li>
+<li><p><strong>eigendyads</strong> (<em>jax.Array, shape (…, 3, 3, 3)</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.tensors.eigenvalue_function">
+<span class="sig-name descname"><span class="pre">eigenvalue_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/tensors/linear_algebra.html#eigenvalue_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.tensors.eigenvalue_function" title="Link to this definition">#</a></dt>
+<dd><p>Scalar function <span class="math notranslate nohighlight">\(g(\lambda_1, \lambda_2, \lambda_3)\)</span> of the eigenvalues of a symmetric
+<span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix, for a symmetric <span class="math notranslate nohighlight">\(g\)</span> (invariant under permutations of its
+arguments, so that it is an isotropic function of <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>).</p>
+<p>Its first and second derivatives with respect to <span class="math notranslate nohighlight">\(\mathbf{A}\)</span> are exact, also at
+repeated eigenvalues, where differentiating through the eigenvalues fails: e.g. for
+an Ogden energy at <span class="math notranslate nohighlight">\(\mathbf{C} = \mathbf{I}\)</span>, or a Hosford yield function at a uniaxial
+stress.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fun</strong> (<em>callable</em>) – Symmetric function called as <code class="docutils literal notranslate"><span class="pre">fun(eigenvalues,</span> <span class="pre">*args)</span></code> with the eigenvalues in
+ascending order, shape (3,). It must be hashable (e.g. a module-level function);
+quantities it depends on and that may be differentiated are passed as <code class="docutils literal notranslate"><span class="pre">args</span></code>.</p></li>
+<li><p><strong>A</strong> (<em>array_like</em><em>, </em><em>shape</em><em> (</em><em>3</em><em>, </em><em>3</em><em>)</em>) – Real symmetric matrix (only its symmetric part is used).</p></li>
+<li><p><strong>*args</strong> (<em>array_like</em>) – Extra arguments of <code class="docutils literal notranslate"><span class="pre">fun</span></code>, e.g. parameters of a material model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Scalar.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jax.Array</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="jaxmat.tensors.expm">
@@ -1596,17 +1655,23 @@ Springer. p. 244.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="jaxmat.tensors.isotropic_function">
-<span class="sig-name descname"><span class="pre">isotropic_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/tensors/linear_algebra.html#isotropic_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.tensors.isotropic_function" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">isotropic_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/tensors/linear_algebra.html#isotropic_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.tensors.isotropic_function" title="Link to this definition">#</a></dt>
 <dd><p>Isotropic matrix function <span class="math notranslate nohighlight">\(f(\mathbf{A})\)</span> of a symmetric <span class="math notranslate nohighlight">\(3 \times 3\)</span> matrix.</p>
 <p>Evaluates the spectral decomposition
 <span class="math notranslate nohighlight">\(f(\mathbf{A}) = \sum_{i=1}^{3} f(\lambda_i)\,\mathbf{n}_i \otimes \mathbf{n}_i\)</span>
 where <span class="math notranslate nohighlight">\(\lambda_i\)</span> are the eigenvalues and <span class="math notranslate nohighlight">\(\mathbf{n}_i\)</span> the corresponding
 eigenvectors of <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>.</p>
+<p>Its first and second derivatives are exact, also at repeated eigenvalues (e.g. for
+<span class="math notranslate nohighlight">\(\mathbf{A} = \mathbf{I}\)</span>): they are given by the Daleckii-Krein formulas instead of
+differentiating through the eigendecomposition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fun</strong> (<em>callable</em>) – Scalar function <span class="math notranslate nohighlight">\(f : \mathbb{R} \to \mathbb{R}\)</span> applied to each eigenvalue.</p></li>
-<li><p><strong>A</strong> (<em>array_like</em><em>, </em><em>shape</em><em> (</em><em>3</em><em>, </em><em>3</em><em>)</em>) – Real symmetric matrix.</p></li>
+<li><p><strong>fun</strong> (<em>callable</em>) – Elementwise scalar function, called as <code class="docutils literal notranslate"><span class="pre">fun(eigenvalues,</span> <span class="pre">*args)</span></code>, applied to
+each eigenvalue. It must be hashable (e.g. a module-level function); quantities
+it depends on and that may be differentiated are passed as <code class="docutils literal notranslate"><span class="pre">args</span></code>.</p></li>
+<li><p><strong>A</strong> (<em>array_like</em><em>, </em><em>shape</em><em> (</em><em>3</em><em>, </em><em>3</em><em>)</em>) – Real symmetric matrix (only its symmetric part is used).</p></li>
+<li><p><strong>*args</strong> (<em>array_like</em>) – Extra arguments of <code class="docutils literal notranslate"><span class="pre">fun</span></code>, e.g. parameters of a material model.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1991,6 +2056,7 @@ which could cause instability or NaNs.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.von_mises"><code class="docutils literal notranslate"><span class="pre">von_mises()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.det33"><code class="docutils literal notranslate"><span class="pre">det33()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.eig33"><code class="docutils literal notranslate"><span class="pre">eig33()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.eigenvalue_function"><code class="docutils literal notranslate"><span class="pre">eigenvalue_function()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.expm"><code class="docutils literal notranslate"><span class="pre">expm()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.inv_sqrtm"><code class="docutils literal notranslate"><span class="pre">inv_sqrtm()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.isotropic_function"><code class="docutils literal notranslate"><span class="pre">isotropic_function()</span></code></a></li>

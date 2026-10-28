@@ -198,7 +198,6 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -208,6 +207,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
 </ul>
 </details></li>
 </ul>
@@ -226,6 +226,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
@@ -235,6 +237,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.nn.html">jaxmat.nn module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
@@ -378,8 +381,7 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">parameter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">eigenvalues</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.linear_algebra</span><span class="w"> </span><span class="kn">import</span> <span class="n">det33</span><span class="p">,</span> <span class="n">principal_invariants</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.linear_algebra</span><span class="w"> </span><span class="kn">import</span> <span class="n">det33</span><span class="p">,</span> <span class="n">eigenvalue_function</span><span class="p">,</span> <span class="n">principal_invariants</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">assert_max_traces</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.behavior</span><span class="w"> </span><span class="kn">import</span> <span class="n">FiniteStrainBehavior</span>
@@ -521,6 +523,11 @@ document.write(`
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_ogden_energy</span><span class="p">(</span><span class="n">lambCb</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Isochoric Ogden energy from the eigenvalues of the isochoric Cauchy-Green tensor.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mu</span> <span class="o">/</span> <span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lambCb</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">**</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">))</span>
+
+
 <div class="viewcode-block" id="CompressibleOgden">
 <a class="viewcode-back" href="../../../api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.CompressibleOgden">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CompressibleOgden</span><span class="p">(</span><span class="n">HyperelasticPotential</span><span class="p">):</span>
@@ -533,16 +540,14 @@ document.write(`
         <span class="n">C</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">F</span>
         <span class="n">J</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">det33</span><span class="p">(</span><span class="n">C</span><span class="p">))</span>
         <span class="n">Cb</span> <span class="o">=</span> <span class="n">J</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">C</span>
-        <span class="n">lambCb</span> <span class="o">=</span> <span class="n">eigenvalues</span><span class="p">(</span><span class="n">Cb</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">W_lamb</span><span class="p">(</span><span class="n">lambCb</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">volumetric</span><span class="p">(</span><span class="n">J</span><span class="p">)</span>
+        <span class="c1"># through eigenvalue_function, so that the tangent is exact at repeated stretches</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">eigenvalue_function</span><span class="p">(</span><span class="n">_ogden_energy</span><span class="p">,</span> <span class="n">Cb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">W</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">volumetric</span><span class="p">(</span><span class="n">J</span><span class="p">)</span>
 
 <div class="viewcode-block" id="CompressibleOgden.W_lamb">
 <a class="viewcode-back" href="../../../api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.CompressibleOgden.W_lamb">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">W_lamb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lambCb</span><span class="p">):</span>
-        <span class="n">alp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">lambCb</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="n">alp2</span> <span class="o">+</span> <span class="n">lambCb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="n">alp2</span> <span class="o">+</span> <span class="n">lambCb</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="n">alp2</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">_ogden_energy</span><span class="p">(</span><span class="n">lambCb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

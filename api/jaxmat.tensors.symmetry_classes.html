@@ -229,6 +229,7 @@
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
@@ -407,9 +408,17 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#projector-algebra">Projector algebra</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.dim"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.rank"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.rank</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.base_tensor_shape"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.base_tensor_shape</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.array_rank"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.array_rank</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.base_array_shape"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.base_array_shape</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.inv"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.inv</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.coeffs"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.coeffs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.array"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.array</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.tensor"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.tensor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.shape"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.shape</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.batch_shape"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.batch_shape</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.to_symmetric"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.to_symmetric()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.fourth_contract"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.fourth_contract()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.rotate"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.rotate()</span></code></a></li>
@@ -446,7 +455,8 @@ No materialised (6,6) Kelvin matrix is stored as a leaf.</p>
 </ul>
 <p>Each subclass provides only:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">__init__</span></code>  (parameter parsing and <code class="docutils literal notranslate"><span class="pre">_basis_arrays</span></code> assignment)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">__init__</span></code>  (parameter parsing)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_basis_arrays</span></code> property — the basis projectors, a constant (not a pytree leaf)</p></li>
 <li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">_rebuild()</span></code> — factory for a new same-type instance with updated coefficients</p></li>
 <li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">inv</span></code> — class-specific inversion</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">__matmul__</span></code> override for same-class composition (coefficient-space algebra)</p></li>
@@ -489,12 +499,17 @@ determined by the symmetry group <span class="math notranslate nohighlight">\(G\
 <dl class="py class">
 <dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AbstractStructuredTensor4</span></span><a class="reference internal" href="../_modules/jaxmat/tensors/symmetry_classes.html#AbstractStructuredTensor4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.Tensor" title="jaxmat.tensors.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a></p>
 <p>Abstract base for symmetry-reduced fourth-rank tensors.</p>
 <p>Concrete subclasses store a coefficient vector
-<code class="docutils literal notranslate"><span class="pre">_coeffs</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">n)</span></code> (the unique JAX leaf) and a
-precomputed basis stack <code class="docutils literal notranslate"><span class="pre">_basis_arrays</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">6,</span> <span class="pre">6)</span></code> (static).
-Every shared operation is derived from these two objects alone.</p>
+<code class="docutils literal notranslate"><span class="pre">_coeffs</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">n)</span></code> (the unique JAX leaf, with the symmetry axis of
+transversely isotropic tensors) and provide the basis stack <code class="docutils literal notranslate"><span class="pre">_basis_arrays</span></code> of shape
+<code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">6,</span> <span class="pre">6)</span></code>, a constant that is not part of the pytree (it is neither differentiated,
+trained, batched nor saved). Every shared operation is derived from these two objects.</p>
+<p>They are <a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.Tensor" title="jaxmat.tensors.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a> objects of rank 4 and interoperate with
+<a class="reference internal" href="jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor4" title="jaxmat.tensors.SymmetricTensor4"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricTensor4</span></code></a> and with each other (<code class="docutils literal notranslate"><span class="pre">&#64;</span></code>, <code class="docutils literal notranslate"><span class="pre">+</span></code>, <code class="docutils literal notranslate"><span class="pre">-</span></code>,
+<a class="reference internal" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.fourth_contract" title="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.fourth_contract"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourth_contract()</span></code></a>), through their materialised Kelvin matrix when needed;
+<code class="docutils literal notranslate"><span class="pre">jnp.asarray(C)</span></code> gives the dense <code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">3,</span> <span class="pre">3,</span> <span class="pre">3)</span></code> tensor.</p>
 <p>The tensor is represented as</p>
 <div class="math notranslate nohighlight">
 \[\mathbb{C} = \sum_{\alpha=1}^n c_{\alpha} \mathbb{P}_{\alpha}\]</div>
@@ -508,6 +523,36 @@ and <span class="math notranslate nohighlight">\(c_{\alpha}\)</span> are the coe
 <dt><a class="reference internal" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.inv" title="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.inv"><code class="xref py py-attr docutils literal notranslate"><span class="pre">inv</span></code></a></dt><dd><p>Class-specific inversion (coefficient-wise or block-matrix).</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.dim">
+<span class="sig-name descname"><span class="pre">dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.dim" title="Link to this definition">#</a></dt>
+<dd><p>Spatial dimension.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.rank">
+<span class="sig-name descname"><span class="pre">rank</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.rank" title="Link to this definition">#</a></dt>
+<dd><p>Tensor rank.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.base_tensor_shape">
+<span class="sig-name descname"><span class="pre">base_tensor_shape</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(3,</span> <span class="pre">3,</span> <span class="pre">3,</span> <span class="pre">3)</span></em><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.base_tensor_shape" title="Link to this definition">#</a></dt>
+<dd><p>Shape of the base (unbatched) dense tensor.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.array_rank">
+<span class="sig-name descname"><span class="pre">array_rank</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.array_rank" title="Link to this definition">#</a></dt>
+<dd><p>Number of storage dimensions of the materialised Kelvin matrix.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.base_array_shape">
+<span class="sig-name descname"><span class="pre">base_array_shape</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(6,</span> <span class="pre">6)</span></em><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.base_array_shape" title="Link to this definition">#</a></dt>
+<dd><p>Shape of the base (unbatched) materialised Kelvin matrix.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.inv">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inv</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4" title="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4"><span class="pre">AbstractStructuredTensor4</span></a></em><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.inv" title="Link to this definition">#</a></dt>
@@ -551,6 +596,24 @@ batch dimensions in <code class="docutils literal notranslate"><span class="pre"
 <dd class="field-even"><p>jax.Array</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.tensor">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Array</span></em><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.tensor" title="Link to this definition">#</a></dt>
+<dd><p>Dense tensor, shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">3,</span> <span class="pre">3,</span> <span class="pre">3,</span> <span class="pre">3)</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.shape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span></em><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.shape" title="Link to this definition">#</a></dt>
+<dd><p>Shape of the materialised Kelvin matrix <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">6,</span> <span class="pre">6)</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.batch_shape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch_shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span></em><a class="headerlink" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.batch_shape" title="Link to this definition">#</a></dt>
+<dd><p>Leading batch dimensions <code class="docutils literal notranslate"><span class="pre">(...)</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -741,9 +804,17 @@ F and G.  See <code class="xref py py-class docutils literal notranslate"><span 
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#projector-algebra">Projector algebra</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.dim"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.rank"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.rank</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.base_tensor_shape"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.base_tensor_shape</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.array_rank"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.array_rank</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.base_array_shape"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.base_array_shape</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.inv"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.inv</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.coeffs"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.coeffs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.array"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.array</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.tensor"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.tensor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.shape"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.shape</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.batch_shape"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.batch_shape</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.to_symmetric"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.to_symmetric()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.fourth_contract"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.fourth_contract()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.rotate"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.rotate()</span></code></a></li>

@@ -226,6 +226,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
@@ -392,7 +393,8 @@ document.write(`
 
 <span class="sd">Each subclass provides only:</span>
 
-<span class="sd">- ``__init__``  (parameter parsing and ``_basis_arrays`` assignment)</span>
+<span class="sd">- ``__init__``  (parameter parsing)</span>
+<span class="sd">- ``_basis_arrays`` property — the basis projectors, a constant (not a pytree leaf)</span>
 <span class="sd">- :meth:`_rebuild` — factory for a new same-type instance with updated coefficients</span>
 <span class="sd">- :attr:`inv` — class-specific inversion</span>
 <span class="sd">- ``__matmul__`` override for same-class composition (coefficient-space algebra)</span>
@@ -416,14 +418,15 @@ document.write(`
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors.generic_tensors</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">SymmetricTensor2</span><span class="p">,</span>
     <span class="n">SymmetricTensor4</span><span class="p">,</span>
+    <span class="n">Tensor</span><span class="p">,</span>
     <span class="n">_array4</span><span class="p">,</span>
+    <span class="n">_scalar</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
@@ -532,14 +535,20 @@ document.write(`
 
 <div class="viewcode-block" id="AbstractStructuredTensor4">
 <a class="viewcode-back" href="../../../api/jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.AbstractStructuredTensor4">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">AbstractStructuredTensor4</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AbstractStructuredTensor4</span><span class="p">(</span><span class="n">Tensor</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract base for symmetry-reduced fourth-rank tensors.</span>
 
 <span class="sd">    Concrete subclasses store a coefficient vector</span>
-<span class="sd">    ``_coeffs`` of shape ``(..., n)`` (the unique JAX leaf) and a</span>
-<span class="sd">    precomputed basis stack ``_basis_arrays`` of shape ``(n, 6, 6)`` (static).</span>
-<span class="sd">    Every shared operation is derived from these two objects alone.</span>
+<span class="sd">    ``_coeffs`` of shape ``(..., n)`` (the unique JAX leaf, with the symmetry axis of</span>
+<span class="sd">    transversely isotropic tensors) and provide the basis stack ``_basis_arrays`` of shape</span>
+<span class="sd">    ``(n, 6, 6)``, a constant that is not part of the pytree (it is neither differentiated,</span>
+<span class="sd">    trained, batched nor saved). Every shared operation is derived from these two objects.</span>
+
+<span class="sd">    They are :class:`~jaxmat.tensors.Tensor` objects of rank 4 and interoperate with</span>
+<span class="sd">    :class:`~jaxmat.tensors.SymmetricTensor4` and with each other (``@``, ``+``, ``-``,</span>
+<span class="sd">    :meth:`fourth_contract`), through their materialised Kelvin matrix when needed;</span>
+<span class="sd">    ``jnp.asarray(C)`` gives the dense ``(3, 3, 3, 3)`` tensor.</span>
 
 <span class="sd">    The tensor is represented as</span>
 
@@ -559,11 +568,24 @@ document.write(`
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_coeffs</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span>  <span class="c1"># shape (..., n) — the unique JAX leaf</span>
-    <span class="n">_basis_arrays</span><span class="p">:</span> <span class="p">(</span>
-        <span class="n">jax</span><span class="o">.</span><span class="n">Array</span>
-    <span class="p">)</span>  <span class="c1"># shape (n, 6, 6) — precomputed constant, frozen by module immutability</span>
+
+    <span class="n">dim</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Spatial dimension.&quot;&quot;&quot;</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tensor rank.&quot;&quot;&quot;</span>
+    <span class="n">base_tensor_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shape of the base (unbatched) dense tensor.&quot;&quot;&quot;</span>
+    <span class="n">array_rank</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of storage dimensions of the materialised Kelvin matrix.&quot;&quot;&quot;</span>
+    <span class="n">base_array_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shape of the base (unbatched) materialised Kelvin matrix.&quot;&quot;&quot;</span>
 
     <span class="c1"># ── abstract interface ─────────────────────────────────────────────────────</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_basis_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Basis projectors as Kelvin matrices, shape ``(n, 6, 6)``.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_coeffs</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractStructuredTensor4</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -623,6 +645,30 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_arrays</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Materialised Kelvin matrix, under the name used by the generic rank-4 code.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dense tensor, shape ``(..., 3, 3, 3, 3)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_symmetric</span><span class="p">()</span><span class="o">.</span><span class="n">tensor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shape of the materialised Kelvin matrix ``(..., 6, 6)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_array_shape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">batch_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Leading batch dimensions ``(...)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__jax_array__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Allow ``jnp.asarray(C)`` to return the dense (3, 3, 3, 3) tensor.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span>
+
 <div class="viewcode-block" id="AbstractStructuredTensor4.to_symmetric">
 <a class="viewcode-back" href="../../../api/jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.AbstractStructuredTensor4.to_symmetric">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_symmetric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SymmetricTensor4</span><span class="p">:</span>
@@ -657,7 +703,7 @@ document.write(`
 <span class="sd">            Scalar (or batch of scalars).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">D</span> <span class="o">=</span> <span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-        <span class="n">PD</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;pij,ij-&gt;p&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_arrays</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>  <span class="c1"># (n,)</span>
+        <span class="n">PD</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;pij,...ij-&gt;...p&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_arrays</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>  <span class="c1"># (..., n)</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span> <span class="o">*</span> <span class="n">PD</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 
@@ -700,7 +746,7 @@ document.write(`
 <span class="sd">        coefficient-space formula is available.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor2</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...ij,...j-&gt;...i&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">SymmetricTensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span> <span class="o">@</span> <span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__rmatmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
@@ -711,15 +757,15 @@ document.write(`
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Scalar multiplication $\alpha \mathbb{C}$; stays in the same symmetry class.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild</span><span class="p">(</span><span class="n">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Scalar multiplication $\alpha \mathbb{C}$; stays in the same symmetry class.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild</span><span class="p">(</span><span class="n">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Scalar division $\mathbb{C} / \alpha$; stays in the same symmetry class.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span> <span class="o">/</span> <span class="n">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Negation $-\mathbb{C}$; stays in the same symmetry class.&quot;&quot;&quot;</span>
@@ -808,7 +854,10 @@ document.write(`
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Provide either coeffs or (kappa, mu)&quot;</span><span class="p">)</span>
             <span class="n">coeffs</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kappa</span><span class="p">),</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mu</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_coeffs&quot;</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coeffs</span><span class="p">))</span>
-        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_basis_arrays&quot;</span><span class="p">,</span> <span class="n">_ISO_BASIS</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_basis_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_ISO_BASIS</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_coeffs</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IsotropicTensor4</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">IsotropicTensor4</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="n">new_coeffs</span><span class="p">)</span>
@@ -951,7 +1000,10 @@ document.write(`
                 <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_coeffs&quot;</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coeffs</span><span class="p">))</span>
-        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_basis_arrays&quot;</span><span class="p">,</span> <span class="n">_CUB_BASIS</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_basis_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_CUB_BASIS</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_coeffs</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CubicTensor4</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">CubicTensor4</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="n">new_coeffs</span><span class="p">)</span>
@@ -1039,12 +1091,13 @@ document.write(`
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">):</span>
         <span class="n">axis</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
-        <span class="n">basis</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">P</span><span class="o">.</span><span class="n">array</span> <span class="k">for</span> <span class="n">P</span> <span class="ow">in</span> <span class="n">_transverse_isotropic_projectors</span><span class="p">(</span><span class="n">axis</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
-        <span class="p">)</span>  <span class="c1"># (6, 6, 6)</span>
         <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;axis&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
         <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_coeffs&quot;</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coeffs</span><span class="p">))</span>
-        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_basis_arrays&quot;</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_basis_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Walpole basis of the symmetry axis, shape (6, 6, 6).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">P</span><span class="o">.</span><span class="n">array</span> <span class="k">for</span> <span class="n">P</span> <span class="ow">in</span> <span class="n">_transverse_isotropic_projectors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_coeffs</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransverseIsotropicTensor4</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">TransverseIsotropicTensor4</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="n">new_coeffs</span><span class="p">)</span>

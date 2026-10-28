@@ -198,12 +198,16 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
 </ul>
 </details></li>
 </ul>
@@ -215,22 +219,25 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.constraints.html">jaxmat.constraints package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.nn.html">jaxmat.nn module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
@@ -382,18 +389,21 @@ document.write(`
 <span class="sd">----------</span>
 <span class="sd">det33, inv33, eig33,</span>
 <span class="sd">principal_invariants, main_invariants, pq_invariants,</span>
-<span class="sd">isotropic_function, sqrtm, inv_sqrtm, expm, logm, powm</span>
+<span class="sd">isotropic_function, eigenvalue_function, sqrtm, inv_sqrtm, expm, logm, powm</span>
 
 <span class="sd">Private (internal helpers)</span>
 <span class="sd">--------------------------</span>
 <span class="sd">_dim, _tr, _dev, _sqrtm</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax</span><span class="w"> </span><span class="kn">import</span> <span class="n">lax</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax.flatten_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ravel_pytree</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">safe_norm</span><span class="p">,</span> <span class="n">safe_sqrt</span>
 
@@ -404,12 +414,22 @@ document.write(`
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dim</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spatial dimension of a square matrix $\mathbf{A}$, inferred from its shape.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Trace $\operatorname{tr}(\mathbf{A}) = A_{ii}$.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Trace $\operatorname{tr}(\mathbf{A}) = A_{ii}$, of a matrix or a batch of matrices.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">axis1</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis2</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_batched</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply ``fun``, a function of a single (3, 3) matrix, to ``A`` of shape (..., 3, 3).&quot;&quot;&quot;</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fun</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">batch_shape</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">fun</span><span class="p">)(</span><span class="n">A</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_shape</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">out</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dev</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
@@ -420,7 +440,7 @@ document.write(`
 <span class="sd">        \frac{1}{d}\operatorname{tr}(\mathbf{A})\,\mathbf{I}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">_dim</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">A</span> <span class="o">-</span> <span class="n">_tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">A</span> <span class="o">-</span> <span class="p">(</span><span class="n">_tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 
 
 <span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
@@ -439,16 +459,17 @@ document.write(`
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    A : array_like, shape (3, 3)</span>
+<span class="sd">    A : array_like, shape (..., 3, 3)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    jax.Array</span>
-<span class="sd">        Scalar determinant.</span>
+<span class="sd">        Determinant, shape (...).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">a11</span><span class="p">,</span> <span class="n">a12</span><span class="p">,</span> <span class="n">a13</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-    <span class="n">a21</span><span class="p">,</span> <span class="n">a22</span><span class="p">,</span> <span class="n">a23</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-    <span class="n">a31</span><span class="p">,</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a33</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">a11</span><span class="p">,</span> <span class="n">a12</span><span class="p">,</span> <span class="n">a13</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">a21</span><span class="p">,</span> <span class="n">a22</span><span class="p">,</span> <span class="n">a23</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">a31</span><span class="p">,</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a33</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="n">a11</span> <span class="o">*</span> <span class="p">(</span><span class="n">a22</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a23</span> <span class="o">*</span> <span class="n">a32</span><span class="p">)</span>
         <span class="o">-</span> <span class="n">a12</span> <span class="o">*</span> <span class="p">(</span><span class="n">a21</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a23</span> <span class="o">*</span> <span class="n">a31</span><span class="p">)</span>
@@ -469,29 +490,37 @@ document.write(`
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    A : array_like, shape (3, 3)</span>
+<span class="sd">    A : array_like, shape (..., 3, 3)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    jax.Array</span>
-<span class="sd">        Shape (3, 3).</span>
+<span class="sd">        Shape (..., 3, 3).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">a11</span><span class="p">,</span> <span class="n">a12</span><span class="p">,</span> <span class="n">a13</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-    <span class="n">a21</span><span class="p">,</span> <span class="n">a22</span><span class="p">,</span> <span class="n">a23</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-    <span class="n">a31</span><span class="p">,</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a33</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-    <span class="n">cof</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">a11</span><span class="p">,</span> <span class="n">a12</span><span class="p">,</span> <span class="n">a13</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">a21</span><span class="p">,</span> <span class="n">a22</span><span class="p">,</span> <span class="n">a23</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">a31</span><span class="p">,</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a33</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">cof</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
         <span class="p">[</span>
-            <span class="p">[</span><span class="n">a22</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a23</span> <span class="o">*</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a13</span> <span class="o">*</span> <span class="n">a32</span> <span class="o">-</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a33</span><span class="p">,</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a23</span> <span class="o">-</span> <span class="n">a13</span> <span class="o">*</span> <span class="n">a22</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">a23</span> <span class="o">*</span> <span class="n">a31</span> <span class="o">-</span> <span class="n">a21</span> <span class="o">*</span> <span class="n">a33</span><span class="p">,</span> <span class="n">a11</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a13</span> <span class="o">*</span> <span class="n">a31</span><span class="p">,</span> <span class="n">a13</span> <span class="o">*</span> <span class="n">a21</span> <span class="o">-</span> <span class="n">a11</span> <span class="o">*</span> <span class="n">a23</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">a21</span> <span class="o">*</span> <span class="n">a32</span> <span class="o">-</span> <span class="n">a22</span> <span class="o">*</span> <span class="n">a31</span><span class="p">,</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a31</span> <span class="o">-</span> <span class="n">a11</span> <span class="o">*</span> <span class="n">a32</span><span class="p">,</span> <span class="n">a11</span> <span class="o">*</span> <span class="n">a22</span> <span class="o">-</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a21</span><span class="p">],</span>
-        <span class="p">]</span>
-    <span class="p">)</span>
+            <span class="n">a22</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a23</span> <span class="o">*</span> <span class="n">a32</span><span class="p">,</span>
+            <span class="n">a13</span> <span class="o">*</span> <span class="n">a32</span> <span class="o">-</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a33</span><span class="p">,</span>
+            <span class="n">a12</span> <span class="o">*</span> <span class="n">a23</span> <span class="o">-</span> <span class="n">a13</span> <span class="o">*</span> <span class="n">a22</span><span class="p">,</span>
+            <span class="n">a23</span> <span class="o">*</span> <span class="n">a31</span> <span class="o">-</span> <span class="n">a21</span> <span class="o">*</span> <span class="n">a33</span><span class="p">,</span>
+            <span class="n">a11</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a13</span> <span class="o">*</span> <span class="n">a31</span><span class="p">,</span>
+            <span class="n">a13</span> <span class="o">*</span> <span class="n">a21</span> <span class="o">-</span> <span class="n">a11</span> <span class="o">*</span> <span class="n">a23</span><span class="p">,</span>
+            <span class="n">a21</span> <span class="o">*</span> <span class="n">a32</span> <span class="o">-</span> <span class="n">a22</span> <span class="o">*</span> <span class="n">a31</span><span class="p">,</span>
+            <span class="n">a12</span> <span class="o">*</span> <span class="n">a31</span> <span class="o">-</span> <span class="n">a11</span> <span class="o">*</span> <span class="n">a32</span><span class="p">,</span>
+            <span class="n">a11</span> <span class="o">*</span> <span class="n">a22</span> <span class="o">-</span> <span class="n">a12</span> <span class="o">*</span> <span class="n">a21</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">*</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="n">det</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">a11</span> <span class="o">*</span> <span class="p">(</span><span class="n">a22</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a23</span> <span class="o">*</span> <span class="n">a32</span><span class="p">)</span>
         <span class="o">-</span> <span class="n">a12</span> <span class="o">*</span> <span class="p">(</span><span class="n">a21</span> <span class="o">*</span> <span class="n">a33</span> <span class="o">-</span> <span class="n">a23</span> <span class="o">*</span> <span class="n">a31</span><span class="p">)</span>
         <span class="o">+</span> <span class="n">a13</span> <span class="o">*</span> <span class="p">(</span><span class="n">a21</span> <span class="o">*</span> <span class="n">a32</span> <span class="o">-</span> <span class="n">a22</span> <span class="o">*</span> <span class="n">a31</span><span class="p">)</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">cof</span> <span class="o">/</span> <span class="n">det</span></div>
+    <span class="k">return</span> <span class="n">cof</span> <span class="o">/</span> <span class="n">det</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span></div>
 
 
 
@@ -517,8 +546,9 @@ document.write(`
 <span class="sd">    I1, I2, I3 : jax.Array</span>
 <span class="sd">        Three scalar invariants.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">i1</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-    <span class="n">i2</span> <span class="o">=</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">A</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">i1</span> <span class="o">=</span> <span class="n">_tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">i2</span> <span class="o">=</span> <span class="p">(</span><span class="n">i1</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">_tr</span><span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">A</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
     <span class="n">i3</span> <span class="o">=</span> <span class="n">det33</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span></div>
 
@@ -543,9 +573,10 @@ document.write(`
 <span class="sd">    J1, J2, J3 : jax.Array</span>
 <span class="sd">        Three scalar invariants.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">j1</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-    <span class="n">j2</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">A</span><span class="p">)</span>
-    <span class="n">j3</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">A</span> <span class="o">@</span> <span class="n">A</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">j1</span> <span class="o">=</span> <span class="n">_tr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">j2</span> <span class="o">=</span> <span class="n">_tr</span><span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">A</span><span class="p">)</span>
+    <span class="n">j3</span> <span class="o">=</span> <span class="n">_tr</span><span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">A</span> <span class="o">@</span> <span class="n">A</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">j1</span><span class="p">,</span> <span class="n">j2</span><span class="p">,</span> <span class="n">j3</span></div>
 
 
@@ -577,9 +608,10 @@ document.write(`
 <span class="sd">    q : jax.Array</span>
 <span class="sd">        Von Mises equivalent stress.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="o">-</span><span class="n">_tr</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">_dev</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
-    <span class="n">q</span> <span class="o">=</span> <span class="n">safe_sqrt</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vdot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">safe_sqrt</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">s</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
     <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span></div>
 
 
@@ -674,6 +706,31 @@ document.write(`
 <a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.eig33">[docs]</a>
 <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">eig33</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Eigenvalues and eigenprojectors of a real symmetric $3 \times 3$ matrix, or of a batch.</span>
+
+<span class="sd">    Closed-form expressions, scaled by the norm of $\mathbf{A}$. The eigenprojectors</span>
+<span class="sd">    $\mathbf{n}_i \otimes \mathbf{n}_i = \partial\lambda_i/\partial\mathbf{A}$ are obtained by</span>
+<span class="sd">    forward differentiation of the eigenvalues. Within a repeated eigenvalue (relative gap</span>
+<span class="sd">    below about 1e-8) they are not individual projectors, only their sum is.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : array_like, shape (..., 3, 3)</span>
+<span class="sd">    rtol : float, optional</span>
+<span class="sd">        Relative tolerance of the isotropic case.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eigvals : jax.Array, shape (..., 3)</span>
+<span class="sd">        Eigenvalues in ascending order.</span>
+<span class="sd">    eigendyads : jax.Array, shape (..., 3, 3, 3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_batched</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_eig33</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_eig33</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">):</span>
     <span class="n">norm_A</span> <span class="o">=</span> <span class="n">safe_norm</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">J2s</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
@@ -752,8 +809,7 @@ document.write(`
     <span class="n">eigvals</span> <span class="o">=</span> <span class="n">norm_A</span> <span class="o">*</span> <span class="n">eigvals</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
     <span class="n">eigendyads</span> <span class="o">=</span> <span class="n">eigendyads</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
     <span class="n">eigendyads</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigendyads</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">eigendyads</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigendyads</span></div>
-
+    <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigendyads</span>
 
 
 <span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
@@ -801,9 +857,190 @@ document.write(`
     <span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">U_inv</span>
 
 
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1"># Spectral functions with exact first and second derivatives</span>
+<span class="c1"># ─────────────────────────────────────────────────────────────────────────────</span>
+<span class="c1">#</span>
+<span class="c1"># Functions of the eigenvalues are not differentiated through ``eig33``: at repeated</span>
+<span class="c1"># eigenvalues the derivatives of the individual eigenprojectors are undefined, and automatic</span>
+<span class="c1"># differentiation returns wrong values there (e.g. the derivative of ``logm`` at a multiple</span>
+<span class="c1"># of the identity). Their derivatives are instead given by custom JVP rules, the</span>
+<span class="c1"># Daleckii-Krein formulas with divided differences, which only involve the eigenprojectors</span>
+<span class="c1"># themselves. The JVP rules are custom functions as well, so that second derivatives</span>
+<span class="c1"># (consistent tangents of stresses defined by a first derivative) are exact too.</span>
+<span class="c1">#</span>
+<span class="c1"># ``eig33`` treats eigenvalues closer than about 1e-8 (relative) as equal and then returns</span>
+<span class="c1"># projectors that are only correct summed over the repeated eigenvalue. The rules are</span>
+<span class="c1"># therefore written so that eigenvalues closer than ``_SPECTRAL_TOL`` (relative to the</span>
+<span class="c1"># largest eigenvalue magnitude) only enter through such sums, using the limits of the</span>
+<span class="c1"># divided differences, while further apart the projectors are accurate (1e-12 or better).</span>
+
+<span class="n">_SPECTRAL_TOL</span> <span class="o">=</span> <span class="mf">1e-5</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sym33</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_spectral_decomposition</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Eigenvalues and (symmetric) eigenprojectors of a symmetric matrix.&quot;&quot;&quot;</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">projectors</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">_sym33</span><span class="p">(</span><span class="n">projectors</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_close</span><span class="p">(</span><span class="n">eigvals</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mask of the pairs of eigenvalues closer than ``_SPECTRAL_TOL``, and safe differences.&quot;&quot;&quot;</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigvals</span><span class="p">))</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">eigvals</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">close</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">_SPECTRAL_TOL</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="k">return</span> <span class="n">close</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">close</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">diff</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_elementwise_derivative</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Derivative of an elementwise scalar function ``x -&gt; fun(x, *args)``.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">fun</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="p">,),</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">x</span><span class="p">),))[</span><span class="mi">1</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_first_divided_differences</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;$f[\lambda_a, \lambda_b]$, with the limit $f&#39;$ at the mid-point for close pairs.&quot;&quot;&quot;</span>
+    <span class="n">close</span><span class="p">,</span> <span class="n">diff</span> <span class="o">=</span> <span class="n">_close</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">extra</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># trailing dimensions of a vector-valued fun</span>
+    <span class="n">mid</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigvals</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">eigvals</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+        <span class="n">close</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">close</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="n">extra</span><span class="p">),</span>
+        <span class="n">_elementwise_derivative</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">f</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span> <span class="o">/</span> <span class="n">diff</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="n">extra</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_second_divided_differences</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;$f[\lambda_a, \lambda_b, \lambda_c]$, shape (3, 3, 3), with the limit $f&#39;&#39;/2$ at</span>
+<span class="sd">    the mean for close triples.&quot;&quot;&quot;</span>
+    <span class="n">lam</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">lam</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lam</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lam</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">x</span> <span class="o">-</span> <span class="n">z</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigvals</span><span class="p">))</span>
+    <span class="n">close</span> <span class="o">=</span> <span class="n">z</span> <span class="o">-</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">_SPECTRAL_TOL</span> <span class="o">*</span> <span class="n">scale</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">dd1</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>  <span class="c1"># elementwise first divided differences</span>
+        <span class="n">near</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">_SPECTRAL_TOL</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">quotient</span> <span class="o">=</span> <span class="p">(</span><span class="n">fun</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-</span> <span class="n">fun</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">near</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">near</span><span class="p">,</span> <span class="n">_elementwise_derivative</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">),</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="n">quotient</span><span class="p">)</span>
+
+    <span class="n">mean</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+    <span class="n">second</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">_elementwise_derivative</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">u</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">:</span> <span class="n">_elementwise_derivative</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">),</span> <span class="n">mean</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">close</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="p">(</span><span class="n">dd1</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="o">-</span> <span class="n">dd1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">close</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">z</span> <span class="o">-</span> <span class="n">x</span><span class="p">))</span>
+
+
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_ArgumentTangent</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``x, *args, *dargs -&gt; d/dt fun(x, *(args + t dargs))``: directional derivative of</span>
+<span class="sd">    ``fun`` along its extra arguments, itself a function of the same kind as ``fun``.&quot;&quot;&quot;</span>
+
+    <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args_and_tangents</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">args_and_tangents</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">args</span><span class="p">,</span> <span class="n">dargs</span> <span class="o">=</span> <span class="n">args_and_tangents</span><span class="p">[:</span><span class="n">n</span><span class="p">],</span> <span class="n">args_and_tangents</span><span class="p">[</span><span class="n">n</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="k">lambda</span> <span class="o">*</span><span class="n">a</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">dargs</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>
+
+
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_ArgumentJacobian</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``x, *args -&gt; d fun(x, *args) / d theta``, shape ``x.shape + (n,)``, with ``theta``</span>
+<span class="sd">    the ``n`` flattened extra arguments: elementwise in ``x`` like ``fun``.&quot;&quot;&quot;</span>
+
+    <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">theta</span><span class="p">,</span> <span class="n">unravel</span> <span class="o">=</span> <span class="n">ravel_pytree</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">jacfwd</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">unravel</span><span class="p">(</span><span class="n">t</span><span class="p">)))(</span><span class="n">theta</span><span class="p">)</span>
+
+
+<span class="c1"># -- matrix functions ---------------------------------------------------------</span>
+<span class="c1">#</span>
+<span class="c1"># The JVP rules only call custom functions of the primal inputs (the Frechet derivative as</span>
+<span class="c1"># a linear operator, and the derivatives with respect to the extra arguments), contracted</span>
+<span class="c1"># with the tangents afterwards. Under reverse mode, JAX inlines custom functions that</span>
+<span class="c1"># receive tangent inputs, which would lose their own rules, hence second derivatives.</span>
+
+
+<span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">custom_jvp</span><span class="p">,</span> <span class="n">nondiff_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_isotropic_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">projectors</span> <span class="o">=</span> <span class="n">_spectral_decomposition</span><span class="p">(</span><span class="n">_sym33</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;a,aij-&gt;ij&quot;</span><span class="p">,</span> <span class="n">fun</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="n">projectors</span><span class="p">)</span>
+
+
+<span class="nd">@_isotropic_function</span><span class="o">.</span><span class="n">defjvp</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_isotropic_function_jvp</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
+    <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span> <span class="o">=</span> <span class="n">primals</span>
+    <span class="n">dA</span><span class="p">,</span> <span class="o">*</span><span class="n">dargs</span> <span class="o">=</span> <span class="n">tangents</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_isotropic_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">tangent</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,jk-&gt;il&quot;</span><span class="p">,</span> <span class="n">_frechet_operator</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="n">_sym33</span><span class="p">(</span><span class="n">dA</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">dtheta</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ravel_pytree</span><span class="p">(</span><span class="n">dargs</span><span class="p">)</span>
+        <span class="n">tangent</span> <span class="o">=</span> <span class="n">tangent</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;kij,k-&gt;ij&quot;</span><span class="p">,</span> <span class="n">_argument_jacobian</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="n">dtheta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">tangent</span>
+
+
+<span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">custom_jvp</span><span class="p">,</span> <span class="n">nondiff_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_frechet_operator</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Daleckii-Krein formula for the derivative of $f(\mathbf{A})$, as the operator</span>
+<span class="sd">    $\mathbb{L} = \sum_{ab} f[\lambda_a, \lambda_b]\,\mathbf{P}_a \boxtimes \mathbf{P}_b$,</span>
+<span class="sd">    $Df(\mathbf{A})[\mathbf{U}]_{il} = L_{ijkl} U_{jk}$.&quot;&quot;&quot;</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">_spectral_decomposition</span><span class="p">(</span><span class="n">_sym33</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="n">F1</span> <span class="o">=</span> <span class="n">_first_divided_differences</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ab,aij,bkl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">F1</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+
+<span class="nd">@_frechet_operator</span><span class="o">.</span><span class="n">defjvp</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_frechet_operator_jvp</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
+    <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span> <span class="o">=</span> <span class="n">primals</span>
+    <span class="n">dA</span><span class="p">,</span> <span class="o">*</span><span class="n">dargs</span> <span class="o">=</span> <span class="n">tangents</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_frechet_operator</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="c1"># second derivative: d/dA [P_a U P_b] along V gives</span>
+    <span class="c1"># sum_abc f[a, b, c] (P_a U P_b V P_c + P_a V P_b U P_c)</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">_spectral_decomposition</span><span class="p">(</span><span class="n">_sym33</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="n">F2</span> <span class="o">=</span> <span class="n">_second_divided_differences</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">PVP</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;bij,jk,ckl-&gt;bcil&quot;</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">_sym33</span><span class="p">(</span><span class="n">dA</span><span class="p">),</span> <span class="n">P</span><span class="p">)</span>
+    <span class="n">tangent</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;abc,aij,bckl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">F2</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">PVP</span><span class="p">)</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+        <span class="s2">&quot;abc,abij,ckl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">F2</span><span class="p">,</span> <span class="n">PVP</span><span class="p">,</span> <span class="n">P</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">dF1</span> <span class="o">=</span> <span class="n">_first_divided_differences</span><span class="p">(</span><span class="n">_ArgumentTangent</span><span class="p">(</span><span class="n">fun</span><span class="p">),</span> <span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">dargs</span><span class="p">)</span>
+        <span class="n">tangent</span> <span class="o">=</span> <span class="n">tangent</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ab,aij,bkl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">dF1</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">tangent</span>
+
+
+<span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">custom_jvp</span><span class="p">,</span> <span class="n">nondiff_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_argument_jacobian</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;$\partial f(\mathbf{A}) / \partial\theta_k = \sum_a \partial_k f(\lambda_a)\,</span>
+<span class="sd">    \mathbf{P}_a$, shape (n, 3, 3), for the flattened extra arguments $\theta$.&quot;&quot;&quot;</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">_spectral_decomposition</span><span class="p">(</span><span class="n">_sym33</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ak,aij-&gt;kij&quot;</span><span class="p">,</span> <span class="n">_ArgumentJacobian</span><span class="p">(</span><span class="n">fun</span><span class="p">)(</span><span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="n">P</span><span class="p">)</span>
+
+
+<span class="nd">@_argument_jacobian</span><span class="o">.</span><span class="n">defjvp</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_argument_jacobian_jvp</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
+    <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span> <span class="o">=</span> <span class="n">primals</span>
+    <span class="n">dA</span><span class="p">,</span> <span class="o">*</span><span class="n">dargs</span> <span class="o">=</span> <span class="n">tangents</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_argument_jacobian</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">_spectral_decomposition</span><span class="p">(</span><span class="n">_sym33</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="n">jac</span> <span class="o">=</span> <span class="n">_ArgumentJacobian</span><span class="p">(</span><span class="n">fun</span><span class="p">)</span>
+    <span class="n">F1</span> <span class="o">=</span> <span class="n">_first_divided_differences</span><span class="p">(</span><span class="n">jac</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>  <span class="c1"># (3, 3, n)</span>
+    <span class="n">tangent</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;abk,aij,jl,blm-&gt;kim&quot;</span><span class="p">,</span> <span class="n">F1</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">_sym33</span><span class="p">(</span><span class="n">dA</span><span class="p">),</span> <span class="n">P</span><span class="p">)</span>
+    <span class="n">theta</span><span class="p">,</span> <span class="n">unravel</span> <span class="o">=</span> <span class="n">ravel_pytree</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">dtheta</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ravel_pytree</span><span class="p">(</span><span class="n">dargs</span><span class="p">)</span>
+    <span class="n">hess</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jacfwd</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">jac</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">unravel</span><span class="p">(</span><span class="n">t</span><span class="p">)))(</span><span class="n">theta</span><span class="p">)</span>  <span class="c1"># (3, n, n)</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">tangent</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;akl,l,aij-&gt;kij&quot;</span><span class="p">,</span> <span class="n">hess</span><span class="p">,</span> <span class="n">dtheta</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="isotropic_function">
 <a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.isotropic_function">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">isotropic_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">isotropic_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Isotropic matrix function $f(\mathbf{A})$ of a symmetric $3 \times 3$ matrix.</span>
 
@@ -812,26 +1049,121 @@ document.write(`
 <span class="sd">    where $\lambda_i$ are the eigenvalues and $\mathbf{n}_i$ the corresponding</span>
 <span class="sd">    eigenvectors of $\mathbf{A}$.</span>
 
+<span class="sd">    Its first and second derivatives are exact, also at repeated eigenvalues (e.g. for</span>
+<span class="sd">    $\mathbf{A} = \mathbf{I}$): they are given by the Daleckii-Krein formulas instead of</span>
+<span class="sd">    differentiating through the eigendecomposition.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    fun : callable</span>
-<span class="sd">        Scalar function $f : \mathbb{R} \to \mathbb{R}$ applied to each eigenvalue.</span>
+<span class="sd">        Elementwise scalar function, called as ``fun(eigenvalues, *args)``, applied to</span>
+<span class="sd">        each eigenvalue. It must be hashable (e.g. a module-level function); quantities</span>
+<span class="sd">        it depends on and that may be differentiated are passed as ``args``.</span>
 <span class="sd">    A : array_like, shape (3, 3)</span>
-<span class="sd">        Real symmetric matrix.</span>
+<span class="sd">        Real symmetric matrix (only its symmetric part is used).</span>
+<span class="sd">    *args : array_like</span>
+<span class="sd">        Extra arguments of ``fun``, e.g. parameters of a material model.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    jax.Array</span>
 <span class="sd">        Shape (3, 3).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">eigvals</span><span class="p">,</span> <span class="n">projectors</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
-    <span class="c1"># The projectors P_i = ∂λ_i/∂A come from jacfwd, which perturbs each</span>
-    <span class="c1"># element of A independently (without enforcing A_{ij} = A_{ji}).  This</span>
-    <span class="c1"># means P_i may have a small antisymmetric component.  Symmetrising before</span>
-    <span class="c1"># the spectral reconstruction removes that noise and ensures f(A) is</span>
-    <span class="c1"># symmetric, consistent with the reference implementation.</span>
-    <span class="n">projectors</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">projectors</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">projectors</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;a,aij-&gt;ij&quot;</span><span class="p">,</span> <span class="n">fun</span><span class="p">(</span><span class="n">eigvals</span><span class="p">),</span> <span class="n">projectors</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_batched</span><span class="p">(</span><span class="k">lambda</span> <span class="n">A_</span><span class="p">:</span> <span class="n">_isotropic_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># -- scalar symmetric functions of the eigenvalues ----------------------------</span>
+
+
+<span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">custom_jvp</span><span class="p">,</span> <span class="n">nondiff_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_eigenvalue_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">eig33</span><span class="p">(</span><span class="n">_sym33</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">fun</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+
+<span class="nd">@_eigenvalue_function</span><span class="o">.</span><span class="n">defjvp</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_eigenvalue_function_jvp</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
+    <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span> <span class="o">=</span> <span class="n">primals</span>
+    <span class="n">dA</span><span class="p">,</span> <span class="o">*</span><span class="n">dargs</span> <span class="o">=</span> <span class="n">tangents</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_eigenvalue_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">tangent</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">_eigenvalue_gradient</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">*</span> <span class="n">_sym33</span><span class="p">(</span><span class="n">dA</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">tangent</span> <span class="o">=</span> <span class="n">tangent</span> <span class="o">+</span> <span class="n">_eigenvalue_function</span><span class="p">(</span><span class="n">_ArgumentTangent</span><span class="p">(</span><span class="n">fun</span><span class="p">),</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">dargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">tangent</span>
+
+
+<span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">custom_jvp</span><span class="p">,</span> <span class="n">nondiff_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_eigenvalue_gradient</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;$\partial g/\partial\mathbf{A} = \sum_a g_{,a}\,\mathbf{P}_a$.&quot;&quot;&quot;</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">_spectral_decomposition</span><span class="p">(</span><span class="n">_sym33</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">fun</span><span class="p">)(</span><span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;a,aij-&gt;ij&quot;</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+
+<span class="nd">@_eigenvalue_gradient</span><span class="o">.</span><span class="n">defjvp</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_eigenvalue_gradient_jvp</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
+    <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span> <span class="o">=</span> <span class="n">primals</span>
+    <span class="n">dA</span><span class="p">,</span> <span class="o">*</span><span class="n">dargs</span> <span class="o">=</span> <span class="n">tangents</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_eigenvalue_gradient</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="c1"># sum_ab g_ab (P_b : V) P_a + sum_ab G_ab P_a V P_b, with G_ab = (g_a - g_b)/(l_a - l_b)</span>
+    <span class="c1"># for a != b. For close pairs, G_ab -&gt; (g_aa + g_bb)/2 - g_ab, and the terms are</span>
+    <span class="c1"># rearranged so that the projectors of close eigenvalues only enter through their sum.</span>
+    <span class="n">eigvals</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">_spectral_decomposition</span><span class="p">(</span><span class="n">_sym33</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">_sym33</span><span class="p">(</span><span class="n">dA</span><span class="p">)</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">fun</span><span class="p">)(</span><span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">hess</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">fun</span><span class="p">)(</span><span class="n">eigvals</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">close</span><span class="p">,</span> <span class="n">diff</span> <span class="o">=</span> <span class="n">_close</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
+    <span class="n">partner</span> <span class="o">=</span> <span class="n">close</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>  <span class="c1"># close to another eigenvalue</span>
+    <span class="n">has_partner</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">partner</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">hdiag</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">hess</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+        <span class="n">close</span><span class="p">,</span>
+        <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">hdiag</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">hdiag</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span> <span class="o">-</span> <span class="n">hess</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">grad</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">grad</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span> <span class="o">/</span> <span class="n">diff</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># off-diagonal Hessian entry shared within a group of repeated eigenvalues</span>
+    <span class="n">hoff</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">partner</span><span class="p">,</span> <span class="n">hess</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">partner</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">has_partner</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">hoff</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">hess</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">has_partner</span><span class="p">,</span> <span class="n">hdiag</span> <span class="o">-</span> <span class="n">hoff</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">G</span><span class="p">)</span>
+    <span class="n">tangent</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ab,bij,ij,akl-&gt;kl&quot;</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+        <span class="s2">&quot;ab,aij,jk,bkl-&gt;il&quot;</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">P</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">tangent</span> <span class="o">=</span> <span class="n">tangent</span> <span class="o">+</span> <span class="n">_eigenvalue_gradient</span><span class="p">(</span><span class="n">_ArgumentTangent</span><span class="p">(</span><span class="n">fun</span><span class="p">),</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">dargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">tangent</span>
+
+
+<div class="viewcode-block" id="eigenvalue_function">
+<a class="viewcode-back" href="../../../api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.eigenvalue_function">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">eigenvalue_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Scalar function $g(\lambda_1, \lambda_2, \lambda_3)$ of the eigenvalues of a symmetric</span>
+<span class="sd">    $3 \times 3$ matrix, for a symmetric $g$ (invariant under permutations of its</span>
+<span class="sd">    arguments, so that it is an isotropic function of $\mathbf{A}$).</span>
+
+<span class="sd">    Its first and second derivatives with respect to $\mathbf{A}$ are exact, also at</span>
+<span class="sd">    repeated eigenvalues, where differentiating through the eigenvalues fails: e.g. for</span>
+<span class="sd">    an Ogden energy at $\mathbf{C} = \mathbf{I}$, or a Hosford yield function at a uniaxial</span>
+<span class="sd">    stress.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fun : callable</span>
+<span class="sd">        Symmetric function called as ``fun(eigenvalues, *args)`` with the eigenvalues in</span>
+<span class="sd">        ascending order, shape (3,). It must be hashable (e.g. a module-level function);</span>
+<span class="sd">        quantities it depends on and that may be differentiated are passed as ``args``.</span>
+<span class="sd">    A : array_like, shape (3, 3)</span>
+<span class="sd">        Real symmetric matrix (only its symmetric part is used).</span>
+<span class="sd">    *args : array_like</span>
+<span class="sd">        Extra arguments of ``fun``, e.g. parameters of a material model.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jax.Array</span>
+<span class="sd">        Scalar.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_batched</span><span class="p">(</span><span class="k">lambda</span> <span class="n">A_</span><span class="p">:</span> <span class="n">_eigenvalue_function</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">A_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span></div>
 
 
 
@@ -862,7 +1194,7 @@ document.write(`
 <span class="sd">        Simo, J. C., &amp; Hughes, T. J. R. (1998). *Computational Inelasticity*.</span>
 <span class="sd">        Springer. p. 244.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_sqrtm</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">_batched</span><span class="p">(</span><span class="n">_sqrtm</span><span class="p">,</span> <span class="n">A</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
 
@@ -892,7 +1224,7 @@ document.write(`
 <span class="sd">        Simo, J. C., &amp; Hughes, T. J. R. (1998). *Computational Inelasticity*.</span>
 <span class="sd">        Springer. p. 244.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_sqrtm</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">_batched</span><span class="p">(</span><span class="n">_sqrtm</span><span class="p">,</span> <span class="n">A</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
 
 
 
@@ -914,7 +1246,7 @@ document.write(`
 <span class="sd">    jax.Array</span>
 <span class="sd">        Shape (3, 3).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">isotropic_function</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">_batched</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_isotropic_function</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span></div>
 
 
 
@@ -938,7 +1270,7 @@ document.write(`
 <span class="sd">    jax.Array</span>
 <span class="sd">        Shape (3, 3).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">isotropic_function</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">_batched</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_isotropic_function</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span></div>
 
 
 
@@ -962,7 +1294,7 @@ document.write(`
 <span class="sd">    jax.Array</span>
 <span class="sd">        Shape (3, 3).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">isotropic_function</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">_batched</span><span class="p">(</span><span class="k">lambda</span> <span class="n">A_</span><span class="p">:</span> <span class="n">_isotropic_function</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">power</span><span class="p">,</span> <span class="n">A_</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span></div>
 
 </pre></div>
 

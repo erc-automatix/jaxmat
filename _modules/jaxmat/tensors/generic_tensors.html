@@ -205,6 +205,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
+</ul>
+</details></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">General resources</span></p>
 <ul class="nav bd-sidenav">
@@ -214,20 +219,26 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.nn.html">jaxmat.nn module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
@@ -238,11 +249,13 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.utils.html">jaxmat.utils module</a></li>
 </ul>
 
     </div>
@@ -454,6 +467,13 @@ document.write(`
     <span class="k">return</span> <span class="n">arg</span><span class="o">.</span><span class="n">_array</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">storage_ndim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A scalar or a batch of scalars, shape ``(...)``, broadcast against the storage axes of</span>
+<span class="sd">    a tensor: a batch of tensors is multiplied by a batch of scalars, not componentwise.&quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">storage_ndim</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_sym2_to_full9</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="s2">&quot;SymmetricTensor2&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert a :class:`SymmetricTensor2` Kelvin array to the full 9-component</span>
@@ -469,6 +489,12 @@ document.write(`
 <span class="sd">        Shape ``(..., 9)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">_S2_W</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">_S2_TO_FULL9_IDX</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_kelvin_matvec</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">vector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kelvin matrix times Kelvin vector, broadcasting batches of both (``@`` would take a</span>
+<span class="sd">    batch of vectors for a matrix).&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...ij,...j-&gt;...i&quot;</span><span class="p">,</span> <span class="n">matrix</span><span class="p">,</span> <span class="n">vector</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_array4</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
@@ -531,7 +557,10 @@ document.write(`
 <span class="sd">    given the tensor is initialized to zero.</span>
 
 <span class="sd">    Batch dimensions precede the storage dimension: a batch of $N$ tensors</span>
-<span class="sd">    has ``array.shape == (N, 9)`` and ``tensor.shape == (N, 3, 3)``.</span>
+<span class="sd">    has ``array.shape == (N, 9)`` and ``tensor.shape == (N, 3, 3)``. Multiplying (or</span>
+<span class="sd">    dividing) by an array of shape ``(N,)`` scales each tensor of the batch by its scalar.</span>
+<span class="sd">    Write the tensor on the left (``T * s``): with a JAX array on the left, ``s * T``, JAX</span>
+<span class="sd">    converts the tensor to a dense array first.</span>
 
 <span class="sd">    The ``@`` operator performs **dense matrix composition**</span>
 <span class="sd">    $(\mathbf{T} \cdot \mathbf{S})_{ik} = T_{ij} S_{jk}$ and always</span>
@@ -699,8 +728,8 @@ document.write(`
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        R : array_like, shape (3, 3)</span>
-<span class="sd">            Orthogonal rotation matrix.</span>
+<span class="sd">        R : array_like, shape (..., 3, 3)</span>
+<span class="sd">            Orthogonal rotation matrix, or a batch of them.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -806,13 +835,13 @@ document.write(`
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">arr</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=-</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
@@ -856,12 +885,17 @@ document.write(`
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    tensor : array_like, shape ``(..., 3, 3)``, optional</span>
-<span class="sd">        Dense symmetric tensor.</span>
+<span class="sd">        Dense tensor, of which the symmetric part is stored.</span>
 <span class="sd">    array : array_like, shape ``(..., 6)``, optional</span>
 <span class="sd">        Pre-built Kelvin array.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
+<span class="sd">    Adding or subtracting a dense ``(..., 3, 3)`` array keeps a :class:`SymmetricTensor2`,</span>
+<span class="sd">    the symmetric part of the result. To keep a skew-symmetric part, convert the operand to</span>
+<span class="sd">    a :class:`Tensor2` first: ``SymmetricTensor2`` combined with ``Tensor2`` gives a</span>
+<span class="sd">    ``Tensor2``.</span>
+
 <span class="sd">    The ``@`` operator returns :class:`Tensor2` because the product of two</span>
 <span class="sd">    symmetric matrices is not symmetric in general.</span>
 
@@ -881,7 +915,9 @@ document.write(`
         <span class="k">if</span> <span class="n">tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">t</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
             <span class="n">_check_trailing</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">&quot;tensor&quot;</span><span class="p">)</span>
-            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_S2_I</span><span class="p">,</span> <span class="n">_S2_J</span><span class="p">]</span> <span class="o">*</span> <span class="n">_S2_W</span><span class="p">)</span>
+            <span class="c1"># symmetric part: a non-symmetric input must not lose its lower triangle</span>
+            <span class="n">t_sym</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_S2_I</span><span class="p">,</span> <span class="n">_S2_J</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_S2_J</span><span class="p">,</span> <span class="n">_S2_I</span><span class="p">])</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_array&quot;</span><span class="p">,</span> <span class="n">t_sym</span> <span class="o">*</span> <span class="n">_S2_W</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">_raw_array</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
             <span class="n">_check_trailing</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">6</span><span class="p">,),</span> <span class="s2">&quot;array&quot;</span><span class="p">)</span>
@@ -1080,16 +1116,15 @@ document.write(`
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        R : array_like, shape (3, 3)</span>
-<span class="sd">            Orthogonal rotation matrix.</span>
+<span class="sd">        R : array_like, shape (..., 3, 3)</span>
+<span class="sd">            Orthogonal rotation matrix, or a batch of them.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Same type as ``self``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span>
-        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ax</span><span class="p">)),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...ia,...jb,...kc,...ld,...abcd-&gt;...ijkl&quot;</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">tensor</span><span class="o">=</span><span class="n">T</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
@@ -1105,13 +1140,13 @@ document.write(`
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="n">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">_scalar</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">array</span><span class="o">=-</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
@@ -1178,9 +1213,9 @@ document.write(`
 <span class="sd">        - ``@`` :class:`Tensor4` → :class:`Tensor4`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor2</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">_sym2_to_full9</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">_kelvin_matvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="n">_sym2_to_full9</span><span class="p">(</span><span class="n">other</span><span class="p">)))</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor2</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Tensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">_kelvin_matvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">))</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor4</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">Tensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span>
@@ -1279,12 +1314,14 @@ document.write(`
 <span class="sd">        - ``@`` :class:`SymmetricTensor4` → $(6,6)@(6,6)$ → :class:`SymmetricTensor4`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor2</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor4</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">SymmetricTensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">_kelvin_matvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_array</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SymmetricTensor4</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">&quot;rank&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+        <span class="p">):</span>  <span class="c1"># also the symmetry-reduced classes, through their Kelvin matrix</span>
+            <span class="k">return</span> <span class="n">SymmetricTensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
         <span class="n">other_arr</span> <span class="o">=</span> <span class="n">_array4</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">other_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other_arr</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">SymmetricTensor2</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">_kelvin_matvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="n">other_arr</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">other_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">SymmetricTensor4</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">@</span> <span class="n">other_arr</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span>

@@ -207,6 +207,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
 </ul>
 </details></li>
 </ul>
@@ -218,12 +219,15 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
@@ -233,6 +237,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.nn.html">jaxmat.nn module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
@@ -487,10 +492,17 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Construct rotation matrix/matrices from Bunge Euler angles (ZXZ convention).</span>
 
-<span class="sd">    The rotation is defined as:</span>
+<span class="sd">    The rotation is the active rotation, composed of the active rotations</span>
+<span class="sd">    :math:`R_z, R_x` about the axes (as returned by :func:`from_axis_angle`):</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        R = R_z(\\phi_1) R_x(\\Phi) R_z(\\phi_2)</span>
+
+<span class="sd">    It maps the sample axes onto the crystal axes: its columns are the crystal axes in the</span>
+<span class="sd">    sample frame, a vector of crystal components :math:`v_c` has the sample components</span>
+<span class="sd">    :math:`R v_c`, and a tensor ``T`` given in the crystal axes is expressed in the sample</span>
+<span class="sd">    axes by ``T.rotate(R)``. It is the transpose of the Bunge orientation matrix</span>
+<span class="sd">    :math:`g = R^T` (rows are the crystal axes), which converts sample to crystal components.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -513,13 +525,13 @@ document.write(`
     <span class="n">R</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="n">c1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">-</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
-            <span class="n">s1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
-            <span class="n">s2</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
             <span class="o">-</span><span class="n">c1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">-</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
-            <span class="o">-</span><span class="n">s1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
-            <span class="n">c2</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
             <span class="n">s1</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
+            <span class="n">s1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
+            <span class="o">-</span><span class="n">s1</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span>
             <span class="o">-</span><span class="n">c1</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
+            <span class="n">s2</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
+            <span class="n">c2</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
             <span class="n">c</span><span class="p">,</span>
         <span class="p">],</span>
         <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>

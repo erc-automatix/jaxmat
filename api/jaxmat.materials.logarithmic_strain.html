@@ -454,10 +454,12 @@ logarithmic strain space.</p></li>
 </p>
 </li>
 </ol>
-<p>The derivative of the tensor logarithm, including at repeated eigenvalues, is obtained by
-automatic differentiation of <a class="reference internal" href="jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.logm" title="jaxmat.tensors.linear_algebra.logm"><code class="xref py py-func docutils literal notranslate"><span class="pre">logm()</span></code></a>, so the
-pull-back holds for anisotropic models as well. As the update only depends on <span class="math notranslate nohighlight">\(\bC\)</span>, the
-behavior is objective: under a superposed rotation <span class="math notranslate nohighlight">\(\bF \to \bQ\bF\)</span>, the stress <span class="math notranslate nohighlight">\(\bS\)</span> and
+<p>The derivative of the tensor logarithm is obtained by automatic differentiation of
+<a class="reference internal" href="jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.logm" title="jaxmat.tensors.linear_algebra.logm"><code class="xref py py-func docutils literal notranslate"><span class="pre">logm()</span></code></a>, whose first and second derivatives are exact
+also at repeated eigenvalues (e.g. at <span class="math notranslate nohighlight">\(\bF = \bI\)</span> or for two equal principal stretches),
+so the pull-back holds for anisotropic models as well and the consistent tangent is exact.
+As the update only depends on <span class="math notranslate nohighlight">\(\bC\)</span>, the behavior is objective: under a superposed rotation
+<span class="math notranslate nohighlight">\(\bF \to \bQ\bF\)</span>, the stress <span class="math notranslate nohighlight">\(\bS\)</span> and
 the internal variables are unchanged and the Cauchy stress rotates as
 <span class="math notranslate nohighlight">\(\bsig \to \bQ\bsig\bQ^\text{T}\)</span>. For a hyperelastic small-strain model of energy
 <span class="math notranslate nohighlight">\(\psi(\beps)\)</span>, the result is the hyperelastic model of energy <span class="math notranslate nohighlight">\(\psi(\bE)\)</span>.</p>

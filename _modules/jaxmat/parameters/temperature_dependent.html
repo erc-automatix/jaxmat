@@ -226,6 +226,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
@@ -465,7 +467,7 @@ document.write(`
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reference value $p_{\textrm{ref}}$&quot;&quot;&quot;</span>
     <span class="n">slope</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">()</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Slope $s$&quot;&quot;&quot;</span>
-    <span class="n">T_ref</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_TEMPERATURE</span><span class="p">)</span>
+    <span class="n">T_ref</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">(</span><span class="n">static</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_TEMPERATURE</span><span class="p">)</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reference temperature $T_{\textrm{ref}}$&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Affine.evaluate">
@@ -487,7 +489,7 @@ document.write(`
 
     <span class="n">coeffs</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">()</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Polynomial coefficients, ordered from low to high order.&quot;&quot;&quot;</span>
-    <span class="n">T_ref</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_TEMPERATURE</span><span class="p">)</span>
+    <span class="n">T_ref</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">(</span><span class="n">static</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_TEMPERATURE</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Polynomial.evaluate">
 <a class="viewcode-back" href="../../../api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Polynomial.evaluate">[docs]</a>
@@ -509,7 +511,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Arrhenius factor.&quot;&quot;&quot;</span>
     <span class="n">Q</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">()</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Activation energy&quot;&quot;&quot;</span>
-    <span class="n">R</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">8.314462618</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">(</span><span class="n">static</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">8.314462618</span><span class="p">)</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Universal gas constant $R=8.314462618 \textrm{J}.\textrm{K}^{-1}.\textrm{mol}^{-1}.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Arrhenius.evaluate">

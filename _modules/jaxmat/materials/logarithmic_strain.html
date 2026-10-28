@@ -395,10 +395,12 @@ document.write(`
 
 <span class="sd">   $$\bS = 2\,\bT:\frac{\partial\bE}{\partial\bC}, \qquad \bP = \bF\bS$$</span>
 
-<span class="sd">The derivative of the tensor logarithm, including at repeated eigenvalues, is obtained by</span>
-<span class="sd">automatic differentiation of :func:`~jaxmat.tensors.linear_algebra.logm`, so the</span>
-<span class="sd">pull-back holds for anisotropic models as well. As the update only depends on $\bC$, the</span>
-<span class="sd">behavior is objective: under a superposed rotation $\bF \to \bQ\bF$, the stress $\bS$ and</span>
+<span class="sd">The derivative of the tensor logarithm is obtained by automatic differentiation of</span>
+<span class="sd">:func:`~jaxmat.tensors.linear_algebra.logm`, whose first and second derivatives are exact</span>
+<span class="sd">also at repeated eigenvalues (e.g. at $\bF = \bI$ or for two equal principal stretches),</span>
+<span class="sd">so the pull-back holds for anisotropic models as well and the consistent tangent is exact.</span>
+<span class="sd">As the update only depends on $\bC$, the behavior is objective: under a superposed rotation</span>
+<span class="sd">$\bF \to \bQ\bF$, the stress $\bS$ and</span>
 <span class="sd">the internal variables are unchanged and the Cauchy stress rotates as</span>
 <span class="sd">$\bsig \to \bQ\bsig\bQ^\text{T}$. For a hyperelastic small-strain model of energy</span>
 <span class="sd">$\psi(\beps)$, the result is the hyperelastic model of energy $\psi(\bE)$.</span>
