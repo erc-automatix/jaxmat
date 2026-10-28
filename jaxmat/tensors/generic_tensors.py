@@ -918,8 +918,10 @@ class SymmetricTensor4(_AbstractTensor4):
         """
         if isinstance(other, SymmetricTensor2):
             return SymmetricTensor2(array=_kelvin_matvec(self._array, other._array))
-        if isinstance(other, SymmetricTensor4):
-            return SymmetricTensor4(array=self._array @ other._array)
+        if isinstance(other, SymmetricTensor4) or (
+            isinstance(other, Tensor) and getattr(other, "rank", None) == 4
+        ):  # also the symmetry-reduced classes, through their Kelvin matrix
+            return SymmetricTensor4(array=self._array @ _array4(other))
         other_arr = _array4(other)
         if other_arr.shape[-1] == 6:
             return SymmetricTensor2(array=_kelvin_matvec(self._array, other_arr))

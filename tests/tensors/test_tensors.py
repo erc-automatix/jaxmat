@@ -8,6 +8,7 @@ from jaxmat.tensors import (
     IsotropicTensor4,
     SymmetricTensor2,
     SymmetricTensor4,
+    Tensor,
     Tensor2,
     Tensor4,
     TransverseIsotropicTensor4,
@@ -522,3 +523,46 @@ def test_symmetric_part_of_dense_input():
         assert jnp.allclose(result.tensor, expected)
     # with a Tensor2, the skew-symmetric part is kept
     assert jnp.allclose((S - Tensor2(tensor=A)).tensor, S.tensor - A)
+
+
+# --------------------------------------------------------------------------------------------
+#  Symmetry-reduced fourth-rank tensors
+# --------------------------------------------------------------------------------------------
+
+
+def _structured():
+    return [
+        IsotropicTensor4(kappa=100.0, mu=50.0),
+        CubicTensor4(kappa=100.0, mua=50.0, mub=30.0),
+        TransverseIsotropicTensor4(
+            jnp.array([1.0, 2.0, 2.0]), jnp.array([5.0, 3.0, 1.0, 1.0, 2.0, 4.0])
+        ),
+    ]
+
+
+@pytest.mark.parametrize("C", _structured(), ids=["isotropic", "cubic", "transverse"])
+def test_structured_tensor_leaves(C):
+    """Only the coefficients (and the symmetry axis) are pytree leaves, not the projector
+    basis: it must not be differentiated, trained, batched or saved."""
+    leaves = jax.tree.leaves(C)
+    assert sum(leaf.size for leaf in leaves) == C.coeffs.size + (3 if hasattr(C, "axis") else 0)
+    grad = jax.grad(lambda C_: C_.fourth_contract(SymmetricTensor4.identity()))(C)
+    assert jax.tree.structure(grad) == jax.tree.structure(C)
+
+
+@pytest.mark.parametrize("C", _structured(), ids=["isotropic", "cubic", "transverse"])
+def test_structured_tensor_interoperability(C):
+    D = SymmetricTensor4(array=jax.random.normal(jax.random.PRNGKey(0), (6, 6)))
+    Cs = C.to_symmetric()
+    assert isinstance(C, Tensor)
+    assert jnp.allclose(jnp.asarray(C), Cs.tensor)
+    assert jnp.allclose((D @ C).array, D.array @ Cs.array)
+    assert jnp.allclose((C @ D).array, Cs.array @ D.array)
+    assert jnp.allclose((D + C).array, D.array + Cs.array)
+    assert jnp.allclose((C - D).array, Cs.array - D.array)
+    assert jnp.allclose(D.fourth_contract(C), jnp.sum(D.array * Cs.array))
+    assert jnp.allclose(SymmetricTensor4(array=C).array, Cs.array)
+    for other in _structured():
+        if type(other) is not type(C):
+            assert jnp.allclose((C + other).array, Cs.array + other.array)
+            assert jnp.allclose((C @ other).array, Cs.array @ other.array)
