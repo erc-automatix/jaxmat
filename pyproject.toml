@@ -11,7 +11,7 @@ authors = [
 ]
 license = "LGPL-3.0-or-later"
 keywords = ["material science", "machine learning", "material modeling", "solid mechanics", "automatic differentiation"]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "jax>=0.6.1",
     "optax>=0.2.5",
@@ -47,7 +47,7 @@ test = [
 ]
 
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]

@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.13"]
+        python-version: ["3.12", "3.13"]
         # Guard against dependency drift: test both the lower pinned bound and
         # the latest release of the solver stack. The 'latest' leg is what would
         # have caught the optimistix `verbose` breakage.
