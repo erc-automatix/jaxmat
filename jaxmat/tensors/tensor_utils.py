@@ -244,6 +244,11 @@ def eigenvalues(sig: SymmetricTensor2) -> jax.Array:
     stable custom JVP via the eigenprojectors, correct even for repeated
     or near-repeated eigenvalues.
 
+    Second derivatives of a function of the eigenvalues (e.g. the tangent of an energy or
+    of a yield function written with them) are not exact at repeated eigenvalues, where
+    individual eigenvalues are not differentiable twice: write such functions with
+    :func:`~jaxmat.tensors.linear_algebra.eigenvalue_function` instead.
+
     Parameters
     ----------
     sig : SymmetricTensor2

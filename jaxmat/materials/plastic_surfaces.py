@@ -5,7 +5,8 @@ import jax
 import jax.numpy as jnp
 
 from jaxmat.parameters import parameter
-from jaxmat.tensors import SymmetricTensor2, dev, eigenvalues
+from jaxmat.tensors import SymmetricTensor2, dev
+from jaxmat.tensors.linear_algebra import eigenvalue_function
 from jaxmat.tensors.utils import safe_norm, safe_sqrt
 
 
@@ -92,6 +93,19 @@ class DruckerPrager(AbstractPlasticSurface):
         return self.alpha * I1 + sqrt_I2
 
 
+def _hosford(sI, a):
+    """Hosford equivalent stress from the principal stresses."""
+    differences = jnp.abs(jnp.array([sI[0] - sI[1], sI[0] - sI[2], sI[2] - sI[1]]))
+    return (0.5 * jnp.sum(differences**a)) ** (1 / a)
+
+
+def _tresca(sI):
+    """Tresca equivalent stress from the principal stresses."""
+    return jnp.maximum(
+        jnp.abs(sI[0] - sI[1]), jnp.maximum(jnp.abs(sI[0] - sI[2]), jnp.abs(sI[2] - sI[1]))
+    )
+
+
 class Hosford(AbstractPlasticSurface):
     r"""Hosford yield surface
 
@@ -111,16 +125,9 @@ class Hosford(AbstractPlasticSurface):
 
     @safe_zero
     def __call__(self, sig):
-        sI = eigenvalues(sig)
-        return (
-            1
-            / 2
-            * (
-                jnp.abs(sI[0] - sI[1]) ** self.a
-                + jnp.abs(sI[0] - sI[2]) ** self.a
-                + jnp.abs(sI[2] - sI[1]) ** self.a
-            )
-        ) ** (1 / self.a)
+        # through eigenvalue_function, so that the derivative of the normal (hence the
+        # consistent tangent) is exact at repeated principal stresses, e.g. uniaxial stress
+        return eigenvalue_function(_hosford, sig, self.a)
 
 
 class Tresca(AbstractPlasticSurface):
@@ -133,8 +140,4 @@ class Tresca(AbstractPlasticSurface):
 
     @safe_zero
     def __call__(self, sig):
-        sI = eigenvalues(sig)
-        return jnp.maximum(
-            jnp.abs(sI[0] - sI[1]),
-            jnp.maximum(jnp.abs(sI[0] - sI[2]), jnp.abs(sI[2] - sI[1])),
-        )
+        return eigenvalue_function(_tresca, sig)

@@ -13,18 +13,21 @@ Public API
 ----------
 det33, inv33, eig33,
 principal_invariants, main_invariants, pq_invariants,
-isotropic_function, sqrtm, inv_sqrtm, expm, logm, powm
+isotropic_function, eigenvalue_function, sqrtm, inv_sqrtm, expm, logm, powm
 
 Private (internal helpers)
 --------------------------
 _dim, _tr, _dev, _sqrtm
 """
 
+import dataclasses
+from collections.abc import Callable
 from functools import partial
 
 import jax
 import jax.numpy as jnp
 from jax import lax
+from jax.flatten_util import ravel_pytree
 
 from .utils import safe_norm, safe_sqrt
 
@@ -411,7 +414,188 @@ def _sqrtm(C) -> tuple[jax.Array, jax.Array]:
     return U, U_inv
 
 
-def isotropic_function(fun, A) -> jax.Array:
+# ─────────────────────────────────────────────────────────────────────────────
+# Spectral functions with exact first and second derivatives
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Functions of the eigenvalues are not differentiated through ``eig33``: at repeated
+# eigenvalues the derivatives of the individual eigenprojectors are undefined, and automatic
+# differentiation returns wrong values there (e.g. the derivative of ``logm`` at a multiple
+# of the identity). Their derivatives are instead given by custom JVP rules, the
+# Daleckii-Krein formulas with divided differences, which only involve the eigenprojectors
+# themselves. The JVP rules are custom functions as well, so that second derivatives
+# (consistent tangents of stresses defined by a first derivative) are exact too.
+#
+# ``eig33`` treats eigenvalues closer than about 1e-8 (relative) as equal and then returns
+# projectors that are only correct summed over the repeated eigenvalue. The rules are
+# therefore written so that eigenvalues closer than ``_SPECTRAL_TOL`` (relative to the
+# largest eigenvalue magnitude) only enter through such sums, using the limits of the
+# divided differences, while further apart the projectors are accurate (1e-12 or better).
+
+_SPECTRAL_TOL = 1e-5
+
+
+def _sym33(A):
+    return 0.5 * (A + jnp.swapaxes(A, -1, -2))
+
+
+def _spectral_decomposition(A):
+    """Eigenvalues and (symmetric) eigenprojectors of a symmetric matrix."""
+    eigvals, projectors = eig33(A)
+    return eigvals, _sym33(projectors)
+
+
+def _close(eigvals):
+    """Mask of the pairs of eigenvalues closer than ``_SPECTRAL_TOL``, and safe differences."""
+    scale = jnp.max(jnp.abs(eigvals))
+    diff = eigvals[:, None] - eigvals[None, :]
+    close = jnp.abs(diff) <= _SPECTRAL_TOL * scale
+    return close, jnp.where(close, 1.0, diff)
+
+
+def _elementwise_derivative(fun, x, *args):
+    """Derivative of an elementwise scalar function ``x -> fun(x, *args)``."""
+    return jax.jvp(lambda y: fun(y, *args), (x,), (jnp.ones_like(x),))[1]
+
+
+def _first_divided_differences(fun, eigvals, *args):
+    r"""$f[\lambda_a, \lambda_b]$, with the limit $f'$ at the mid-point for close pairs."""
+    close, diff = _close(eigvals)
+    f = fun(eigvals, *args)
+    extra = (1,) * (f.ndim - 1)  # trailing dimensions of a vector-valued fun
+    mid = 0.5 * (eigvals[:, None] + eigvals[None, :])
+    return jnp.where(
+        close.reshape(close.shape + extra),
+        _elementwise_derivative(fun, mid, *args),
+        (f[:, None] - f[None, :]) / diff.reshape(diff.shape + extra),
+    )
+
+
+def _second_divided_differences(fun, eigvals, *args):
+    r"""$f[\lambda_a, \lambda_b, \lambda_c]$, shape (3, 3, 3), with the limit $f''/2$ at
+    the mean for close triples."""
+    lam = jnp.stack(jnp.meshgrid(eigvals, eigvals, eigvals, indexing="ij"), axis=-1)
+    x, z = jnp.min(lam, axis=-1), jnp.max(lam, axis=-1)
+    y = jnp.sum(lam, axis=-1) - x - z
+    scale = jnp.max(jnp.abs(eigvals))
+    close = z - x <= _SPECTRAL_TOL * scale
+
+    def dd1(a, b):  # elementwise first divided differences
+        near = jnp.abs(a - b) <= _SPECTRAL_TOL * scale
+        quotient = (fun(a, *args) - fun(b, *args)) / jnp.where(near, 1.0, a - b)
+        return jnp.where(near, _elementwise_derivative(fun, 0.5 * (a + b), *args), quotient)
+
+    mean = (x + y + z) / 3
+    second = 0.5 * _elementwise_derivative(
+        lambda u, *a: _elementwise_derivative(fun, u, *a), mean, *args
+    )
+    return jnp.where(close, second, (dd1(y, z) - dd1(x, y)) / jnp.where(close, 1.0, z - x))
+
+
+@dataclasses.dataclass(frozen=True)
+class _ArgumentTangent:
+    """``x, *args, *dargs -> d/dt fun(x, *(args + t dargs))``: directional derivative of
+    ``fun`` along its extra arguments, itself a function of the same kind as ``fun``."""
+
+    fun: Callable
+
+    def __call__(self, x, *args_and_tangents):
+        n = len(args_and_tangents) // 2
+        args, dargs = args_and_tangents[:n], args_and_tangents[n:]
+        return jax.jvp(lambda *a: self.fun(x, *a), tuple(args), tuple(dargs))[1]
+
+
+@dataclasses.dataclass(frozen=True)
+class _ArgumentJacobian:
+    """``x, *args -> d fun(x, *args) / d theta``, shape ``x.shape + (n,)``, with ``theta``
+    the ``n`` flattened extra arguments: elementwise in ``x`` like ``fun``."""
+
+    fun: Callable
+
+    def __call__(self, x, *args):
+        theta, unravel = ravel_pytree(args)
+        return jax.jacfwd(lambda t: self.fun(x, *unravel(t)))(theta)
+
+
+# -- matrix functions ---------------------------------------------------------
+#
+# The JVP rules only call custom functions of the primal inputs (the Frechet derivative as
+# a linear operator, and the derivatives with respect to the extra arguments), contracted
+# with the tangents afterwards. Under reverse mode, JAX inlines custom functions that
+# receive tangent inputs, which would lose their own rules, hence second derivatives.
+
+
+@partial(jax.custom_jvp, nondiff_argnums=(0,))
+def _isotropic_function(fun, A, *args):
+    eigvals, projectors = _spectral_decomposition(_sym33(A))
+    return jnp.einsum("a,aij->ij", fun(eigvals, *args), projectors)
+
+
+@_isotropic_function.defjvp
+def _isotropic_function_jvp(fun, primals, tangents):
+    A, *args = primals
+    dA, *dargs = tangents
+    out = _isotropic_function(fun, A, *args)
+    tangent = jnp.einsum("ijkl,jk->il", _frechet_operator(fun, A, *args), _sym33(dA))
+    if args:
+        dtheta, _ = ravel_pytree(dargs)
+        tangent = tangent + jnp.einsum("kij,k->ij", _argument_jacobian(fun, A, *args), dtheta)
+    return out, tangent
+
+
+@partial(jax.custom_jvp, nondiff_argnums=(0,))
+def _frechet_operator(fun, A, *args):
+    r"""Daleckii-Krein formula for the derivative of $f(\mathbf{A})$, as the operator
+    $\mathbb{L} = \sum_{ab} f[\lambda_a, \lambda_b]\,\mathbf{P}_a \boxtimes \mathbf{P}_b$,
+    $Df(\mathbf{A})[\mathbf{U}]_{il} = L_{ijkl} U_{jk}$."""
+    eigvals, P = _spectral_decomposition(_sym33(A))
+    F1 = _first_divided_differences(fun, eigvals, *args)
+    return jnp.einsum("ab,aij,bkl->ijkl", F1, P, P)
+
+
+@_frechet_operator.defjvp
+def _frechet_operator_jvp(fun, primals, tangents):
+    A, *args = primals
+    dA, *dargs = tangents
+    out = _frechet_operator(fun, A, *args)
+    # second derivative: d/dA [P_a U P_b] along V gives
+    # sum_abc f[a, b, c] (P_a U P_b V P_c + P_a V P_b U P_c)
+    eigvals, P = _spectral_decomposition(_sym33(A))
+    F2 = _second_divided_differences(fun, eigvals, *args)
+    PVP = jnp.einsum("bij,jk,ckl->bcil", P, _sym33(dA), P)
+    tangent = jnp.einsum("abc,aij,bckl->ijkl", F2, P, PVP) + jnp.einsum(
+        "abc,abij,ckl->ijkl", F2, PVP, P
+    )
+    if args:
+        dF1 = _first_divided_differences(_ArgumentTangent(fun), eigvals, *args, *dargs)
+        tangent = tangent + jnp.einsum("ab,aij,bkl->ijkl", dF1, P, P)
+    return out, tangent
+
+
+@partial(jax.custom_jvp, nondiff_argnums=(0,))
+def _argument_jacobian(fun, A, *args):
+    r"""$\partial f(\mathbf{A}) / \partial\theta_k = \sum_a \partial_k f(\lambda_a)\,
+    \mathbf{P}_a$, shape (n, 3, 3), for the flattened extra arguments $\theta$."""
+    eigvals, P = _spectral_decomposition(_sym33(A))
+    return jnp.einsum("ak,aij->kij", _ArgumentJacobian(fun)(eigvals, *args), P)
+
+
+@_argument_jacobian.defjvp
+def _argument_jacobian_jvp(fun, primals, tangents):
+    A, *args = primals
+    dA, *dargs = tangents
+    out = _argument_jacobian(fun, A, *args)
+    eigvals, P = _spectral_decomposition(_sym33(A))
+    jac = _ArgumentJacobian(fun)
+    F1 = _first_divided_differences(jac, eigvals, *args)  # (3, 3, n)
+    tangent = jnp.einsum("abk,aij,jl,blm->kim", F1, P, _sym33(dA), P)
+    theta, unravel = ravel_pytree(args)
+    dtheta, _ = ravel_pytree(dargs)
+    hess = jax.jacfwd(lambda t: jac(eigvals, *unravel(t)))(theta)  # (3, n, n)
+    return out, tangent + jnp.einsum("akl,l,aij->kij", hess, dtheta, P)
+
+
+def isotropic_function(fun, A, *args) -> jax.Array:
     r"""
     Isotropic matrix function $f(\mathbf{A})$ of a symmetric $3 \times 3$ matrix.
 
@@ -420,26 +604,118 @@ def isotropic_function(fun, A) -> jax.Array:
     where $\lambda_i$ are the eigenvalues and $\mathbf{n}_i$ the corresponding
     eigenvectors of $\mathbf{A}$.
 
+    Its first and second derivatives are exact, also at repeated eigenvalues (e.g. for
+    $\mathbf{A} = \mathbf{I}$): they are given by the Daleckii-Krein formulas instead of
+    differentiating through the eigendecomposition.
+
     Parameters
     ----------
     fun : callable
-        Scalar function $f : \mathbb{R} \to \mathbb{R}$ applied to each eigenvalue.
+        Elementwise scalar function, called as ``fun(eigenvalues, *args)``, applied to
+        each eigenvalue. It must be hashable (e.g. a module-level function); quantities
+        it depends on and that may be differentiated are passed as ``args``.
     A : array_like, shape (3, 3)
-        Real symmetric matrix.
+        Real symmetric matrix (only its symmetric part is used).
+    *args : array_like
+        Extra arguments of ``fun``, e.g. parameters of a material model.
 
     Returns
     -------
     jax.Array
         Shape (3, 3).
     """
-    eigvals, projectors = eig33(jnp.asarray(A))
-    # The projectors P_i = ∂λ_i/∂A come from jacfwd, which perturbs each
-    # element of A independently (without enforcing A_{ij} = A_{ji}).  This
-    # means P_i may have a small antisymmetric component.  Symmetrising before
-    # the spectral reconstruction removes that noise and ensures f(A) is
-    # symmetric, consistent with the reference implementation.
-    projectors = 0.5 * (projectors + jnp.swapaxes(projectors, -1, -2))
-    return jnp.einsum("a,aij->ij", fun(eigvals), projectors)
+    return _isotropic_function(fun, jnp.asarray(A), *args)
+
+
+# -- scalar symmetric functions of the eigenvalues ----------------------------
+
+
+@partial(jax.custom_jvp, nondiff_argnums=(0,))
+def _eigenvalue_function(fun, A, *args):
+    eigvals, _ = eig33(_sym33(A))
+    return fun(eigvals, *args)
+
+
+@_eigenvalue_function.defjvp
+def _eigenvalue_function_jvp(fun, primals, tangents):
+    A, *args = primals
+    dA, *dargs = tangents
+    out = _eigenvalue_function(fun, A, *args)
+    tangent = jnp.sum(_eigenvalue_gradient(fun, A, *args) * _sym33(dA))
+    if args:
+        tangent = tangent + _eigenvalue_function(_ArgumentTangent(fun), A, *args, *dargs)
+    return out, tangent
+
+
+@partial(jax.custom_jvp, nondiff_argnums=(0,))
+def _eigenvalue_gradient(fun, A, *args):
+    r"""$\partial g/\partial\mathbf{A} = \sum_a g_{,a}\,\mathbf{P}_a$."""
+    eigvals, P = _spectral_decomposition(_sym33(A))
+    grad = jax.grad(fun)(eigvals, *args)
+    return jnp.einsum("a,aij->ij", grad, P)
+
+
+@_eigenvalue_gradient.defjvp
+def _eigenvalue_gradient_jvp(fun, primals, tangents):
+    A, *args = primals
+    dA, *dargs = tangents
+    out = _eigenvalue_gradient(fun, A, *args)
+    # sum_ab g_ab (P_b : V) P_a + sum_ab G_ab P_a V P_b, with G_ab = (g_a - g_b)/(l_a - l_b)
+    # for a != b. For close pairs, G_ab -> (g_aa + g_bb)/2 - g_ab, and the terms are
+    # rearranged so that the projectors of close eigenvalues only enter through their sum.
+    eigvals, P = _spectral_decomposition(_sym33(A))
+    V = _sym33(dA)
+    grad = jax.grad(fun)(eigvals, *args)
+    hess = jax.hessian(fun)(eigvals, *args)
+    close, diff = _close(eigvals)
+    partner = close & ~jnp.eye(3, dtype=bool)  # close to another eigenvalue
+    has_partner = jnp.any(partner, axis=1)
+    hdiag = jnp.diag(hess)
+    G = jnp.where(
+        close,
+        0.5 * (hdiag[:, None] + hdiag[None, :]) - hess,
+        (grad[:, None] - grad[None, :]) / diff,
+    )
+    # off-diagonal Hessian entry shared within a group of repeated eigenvalues
+    hoff = jnp.sum(jnp.where(partner, hess, 0.0), axis=1) / jnp.maximum(jnp.sum(partner, axis=1), 1)
+    H = jnp.where(jnp.eye(3, dtype=bool) & has_partner[:, None], hoff[:, None], hess)
+    G = jnp.where(jnp.eye(3, dtype=bool), jnp.where(has_partner, hdiag - hoff, 0.0), G)
+    tangent = jnp.einsum("ab,bij,ij,akl->kl", H, P, V, P) + jnp.einsum(
+        "ab,aij,jk,bkl->il", G, P, V, P
+    )
+    if args:
+        tangent = tangent + _eigenvalue_gradient(_ArgumentTangent(fun), A, *args, *dargs)
+    return out, tangent
+
+
+def eigenvalue_function(fun, A, *args) -> jax.Array:
+    r"""
+    Scalar function $g(\lambda_1, \lambda_2, \lambda_3)$ of the eigenvalues of a symmetric
+    $3 \times 3$ matrix, for a symmetric $g$ (invariant under permutations of its
+    arguments, so that it is an isotropic function of $\mathbf{A}$).
+
+    Its first and second derivatives with respect to $\mathbf{A}$ are exact, also at
+    repeated eigenvalues, where differentiating through the eigenvalues fails: e.g. for
+    an Ogden energy at $\mathbf{C} = \mathbf{I}$, or a Hosford yield function at a uniaxial
+    stress.
+
+    Parameters
+    ----------
+    fun : callable
+        Symmetric function called as ``fun(eigenvalues, *args)`` with the eigenvalues in
+        ascending order, shape (3,). It must be hashable (e.g. a module-level function);
+        quantities it depends on and that may be differentiated are passed as ``args``.
+    A : array_like, shape (3, 3)
+        Real symmetric matrix (only its symmetric part is used).
+    *args : array_like
+        Extra arguments of ``fun``, e.g. parameters of a material model.
+
+    Returns
+    -------
+    jax.Array
+        Scalar.
+    """
+    return _eigenvalue_function(fun, jnp.asarray(A), *args)
 
 
 def sqrtm(A) -> jax.Array:
@@ -513,7 +789,7 @@ def expm(A) -> jax.Array:
     jax.Array
         Shape (3, 3).
     """
-    return isotropic_function(jnp.exp, jnp.asarray(A))
+    return _isotropic_function(jnp.exp, jnp.asarray(A))
 
 
 def logm(A) -> jax.Array:
@@ -534,7 +810,7 @@ def logm(A) -> jax.Array:
     jax.Array
         Shape (3, 3).
     """
-    return isotropic_function(jnp.log, jnp.asarray(A))
+    return _isotropic_function(jnp.log, jnp.asarray(A))
 
 
 def powm(A, m) -> jax.Array:
@@ -555,4 +831,4 @@ def powm(A, m) -> jax.Array:
     jax.Array
         Shape (3, 3).
     """
-    return isotropic_function(lambda x: jnp.power(x, m), jnp.asarray(A))
+    return _isotropic_function(jnp.power, jnp.asarray(A), m)

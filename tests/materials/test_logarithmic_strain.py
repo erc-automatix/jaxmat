@@ -232,6 +232,56 @@ def test_elastic_tangent_matches_finite_differences():
     assert jnp.abs(A - A_fd).max() / jnp.abs(A).max() < 1e-6
 
 
+# repeated principal stretches: F = I, and two equal stretches off the material axes
+REPEATED = {
+    "F = I": Tensor2.identity(),
+    "two equal stretches": Tensor2(tensor=rotation.from_euler_bunge(0.4, 1.1, -0.6))
+    @ diagonal(1.2, 0.95, 0.95),
+}
+
+
+@pytest.mark.parametrize("F", REPEATED.values(), ids=REPEATED.keys())
+@pytest.mark.parametrize("name", ["elastic", "anisotropic"])
+def test_tangent_at_repeated_stretches(name, F):
+    """At repeated eigenvalues of C the tangent involves the second derivative of logm
+    there (it was off by 38% at F = I)."""
+    material = FINITE[name]
+    A, A_fd = tangents(material, F, material.init_state())
+    assert jnp.abs(A - A_fd).max() / jnp.abs(A).max() < 1e-6
+
+
+@pytest.mark.parametrize("name", ["elastic", "anisotropic"])
+def test_tangent_at_identity_is_the_small_strain_stiffness(name):
+    """dP/dF[H] = C : sym(H) at F = I."""
+    material, stiffness = FINITE[name], SMALL[name].elasticity.C
+    H = Tensor2(tensor=[[0.3, -0.2, 0.5], [0.1, 0.4, -0.3], [0.2, 0.6, -0.1]])
+
+    def PK1(F):
+        return material.constitutive_update(F, material.init_state(), DT)[0]
+
+    _, dP = jax.jvp(PK1, (Tensor2.identity(),), (H,))
+    expected = stiffness @ H.sym
+    assert frobenius(dP - expected) < 1e-9 * frobenius(expected)
+
+
+def test_anisotropic_stress_at_repeated_stretches():
+    """With anisotropy, the log-space stress is not coaxial with C, and the stress involves
+    the derivative of logm at repeated eigenvalues (it was off by 12%). Reference: finite
+    differences of the energy, which only uses values of logm."""
+    material, stiffness = FINITE["anisotropic"], SMALL["anisotropic"].elasticity.C
+    F = REPEATED["two equal stretches"]
+
+    def psi(F_array):
+        F_ = Tensor2(array=F_array)
+        E = SymmetricTensor2(tensor=0.5 * logm((F_.T @ F_).sym))
+        return 0.5 * E.double_contract(stiffness @ E)
+
+    h = 1e-6
+    P_fd = jnp.array([(psi(F.array + h * e) - psi(F.array - h * e)) / (2 * h) for e in jnp.eye(9)])
+    P, _ = material.constitutive_update(F, material.init_state(), DT)
+    assert jnp.abs(P.array - P_fd).max() / jnp.abs(P_fd).max() < 1e-8
+
+
 def test_elastic_path_independence():
     material = FINITE["elastic"]
     F_end = Tensor2(tensor=[[1.2, 0.1, 0.0], [0.05, 0.9, 0.03], [0.0, 0.0, 1.05]])
