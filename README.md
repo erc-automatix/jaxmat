@@ -1,5 +1,12 @@
 # `jaxmat`: Automated material constitutive modeling in JAX
 
+[![PyPI](https://img.shields.io/pypi/v/jaxmat)](https://pypi.org/project/jaxmat/)
+[![Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Ferc-automatix%2Fjaxmat%2Fmain%2Fpyproject.toml)](https://github.com/erc-automatix/jaxmat/blob/main/pyproject.toml)
+[![Tests](https://github.com/erc-automatix/jaxmat/actions/workflows/ci_tests.yml/badge.svg?branch=main)](https://github.com/erc-automatix/jaxmat/actions/workflows/ci_tests.yml)
+[![Docs](https://img.shields.io/badge/docs-online-blue)](https://erc-automatix.github.io/jaxmat/)
+[![License](https://img.shields.io/badge/license-LGPL--3.0--or--later-blue)](https://github.com/erc-automatix/jaxmat/blob/main/LICENSE)
+[![DOI](https://zenodo.org/badge/1018223703.svg)](https://doi.org/10.5281/zenodo.17611833)
+
 `jaxmat` is an open-source library for implementing material constitutive
 models in a way that integrates seamlessly with modern machine learning
 frameworks and existing finite element software.
