@@ -201,12 +201,15 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity: batched inference + calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
 </ul>
 </details></li>
 </ul>
@@ -229,9 +232,11 @@
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
@@ -242,11 +247,13 @@
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.utils.html">jaxmat.utils module</a></li>
 </ul>
 
     </div>
@@ -430,13 +437,13 @@ elastic (reversible) response.</p></li>
 <li><p>A <strong>dissipation pseudo-potential</strong> <span class="math notranslate nohighlight">\(\Phi(\dot{\balpha})\)</span> defining the
 evolution of the internal variables (irreversible processes).</p></li>
 </ul>
-<p>The state variable evolution is obtained by minimizing the <strong>incremental potential</strong>:</p>
-<dl class="simple">
-<dt>$$min_{Delta balpha} J(Deltabalpha ;beps_{n+1},balpha_n)</dt><dd><p>= min_{Delta balpha} Psi(beps_{n+1}, balpha_n + Delta balpha)
-+ Delta t Phileft(dfrac{Delta balpha}{Delta t}right)</p>
-</dd>
-</dl>
-<p>$$</p>
+<p>The state variable evolution is obtained by minimizing the incremental potential:</p>
+<p><div class="math notranslate nohighlight">
+\[\min_{\Delta \balpha} J(\Delta\balpha ;\beps_{n+1},\balpha_n)
+= \min_{\Delta \balpha} \Psi(\beps_{n+1}, \balpha_n + \Delta \balpha)
++ \Delta t \Phi\left(\dfrac{\Delta \balpha}{\Delta t}\right)
+\]</div>
+</p>
 <p>subject to the current strain <span class="math notranslate nohighlight">\(\beps_{n+1} = \beps_n+\Delta\beps\)</span> and time increment <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p>
 <p>The minimization is performed numerically using a Newton line-search solver.</p>
 <div class="admonition important">

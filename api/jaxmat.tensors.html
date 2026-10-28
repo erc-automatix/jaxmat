@@ -201,12 +201,16 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity: batched inference + calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
 </ul>
 </details></li>
 </ul>
@@ -218,20 +222,25 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.nn.html">jaxmat.nn module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
@@ -242,11 +251,13 @@
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.utils.html">jaxmat.utils module</a></li>
 </ul>
 
     </div>
@@ -539,17 +550,16 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html#jaxmat.tensors.mappings.kelvin_rank4_map"><code class="docutils literal notranslate"><span class="pre">kelvin_rank4_map()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#projector-algebra">Projector algebra</a></li>
-<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.inv"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.inv</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.coeffs"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.coeffs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.array"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.array</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.to_symmetric"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.to_symmetric()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.fourth_contract"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.fourth_contract()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.rotate"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4.rotate()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.rotation.html#jaxmat.tensors.rotation.from_axis_angle"><code class="docutils literal notranslate"><span class="pre">from_axis_angle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.rotation.html#jaxmat.tensors.rotation.from_quaternion"><code class="docutils literal notranslate"><span class="pre">from_quaternion()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.rotation.html#jaxmat.tensors.rotation.from_euler_bunge"><code class="docutils literal notranslate"><span class="pre">from_euler_bunge()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.rotation.html#jaxmat.tensors.rotation.random"><code class="docutils literal notranslate"><span class="pre">random()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#projector-algebra">Projector algebra</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4"><code class="docutils literal notranslate"><span class="pre">AbstractStructuredTensor4</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.isotropic_projectors"><code class="docutils literal notranslate"><span class="pre">isotropic_projectors()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.cubic_projectors"><code class="docutils literal notranslate"><span class="pre">cubic_projectors()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.transverse_isotropic_projectors"><code class="docutils literal notranslate"><span class="pre">transverse_isotropic_projectors()</span></code></a></li>
@@ -1088,7 +1098,7 @@ Coefficients are stored as <span class="math notranslate nohighlight">\(\{3\kapp
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inv</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#jaxmat.tensors.CubicTensor4" title="jaxmat.tensors.CubicTensor4"><span class="pre">CubicTensor4</span></a></em><a class="headerlink" href="#jaxmat.tensors.CubicTensor4.inv" title="Link to this definition">#</a></dt>
 <dd><p>Inverse <span class="math notranslate nohighlight">\(\mathbb{C}^{-1}\)</span>.</p>
 <p>Because the three projectors are mutually orthogonal, the inverse
-is coefficient-wise: <span class="math notranslate nohighlight">\(c_\alpha^{-1}\)</span> for each <span class="math notranslate nohighlight">\(\alpha\)</span>.</p>
+is coefficient-wise: <span class="math notranslate nohighlight">\(c_{\alpha}^{-1}\)</span> for each <span class="math notranslate nohighlight">\(\alpha\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#jaxmat.tensors.CubicTensor4" title="jaxmat.tensors.CubicTensor4">CubicTensor4</a></p>
@@ -1221,7 +1231,7 @@ the inverse is obtained by inverting each coefficient:
 expanded in the six Walpole basis tensors
 <span class="math notranslate nohighlight">\(\mathbb{E}_1, \mathbb{E}_2, \mathbb{E}_3, \mathbb{E}_4, \mathbb{F}, \mathbb{G}\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\mathbb{C} = \sum_{\alpha=1}^6 c_\alpha \mathbb{P}_\alpha\]</div>
+\[\mathbb{C} = \sum_{\alpha=1}^6 c_{\alpha} \mathbb{P}_{\alpha}\]</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

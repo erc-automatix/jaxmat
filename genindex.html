@@ -198,12 +198,16 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
 </ul>
 </details></li>
 </ul>
@@ -215,20 +219,26 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="api/jaxmat.nn.html">jaxmat.nn module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
@@ -239,11 +249,13 @@
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="api/jaxmat.utils.html">jaxmat.utils module</a></li>
 </ul>
 
     </div>
@@ -379,7 +391,9 @@ document.write(`
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
@@ -393,6 +407,8 @@ document.write(`
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Arrhenius.A">A (Arrhenius attribute)</a>
+</li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.Hosford.a">a (Hosford attribute)</a>, <a href="api/jaxmat.materials.plastic_surfaces.html#jaxmat.materials.plastic_surfaces.Hosford.a">[1]</a>
 </li>
       <li><a href="api/jaxmat.materials.behavior.html#jaxmat.materials.behavior.AbstractBehavior">AbstractBehavior (class in jaxmat.materials.behavior)</a>
@@ -409,6 +425,8 @@ document.write(`
         <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.AbstractLinearElastic">(class in jaxmat.materials.elasticity)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.AbstractParameter">AbstractParameter (class in jaxmat.parameters.temperature_dependent)</a>
+</li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.AbstractPlasticSurface">AbstractPlasticSurface (class in jaxmat.materials)</a>
 
       <ul>
@@ -419,14 +437,20 @@ document.write(`
 </li>
       <li><a href="api/jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4">AbstractStructuredTensor4 (class in jaxmat.tensors.symmetry_classes)</a>
 </li>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN.activation">activation (ICNN attribute)</a>
+</li>
       <li><a href="api/jaxmat.state.html#jaxmat.state.AbstractState.add">add() (AbstractState method)</a>
 </li>
       <li><a href="api/jaxmat.materials.behavior.html#jaxmat.materials.behavior.AbstractBehavior.adjoint">adjoint (AbstractBehavior attribute)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Affine">Affine (class in jaxmat.parameters.temperature_dependent)</a>
 </li>
       <li><a href="api/jaxmat.materials.viscoplasticity.html#jaxmat.materials.viscoplasticity.AFInternalState">AFInternalState (class in jaxmat.materials.viscoplasticity)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.aliases">aliases (Physics attribute)</a>
+</li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.CompressibleOgden.alpha">alpha (CompressibleOgden attribute)</a>, <a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.CompressibleOgden.alpha">[1]</a>
 
       <ul>
@@ -454,6 +478,10 @@ document.write(`
 </li>
       </ul></li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.array_rank">array_rank (Tensor2 attribute)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Arrhenius">Arrhenius (class in jaxmat.parameters.temperature_dependent)</a>
+</li>
+      <li><a href="api/jaxmat.utils.html#jaxmat.utils.assert_max_traces">assert_max_traces() (in module jaxmat.utils)</a>
 </li>
       <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.axis">axis (LinearElasticTransverseIsotropic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticTransverseIsotropic.axis">[1]</a>
 
@@ -487,14 +515,20 @@ document.write(`
       </ul></li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.base_tensor_shape">base_tensor_shape (Tensor2 attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.batch_shape">batch_shape (Tensor2 property)</a>
 </li>
       <li><a href="api/jaxmat.materials.behavior.html#jaxmat.materials.behavior.AbstractBehavior.batched_constitutive_update">batched_constitutive_update() (AbstractBehavior method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.fe_fp_elastoplasticity.InternalState.be_bar">be_bar (InternalState attribute)</a>
 </li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.LogarithmicStrain.behavior">behavior (LogarithmicStrain attribute)</a>, <a href="api/jaxmat.materials.logarithmic_strain.html#jaxmat.materials.logarithmic_strain.LogarithmicStrain.behavior">[1]</a>
+
+      <ul>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.TemperatureDependent.behavior">(TemperatureDependent attribute)</a>, <a href="api/jaxmat.materials.thermomechanics.html#jaxmat.materials.thermomechanics.TemperatureDependent.behavior">[1]</a>
+</li>
+      </ul></li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.VolumetricPart.beta">beta (VolumetricPart attribute)</a>, <a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.VolumetricPart.beta">[1]</a>
 </li>
       <li><a href="api/jaxmat.solvers.html#jaxmat.solvers.BFGSLinearTrustRegion">BFGSLinearTrustRegion() (in module jaxmat.solvers)</a>
@@ -503,6 +537,10 @@ document.write(`
         <li><a href="api/jaxmat.solvers.custom_optimistix_solvers.html#jaxmat.solvers.custom_optimistix_solvers.BFGSLinearTrustRegion">(in module jaxmat.solvers.custom_optimistix_solvers)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.constraints.Bounded">Bounded() (in module jaxmat.parameters.constraints)</a>
+</li>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN.bs">bs (ICNN attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -539,8 +577,14 @@ document.write(`
 </li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.HyperelasticPotential.Cauchy">Cauchy() (HyperelasticPotential method)</a>, <a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.HyperelasticPotential.Cauchy">[1]</a>
 </li>
-      <li><a href="api/jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.coeffs">coeffs (AbstractStructuredTensor4 property)</a>
+      <li><a href="api/jaxmat.config.html#jaxmat.config.check_max_traces">check_max_traces (in module jaxmat.config)</a>
 </li>
+      <li><a href="api/jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.coeffs">coeffs (AbstractStructuredTensor4 property)</a>
+
+      <ul>
+        <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Polynomial.coeffs">(Polynomial attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.GeneralHardening.combined_hardening">combined_hardening (GeneralHardening attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.GeneralHardening.combined_hardening">[1]</a>
 </li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.CompressibleGhentMooneyRivlin">CompressibleGhentMooneyRivlin (class in jaxmat.materials)</a>
@@ -569,6 +613,8 @@ document.write(`
         <li><a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.CompressibleOgden">(class in jaxmat.materials.hyperelasticity)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Constant">Constant (class in jaxmat.parameters.temperature_dependent)</a>
+</li>
       <li><a href="api/jaxmat.materials.behavior.html#jaxmat.materials.behavior.AbstractBehavior.constitutive_update">constitutive_update() (AbstractBehavior method)</a>
 
       <ul>
@@ -592,9 +638,15 @@ document.write(`
 </li>
         <li><a href="api/jaxmat.materials.html#jaxmat.materials.Hyperelasticity.constitutive_update">(Hyperelasticity method)</a>, <a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.Hyperelasticity.constitutive_update">[1]</a>
 </li>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.LogarithmicStrain.constitutive_update">(LogarithmicStrain method)</a>, <a href="api/jaxmat.materials.logarithmic_strain.html#jaxmat.materials.logarithmic_strain.LogarithmicStrain.constitutive_update">[1]</a>
+</li>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.MultiphysicsBehavior.constitutive_update">(MultiphysicsBehavior method)</a>, <a href="api/jaxmat.materials.multiphysics.html#jaxmat.materials.multiphysics.MultiphysicsBehavior.constitutive_update">[1]</a>
+</li>
         <li><a href="api/jaxmat.materials.behavior.html#jaxmat.materials.behavior.SmallStrainBehavior.constitutive_update">(SmallStrainBehavior method)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.SmallStrainBehavior.constitutive_update">[1]</a>
 </li>
         <li><a href="api/jaxmat.materials.html#jaxmat.materials.StandardLinearSolid.constitutive_update">(StandardLinearSolid method)</a>, <a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.StandardLinearSolid.constitutive_update">[1]</a>
+</li>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.TemperatureDependent.constitutive_update">(TemperatureDependent method)</a>, <a href="api/jaxmat.materials.thermomechanics.html#jaxmat.materials.thermomechanics.TemperatureDependent.constitutive_update">[1]</a>
 </li>
         <li><a href="api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.vonMisesIsotropicHardening.constitutive_update">(vonMisesIsotropicHardening method)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.vonMisesIsotropicHardening.constitutive_update">[1]</a>
 </li>
@@ -613,6 +665,18 @@ document.write(`
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Scalar.default">default (Scalar attribute)</a>
+
+      <ul>
+        <li><a href="api/jaxmat.state.html#jaxmat.state.Vector.default">(Vector attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.TemperatureDependent.default_temperature">default_temperature (TemperatureDependent attribute)</a>, <a href="api/jaxmat.materials.thermomechanics.html#jaxmat.materials.thermomechanics.TemperatureDependent.default_temperature">[1]</a>
+</li>
+      <li><a href="api/jaxmat.utils.html#jaxmat.utils.default_value">default_value() (in module jaxmat.utils)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.AbstractParameter.depends_on">depends_on (AbstractParameter attribute)</a>
+</li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.det">det (Tensor2 property)</a>
 </li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.det33">det33() (in module jaxmat.tensors)</a>
@@ -621,16 +685,20 @@ document.write(`
         <li><a href="api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.det33">(in module jaxmat.tensors.linear_algebra)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.dev">dev() (in module jaxmat.tensors)</a>
 
       <ul>
         <li><a href="api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.dev">(in module jaxmat.tensors.tensor_utils)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.dim">dim (Tensor2 attribute)</a>
+
+      <ul>
+        <li><a href="api/jaxmat.state.html#jaxmat.state.Vector.dim">(Vector attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api/jaxmat.materials.generalized_standard.html#jaxmat.materials.generalized_standard.GeneralizedStandardMaterial.dissipation_potential">dissipation_potential (GeneralizedStandardMaterial attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.GeneralizedStandardMaterial.dissipation_potential">[1]</a>
 </li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2.double_contract">double_contract() (SymmetricTensor2 method)</a>
@@ -693,12 +761,14 @@ document.write(`
         <li><a href="api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.vonMisesIsotropicHardening.elasticity">(vonMisesIsotropicHardening attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.vonMisesIsotropicHardening.elasticity">[1]</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticOrthotropic.EN">EN (LinearElasticOrthotropic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticOrthotropic.EN">[1]</a>
+</li>
+      <li><a href="api/jaxmat.utils.html#jaxmat.utils.enforce_dtype">enforce_dtype() (in module jaxmat.utils)</a>
 </li>
       <li><a href="api/jaxmat.state.html#jaxmat.state.SmallStrainState.eps">eps (SmallStrainState property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.loader.html#jaxmat.loader.ImposedLoading.eps_vals">eps_vals (ImposedLoading attribute)</a>
 </li>
       <li><a href="api/jaxmat.materials.viscoplasticity.html#jaxmat.materials.viscoplasticity.AFInternalState.epsp">epsp (AFInternalState attribute)</a>
@@ -723,12 +793,34 @@ document.write(`
         <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.ET">(LinearElasticTransverseIsotropic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticTransverseIsotropic.ET">[1]</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.AbstractParameter.evaluate">evaluate() (AbstractParameter method)</a>
+
+      <ul>
+        <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Affine.evaluate">(Affine method)</a>
+</li>
+        <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Arrhenius.evaluate">(Arrhenius method)</a>
+</li>
+        <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Constant.evaluate">(Constant method)</a>
+</li>
+        <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Expression.evaluate">(Expression method)</a>
+</li>
+        <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Polynomial.evaluate">(Polynomial method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.evaluate_parameters">evaluate_parameters() (in module jaxmat.parameters.temperature_dependent)</a>
+</li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.expm">expm() (in module jaxmat.tensors)</a>
 
       <ul>
         <li><a href="api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.expm">(in module jaxmat.tensors.linear_algebra)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Expression">Expression (class in jaxmat.parameters.temperature_dependent)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.external">external (Physics attribute)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.external_names">external_names (Physics property)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -743,21 +835,39 @@ document.write(`
         <li><a href="api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.fe_fp_elastoplasticity.FeFpJ2Plasticity">(class in jaxmat.materials.fe_fp_elastoplasticity)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN.final_U">final_U (ICNN attribute)</a>
+</li>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN.final_W">final_W (ICNN attribute)</a>
+</li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.FiniteStrainBehavior">FiniteStrainBehavior (class in jaxmat.materials)</a>
 
       <ul>
         <li><a href="api/jaxmat.materials.behavior.html#jaxmat.materials.behavior.FiniteStrainBehavior">(class in jaxmat.materials.behavior)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.state.html#jaxmat.state.FiniteStrainState">FiniteStrainState (class in jaxmat.state)</a>
 </li>
       <li><a href="api/jaxmat.tensors.utils.html#jaxmat.tensors.utils.FischerBurmeister">FischerBurmeister() (in module jaxmat.tensors.utils)</a>
 </li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.flux_names">flux_names (Physics property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.fluxes">fluxes (Physics attribute)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.Fluxes">Fluxes (Physics property)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Expression.fn">fn (Expression attribute)</a>
+</li>
       <li><a href="api/jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.fourth_contract">fourth_contract() (AbstractStructuredTensor4 method)</a>
 </li>
       <li><a href="api/jaxmat.materials.generalized_standard.html#jaxmat.materials.generalized_standard.GeneralizedStandardMaterial.free_energy">free_energy (GeneralizedStandardMaterial attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.GeneralizedStandardMaterial.free_energy">[1]</a>
+</li>
+      <li><a href="api/jaxmat.tensors.rotation.html#jaxmat.tensors.rotation.from_axis_angle">from_axis_angle() (in module jaxmat.tensors.rotation)</a>
+</li>
+      <li><a href="api/jaxmat.tensors.rotation.html#jaxmat.tensors.rotation.from_euler_bunge">from_euler_bunge() (in module jaxmat.tensors.rotation)</a>
+</li>
+      <li><a href="api/jaxmat.tensors.rotation.html#jaxmat.tensors.rotation.from_quaternion">from_quaternion() (in module jaxmat.tensors.rotation)</a>
 </li>
       <li><a href="api/jaxmat.tensors.mappings.html#jaxmat.tensors.mappings.full_rank2_map">full_rank2_map() (in module jaxmat.tensors.mappings)</a>
 </li>
@@ -791,14 +901,14 @@ document.write(`
         <li><a href="api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.GeneralIsotropicHardening">(class in jaxmat.materials.elastoplasticity)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.GeneralizedMaxwell">GeneralizedMaxwell (class in jaxmat.materials)</a>
 
       <ul>
         <li><a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwell">(class in jaxmat.materials.viscoelasticity)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwellState">GeneralizedMaxwellState (class in jaxmat.materials.viscoelasticity)</a>
 </li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.GeneralizedStandardMaterial">GeneralizedStandardMaterial (class in jaxmat.materials)</a>
@@ -817,6 +927,10 @@ document.write(`
       </ul></li>
       <li><a href="api/jaxmat.loader.html#jaxmat.loader.global_solve">global_solve() (in module jaxmat.loader)</a>
 </li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.gradient_names">gradient_names (Physics property)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.gradients">gradients (Physics attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -824,6 +938,8 @@ document.write(`
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.LinearKinematicHardening.H">H (LinearKinematicHardening attribute)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.has_parameter_dependence">has_parameter_dependence() (in module jaxmat.parameters.temperature_dependent)</a>
 </li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.Hosford">Hosford (class in jaxmat.materials)</a>
 
@@ -851,6 +967,8 @@ document.write(`
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN">ICNN (class in jaxmat.nn)</a>
+</li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor4.identity">identity() (SymmetricTensor4 class method)</a>
 
       <ul>
@@ -866,9 +984,21 @@ document.write(`
       <li><a href="api/jaxmat.materials.behavior.html#jaxmat.materials.behavior.FiniteStrainBehavior.init_state">init_state() (FiniteStrainBehavior method)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.FiniteStrainBehavior.init_state">[1]</a>
 
       <ul>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.LogarithmicStrain.init_state">(LogarithmicStrain method)</a>, <a href="api/jaxmat.materials.logarithmic_strain.html#jaxmat.materials.logarithmic_strain.LogarithmicStrain.init_state">[1]</a>
+</li>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.MultiphysicsBehavior.init_state">(MultiphysicsBehavior method)</a>, <a href="api/jaxmat.materials.multiphysics.html#jaxmat.materials.multiphysics.MultiphysicsBehavior.init_state">[1]</a>
+</li>
         <li><a href="api/jaxmat.materials.behavior.html#jaxmat.materials.behavior.SmallStrainBehavior.init_state">(SmallStrainBehavior method)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.SmallStrainBehavior.init_state">[1]</a>
 </li>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.TemperatureDependent.init_state">(TemperatureDependent method)</a>, <a href="api/jaxmat.materials.thermomechanics.html#jaxmat.materials.thermomechanics.TemperatureDependent.init_state">[1]</a>
+</li>
       </ul></li>
+      <li><a href="api/jaxmat.utils.html#jaxmat.utils.initial_value">initial_value() (in module jaxmat.utils)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.input_names">input_names (Physics property)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.Inputs">Inputs (Physics property)</a>
+</li>
       <li><a href="api/jaxmat.state.html#id3">internal (FiniteStrainState attribute)</a>, <a href="api/jaxmat.state.html#jaxmat.state.FiniteStrainState.internal">[1]</a>
 
       <ul>
@@ -897,6 +1027,8 @@ document.write(`
         <li><a href="api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.fe_fp_elastoplasticity.InternalState">(class in jaxmat.materials.fe_fp_elastoplasticity)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.constraints.Interval">Interval() (in module jaxmat.parameters.constraints)</a>
+</li>
       <li><a href="api/jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.inv">inv (AbstractStructuredTensor4 property)</a>
 
       <ul>
@@ -941,6 +1073,13 @@ document.write(`
 
       <ul>
         <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.IsotropicTensor4.J">(IsotropicTensor4 attribute)</a>
+</li>
+      </ul></li>
+      <li>
+    jaxmat.config
+
+      <ul>
+        <li><a href="api/jaxmat.config.html#module-jaxmat.config">module</a>
 </li>
       </ul></li>
       <li>
@@ -1000,10 +1139,31 @@ document.write(`
 </li>
       </ul></li>
       <li>
+    jaxmat.materials.logarithmic_strain
+
+      <ul>
+        <li><a href="api/jaxmat.materials.logarithmic_strain.html#module-jaxmat.materials.logarithmic_strain">module</a>
+</li>
+      </ul></li>
+      <li>
+    jaxmat.materials.multiphysics
+
+      <ul>
+        <li><a href="api/jaxmat.materials.multiphysics.html#module-jaxmat.materials.multiphysics">module</a>
+</li>
+      </ul></li>
+      <li>
     jaxmat.materials.plastic_surfaces
 
       <ul>
         <li><a href="api/jaxmat.materials.plastic_surfaces.html#module-jaxmat.materials.plastic_surfaces">module</a>
+</li>
+      </ul></li>
+      <li>
+    jaxmat.materials.thermomechanics
+
+      <ul>
+        <li><a href="api/jaxmat.materials.thermomechanics.html#module-jaxmat.materials.thermomechanics">module</a>
 </li>
       </ul></li>
       <li>
@@ -1020,13 +1180,34 @@ document.write(`
         <li><a href="api/jaxmat.materials.viscoplastic_flows.html#module-jaxmat.materials.viscoplastic_flows">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     jaxmat.materials.viscoplasticity
 
       <ul>
         <li><a href="api/jaxmat.materials.viscoplasticity.html#module-jaxmat.materials.viscoplasticity">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    jaxmat.nn
+
+      <ul>
+        <li><a href="api/jaxmat.nn.html#module-jaxmat.nn">module</a>
+</li>
+      </ul></li>
+      <li>
+    jaxmat.parameters.constraints
+
+      <ul>
+        <li><a href="api/jaxmat.parameters.html#module-jaxmat.parameters.constraints">module</a>
+</li>
+      </ul></li>
+      <li>
+    jaxmat.parameters.temperature_dependent
+
+      <ul>
+        <li><a href="api/jaxmat.parameters.html#module-jaxmat.parameters.temperature_dependent">module</a>
 </li>
       </ul></li>
       <li>
@@ -1086,6 +1267,13 @@ document.write(`
 </li>
       </ul></li>
       <li>
+    jaxmat.tensors.rotation
+
+      <ul>
+        <li><a href="api/jaxmat.tensors.rotation.html#module-jaxmat.tensors.rotation">module</a>
+</li>
+      </ul></li>
+      <li>
     jaxmat.tensors.symmetry_classes
 
       <ul>
@@ -1104,6 +1292,13 @@ document.write(`
 
       <ul>
         <li><a href="api/jaxmat.tensors.utils.html#module-jaxmat.tensors.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    jaxmat.utils
+
+      <ul>
+        <li><a href="api/jaxmat.utils.html#module-jaxmat.utils">module</a>
 </li>
       </ul></li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.CompressibleGhentMooneyRivlin.Jm">Jm (CompressibleGhentMooneyRivlin attribute)</a>, <a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.CompressibleGhentMooneyRivlin.Jm">[1]</a>
@@ -1174,8 +1369,6 @@ document.write(`
         <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticOrthotropic">(class in jaxmat.materials.elasticity)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticTransverseIsotropic">LinearElasticTransverseIsotropic (class in jaxmat.materials)</a>
 
       <ul>
@@ -1184,7 +1377,25 @@ document.write(`
       </ul></li>
       <li><a href="api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.LinearKinematicHardening">LinearKinematicHardening (class in jaxmat.materials.viscoplastic_flows)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticIsotropic.lmbda">lmbda (LinearElasticIsotropic property)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticIsotropic.lmbda">[1]</a>
+</li>
+      <li><a href="api/jaxmat.utils.html#jaxmat.utils.load_model">load_model() (in module jaxmat.utils)</a>
+</li>
+      <li><a href="api/jaxmat.materials.logarithmic_strain.html#jaxmat.materials.logarithmic_strain.LogarithmicStrainState.log_strain">log_strain (LogarithmicStrainState attribute)</a>
+</li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.LogarithmicStrain.log_strain">log_strain() (LogarithmicStrain static method)</a>, <a href="api/jaxmat.materials.logarithmic_strain.html#jaxmat.materials.logarithmic_strain.LogarithmicStrain.log_strain">[1]</a>
+</li>
+      <li><a href="api/jaxmat.materials.logarithmic_strain.html#jaxmat.materials.logarithmic_strain.LogarithmicStrainState.log_stress">log_stress (LogarithmicStrainState attribute)</a>
+</li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.LogarithmicStrain">LogarithmicStrain (class in jaxmat.materials)</a>
+
+      <ul>
+        <li><a href="api/jaxmat.materials.logarithmic_strain.html#jaxmat.materials.logarithmic_strain.LogarithmicStrain">(class in jaxmat.materials.logarithmic_strain)</a>
+</li>
+      </ul></li>
+      <li><a href="api/jaxmat.materials.logarithmic_strain.html#jaxmat.materials.logarithmic_strain.LogarithmicStrainState">LogarithmicStrainState (class in jaxmat.materials.logarithmic_strain)</a>
 </li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.logm">logm() (in module jaxmat.tensors)</a>
 
@@ -1208,6 +1419,10 @@ document.write(`
       </ul></li>
       <li><a href="api/jaxmat.state.html#jaxmat.state.make_batched">make_batched() (in module jaxmat.state)</a>
 </li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.make_fluxes">make_fluxes() (Physics method)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.make_inputs">make_inputs() (Physics method)</a>
+</li>
       <li><a href="api/jaxmat.materials.behavior.html#jaxmat.materials.behavior.AbstractBehavior.make_internal_state">make_internal_state() (AbstractBehavior method)</a>
 
       <ul>
@@ -1219,7 +1434,17 @@ document.write(`
 </li>
         <li><a href="api/jaxmat.materials.html#jaxmat.materials.GenericViscoplasticity.make_internal_state">(GenericViscoplasticity method)</a>, <a href="api/jaxmat.materials.viscoplasticity.html#jaxmat.materials.viscoplasticity.GenericViscoplasticity.make_internal_state">[1]</a>
 </li>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.LogarithmicStrain.make_internal_state">(LogarithmicStrain method)</a>, <a href="api/jaxmat.materials.logarithmic_strain.html#jaxmat.materials.logarithmic_strain.LogarithmicStrain.make_internal_state">[1]</a>
+</li>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.MultiphysicsBehavior.make_internal_state">(MultiphysicsBehavior method)</a>, <a href="api/jaxmat.materials.multiphysics.html#jaxmat.materials.multiphysics.MultiphysicsBehavior.make_internal_state">[1]</a>
+</li>
+        <li><a href="api/jaxmat.materials.html#jaxmat.materials.TemperatureDependent.make_internal_state">(TemperatureDependent method)</a>, <a href="api/jaxmat.materials.thermomechanics.html#jaxmat.materials.thermomechanics.TemperatureDependent.make_internal_state">[1]</a>
+</li>
       </ul></li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.make_physics">make_physics() (in module jaxmat.state)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.make_state">make_state() (in module jaxmat.state)</a>
+</li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.matvec">matvec() (Tensor2 method)</a>
 </li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.StandardLinearSolid.maxwell_stiffness">maxwell_stiffness (StandardLinearSolid attribute)</a>, <a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.StandardLinearSolid.maxwell_stiffness">[1]</a>
@@ -1232,6 +1457,8 @@ document.write(`
     module
 
       <ul>
+        <li><a href="api/jaxmat.config.html#module-jaxmat.config">jaxmat.config</a>
+</li>
         <li><a href="api/jaxmat.loader.html#module-jaxmat.loader">jaxmat.loader</a>
 </li>
         <li><a href="api/jaxmat.materials.html#module-jaxmat.materials">jaxmat.materials</a>
@@ -1248,13 +1475,25 @@ document.write(`
 </li>
         <li><a href="api/jaxmat.materials.hyperelasticity.html#module-jaxmat.materials.hyperelasticity">jaxmat.materials.hyperelasticity</a>
 </li>
+        <li><a href="api/jaxmat.materials.logarithmic_strain.html#module-jaxmat.materials.logarithmic_strain">jaxmat.materials.logarithmic_strain</a>
+</li>
+        <li><a href="api/jaxmat.materials.multiphysics.html#module-jaxmat.materials.multiphysics">jaxmat.materials.multiphysics</a>
+</li>
         <li><a href="api/jaxmat.materials.plastic_surfaces.html#module-jaxmat.materials.plastic_surfaces">jaxmat.materials.plastic_surfaces</a>
+</li>
+        <li><a href="api/jaxmat.materials.thermomechanics.html#module-jaxmat.materials.thermomechanics">jaxmat.materials.thermomechanics</a>
 </li>
         <li><a href="api/jaxmat.materials.viscoelasticity.html#module-jaxmat.materials.viscoelasticity">jaxmat.materials.viscoelasticity</a>
 </li>
         <li><a href="api/jaxmat.materials.viscoplastic_flows.html#module-jaxmat.materials.viscoplastic_flows">jaxmat.materials.viscoplastic_flows</a>
 </li>
         <li><a href="api/jaxmat.materials.viscoplasticity.html#module-jaxmat.materials.viscoplasticity">jaxmat.materials.viscoplasticity</a>
+</li>
+        <li><a href="api/jaxmat.nn.html#module-jaxmat.nn">jaxmat.nn</a>
+</li>
+        <li><a href="api/jaxmat.parameters.html#module-jaxmat.parameters.constraints">jaxmat.parameters.constraints</a>
+</li>
+        <li><a href="api/jaxmat.parameters.html#module-jaxmat.parameters.temperature_dependent">jaxmat.parameters.temperature_dependent</a>
 </li>
         <li><a href="api/jaxmat.solvers.html#module-jaxmat.solvers">jaxmat.solvers</a>
 </li>
@@ -1272,15 +1511,21 @@ document.write(`
 </li>
         <li><a href="api/jaxmat.tensors.mappings.html#module-jaxmat.tensors.mappings">jaxmat.tensors.mappings</a>
 </li>
+        <li><a href="api/jaxmat.tensors.rotation.html#module-jaxmat.tensors.rotation">jaxmat.tensors.rotation</a>
+</li>
         <li><a href="api/jaxmat.tensors.symmetry_classes.html#module-jaxmat.tensors.symmetry_classes">jaxmat.tensors.symmetry_classes</a>
 </li>
         <li><a href="api/jaxmat.tensors.tensor_utils.html#module-jaxmat.tensors.tensor_utils">jaxmat.tensors.tensor_utils</a>
 </li>
         <li><a href="api/jaxmat.tensors.utils.html#module-jaxmat.tensors.utils">jaxmat.tensors.utils</a>
 </li>
+        <li><a href="api/jaxmat.utils.html#module-jaxmat.utils">jaxmat.utils</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN.monotone">monotone (ICNN attribute)</a>
+</li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.CompressibleNeoHookean.mu">mu (CompressibleNeoHookean attribute)</a>, <a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.CompressibleNeoHookean.mu">[1]</a>
 
       <ul>
@@ -1297,6 +1542,12 @@ document.write(`
 </li>
       <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticOrthotropic.muLT">muLT (LinearElasticOrthotropic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticOrthotropic.muLT">[1]</a>
 </li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.MultiphysicsBehavior">MultiphysicsBehavior (class in jaxmat.materials)</a>
+
+      <ul>
+        <li><a href="api/jaxmat.materials.multiphysics.html#jaxmat.materials.multiphysics.MultiphysicsBehavior">(class in jaxmat.materials.multiphysics)</a>
+</li>
+      </ul></li>
       <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticOrthotropic.muTN">muTN (LinearElasticOrthotropic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticOrthotropic.muTN">[1]</a>
 </li>
   </ul></td>
@@ -1305,8 +1556,14 @@ document.write(`
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwellState.Nbranch">Nbranch (GeneralizedMaxwellState attribute)</a>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.name">name (Physics attribute)</a>
 </li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.GeneralizedMaxwell.Nbranch">Nbranch (GeneralizedMaxwell attribute)</a>, <a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwell.Nbranch">[1]</a>
+
+      <ul>
+        <li><a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwellState.Nbranch">(GeneralizedMaxwellState attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api/jaxmat.solvers.custom_newton.html#jaxmat.solvers.custom_newton.newton_solve_jittable">newton_solve_jittable() (in module jaxmat.solvers.custom_newton)</a>
 </li>
       <li><a href="api/jaxmat.solvers.html#jaxmat.solvers.NewtonTrustRegion">NewtonTrustRegion() (in module jaxmat.solvers)</a>
@@ -1329,10 +1586,10 @@ document.write(`
         <li><a href="api/jaxmat.materials.viscoplastic_flows.html#jaxmat.materials.viscoplastic_flows.NortonFlow">(class in jaxmat.materials.viscoplastic_flows)</a>
 </li>
       </ul></li>
-      <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticIsotropic.nu">nu (LinearElasticIsotropic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticIsotropic.nu">[1]</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticIsotropic.nu">nu (LinearElasticIsotropic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticIsotropic.nu">[1]</a>
+</li>
       <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticTransverseIsotropic.nuL">nuL (LinearElasticTransverseIsotropic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticTransverseIsotropic.nuL">[1]</a>
 </li>
       <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElasticOrthotropic.nuLN">nuLN (LinearElasticOrthotropic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElasticOrthotropic.nuLN">[1]</a>
@@ -1362,6 +1619,14 @@ document.write(`
   </ul></td>
 </tr></table>
 
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.config.html#jaxmat.config.override">override() (in module jaxmat.config)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1375,6 +1640,16 @@ document.write(`
         <li><a href="api/jaxmat.materials.elastoplasticity.html#jaxmat.materials.elastoplasticity.InternalState.p">(InternalState attribute)</a>, <a href="api/jaxmat.materials.fe_fp_elastoplasticity.html#jaxmat.materials.fe_fp_elastoplasticity.InternalState.p">[1]</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.generic_parameters.parameter">parameter() (in module jaxmat.parameters.generic_parameters)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.parameter_dependencies">parameter_dependencies() (in module jaxmat.parameters.temperature_dependent)</a>
+</li>
+      <li><a href="api/jaxmat.utils.html#jaxmat.utils.partition_by_node_names">partition_by_node_names() (in module jaxmat.utils)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics">Physics (class in jaxmat.state)</a>
+</li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.MultiphysicsBehavior.physics">physics (MultiphysicsBehavior attribute)</a>, <a href="api/jaxmat.materials.multiphysics.html#jaxmat.materials.multiphysics.MultiphysicsBehavior.physics">[1]</a>
+</li>
       <li><a href="api/jaxmat.state.html#id5">PK1 (FiniteStrainState attribute)</a>, <a href="api/jaxmat.state.html#jaxmat.state.FiniteStrainState.PK1">[1]</a>
 </li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.HyperelasticPotential.PK1">PK1() (HyperelasticPotential method)</a>, <a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.HyperelasticPotential.PK1">[1]</a>
@@ -1409,6 +1684,14 @@ document.write(`
         <li><a href="api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.polar">(in module jaxmat.tensors.tensor_utils)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Polynomial">Polynomial (class in jaxmat.parameters.temperature_dependent)</a>
+</li>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN.positive">positive (ICNN attribute)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.constraints.Positive">Positive() (in module jaxmat.parameters.constraints)</a>
+</li>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.positive_param">positive_param() (in module jaxmat.nn)</a>
+</li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.Hyperelasticity.potential">potential (Hyperelasticity attribute)</a>, <a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.Hyperelasticity.potential">[1]</a>
 </li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.powm">powm() (in module jaxmat.tensors)</a>
@@ -1429,6 +1712,8 @@ document.write(`
         <li><a href="api/jaxmat.tensors.linear_algebra.html#jaxmat.tensors.linear_algebra.principal_invariants">(in module jaxmat.tensors.linear_algebra)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.utils.html#jaxmat.utils.print_eqx_fields">print_eqx_fields() (in module jaxmat.utils)</a>
+</li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.CubicTensor4.project">project() (CubicTensor4 class method)</a>
 
       <ul>
@@ -1440,17 +1725,33 @@ document.write(`
   </ul></td>
 </tr></table>
 
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Arrhenius.Q">Q (Arrhenius attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Arrhenius.R">R (Arrhenius attribute)</a>
+</li>
+      <li><a href="api/jaxmat.tensors.rotation.html#jaxmat.tensors.rotation.random">random() (in module jaxmat.tensors.rotation)</a>
+</li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.rank">rank (Tensor2 attribute)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Affine.ref">ref (Affine attribute)</a>
 </li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.GeneralizedMaxwell.relaxation_times">relaxation_times (GeneralizedMaxwell attribute)</a>, <a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwell.relaxation_times">[1]</a>
 </li>
-      <li><a href="api/jaxmat.loader.html#jaxmat.loader.residual">residual() (in module jaxmat.loader)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.loader.html#jaxmat.loader.residual">residual() (in module jaxmat.loader)</a>
+</li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.MultiphysicsBehavior.response">response() (MultiphysicsBehavior method)</a>, <a href="api/jaxmat.materials.multiphysics.html#jaxmat.materials.multiphysics.MultiphysicsBehavior.response">[1]</a>
+</li>
       <li><a href="api/jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.rotate">rotate() (AbstractStructuredTensor4 method)</a>
 
       <ul>
@@ -1491,7 +1792,17 @@ document.write(`
         <li><a href="api/jaxmat.materials.plastic_surfaces.html#jaxmat.materials.plastic_surfaces.safe_zero">(in module jaxmat.materials.plastic_surfaces)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.utils.html#jaxmat.utils.save_model">save_model() (in module jaxmat.utils)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Scalar">Scalar (class in jaxmat.state)</a>
+</li>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN.scalar_input">scalar_input (ICNN attribute)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.constraints.Scaled">Scaled() (in module jaxmat.parameters.constraints)</a>
+</li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.shape">shape (Tensor2 property)</a>
+</li>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.shifted_softplus">shifted_softplus() (in module jaxmat.nn)</a>
 </li>
       <li><a href="api/jaxmat.state.html#jaxmat.state.FiniteStrainState.sig">sig (FiniteStrainState property)</a>
 
@@ -1523,10 +1834,12 @@ document.write(`
         <li><a href="api/jaxmat.tensors.tensor_utils.html#jaxmat.tensors.tensor_utils.skw">(in module jaxmat.tensors.tensor_utils)</a>
 </li>
       </ul></li>
-      <li><a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.SLSState">SLSState (class in jaxmat.materials.viscoelasticity)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Affine.slope">slope (Affine attribute)</a>
+</li>
+      <li><a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.SLSState">SLSState (class in jaxmat.materials.viscoelasticity)</a>
+</li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.SmallStrainBehavior">SmallStrainBehavior (class in jaxmat.materials)</a>
 
       <ul>
@@ -1555,6 +1868,8 @@ document.write(`
         <li><a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.StandardLinearSolid">(class in jaxmat.materials.viscoelasticity)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Physics.State">State (Physics property)</a>
+</li>
       <li><a href="api/jaxmat.materials.elasticity.html#jaxmat.materials.elasticity.LinearElastic.stiffness">stiffness (LinearElastic attribute)</a>, <a href="api/jaxmat.materials.html#jaxmat.materials.LinearElastic.stiffness">[1]</a>
 </li>
       <li><a href="api/jaxmat.state.html#id1">strain (SmallStrainState attribute)</a>, <a href="api/jaxmat.state.html#jaxmat.state.SmallStrainState.strain">[1]</a>
@@ -1595,6 +1910,20 @@ document.write(`
         <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.T">(Tensor2 property)</a>
 </li>
       </ul></li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Affine.T_ref">T_ref (Affine attribute)</a>
+
+      <ul>
+        <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Polynomial.T_ref">(Polynomial attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.MultiphysicsBehavior.tangent">tangent() (MultiphysicsBehavior method)</a>, <a href="api/jaxmat.materials.multiphysics.html#jaxmat.materials.multiphysics.MultiphysicsBehavior.tangent">[1]</a>
+</li>
+      <li><a href="api/jaxmat.materials.html#jaxmat.materials.TemperatureDependent">TemperatureDependent (class in jaxmat.materials)</a>
+
+      <ul>
+        <li><a href="api/jaxmat.materials.thermomechanics.html#jaxmat.materials.thermomechanics.TemperatureDependent">(class in jaxmat.materials.thermomechanics)</a>
+</li>
+      </ul></li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor">Tensor (class in jaxmat.tensors)</a>
 </li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.SymmetricTensor2.tensor">tensor (SymmetricTensor2 property)</a>
@@ -1607,14 +1936,14 @@ document.write(`
         <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor4.tensor">(Tensor4 property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2">Tensor2 (class in jaxmat.tensors)</a>
 </li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor4">Tensor4 (class in jaxmat.tensors)</a>
 </li>
       <li><a href="api/jaxmat.tensors.html#jaxmat.tensors.Tensor2.tensor_shape">tensor_shape (Tensor2 property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.tensors.symmetry_classes.html#jaxmat.tensors.symmetry_classes.AbstractStructuredTensor4.to_symmetric">to_symmetric() (AbstractStructuredTensor4 method)</a>
 
       <ul>
@@ -1649,7 +1978,17 @@ document.write(`
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.constraints.Unconstrained">Unconstrained() (in module jaxmat.parameters.constraints)</a>
+</li>
       <li><a href="api/jaxmat.state.html#jaxmat.state.AbstractState.update">update() (AbstractState method)</a>
+
+      <ul>
+        <li><a href="api/jaxmat.config.html#jaxmat.config.update">(in module jaxmat.config)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN.Us">Us (ICNN attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1657,6 +1996,12 @@ document.write(`
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.Constant.value">value (Constant attribute)</a>
+</li>
+      <li><a href="api/jaxmat.parameters.html#jaxmat.parameters.temperature_dependent.AbstractParameter.variables">variables (AbstractParameter property)</a>
+</li>
+      <li><a href="api/jaxmat.state.html#jaxmat.state.Vector">Vector (class in jaxmat.state)</a>
+</li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.GeneralizedMaxwell.viscous_branches">viscous_branches (GeneralizedMaxwell attribute)</a>, <a href="api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.viscoelasticity.GeneralizedMaxwell.viscous_branches">[1]</a>
 </li>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.ArmstrongFrederickViscoplasticity.viscous_flow">viscous_flow (ArmstrongFrederickViscoplasticity attribute)</a>, <a href="api/jaxmat.materials.viscoplasticity.html#jaxmat.materials.viscoplasticity.ArmstrongFrederickViscoplasticity.viscous_flow">[1]</a>
@@ -1720,6 +2065,10 @@ document.write(`
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/jaxmat.materials.html#jaxmat.materials.CompressibleOgden.W_lamb">W_lamb() (CompressibleOgden method)</a>, <a href="api/jaxmat.materials.hyperelasticity.html#jaxmat.materials.hyperelasticity.CompressibleOgden.W_lamb">[1]</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/jaxmat.nn.html#jaxmat.nn.ICNN.Ws">Ws (ICNN attribute)</a>
 </li>
   </ul></td>
 </tr></table>

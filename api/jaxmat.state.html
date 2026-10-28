@@ -201,12 +201,16 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity: batched inference + calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
 </ul>
 </details></li>
 </ul>
@@ -218,6 +222,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
@@ -229,9 +234,12 @@
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.nn.html">jaxmat.nn module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
@@ -242,11 +250,13 @@
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.utils.html">jaxmat.utils module</a></li>
 </ul>
 
     </div>
@@ -425,6 +435,34 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.make_batched"><code class="docutils literal notranslate"><span class="pre">make_batched()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Scalar"><code class="docutils literal notranslate"><span class="pre">Scalar</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Scalar.default"><code class="docutils literal notranslate"><span class="pre">Scalar.default</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Vector"><code class="docutils literal notranslate"><span class="pre">Vector</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Vector.dim"><code class="docutils literal notranslate"><span class="pre">Vector.dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Vector.default"><code class="docutils literal notranslate"><span class="pre">Vector.default</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics"><code class="docutils literal notranslate"><span class="pre">Physics</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.name"><code class="docutils literal notranslate"><span class="pre">Physics.name</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.gradients"><code class="docutils literal notranslate"><span class="pre">Physics.gradients</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.fluxes"><code class="docutils literal notranslate"><span class="pre">Physics.fluxes</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.external"><code class="docutils literal notranslate"><span class="pre">Physics.external</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.aliases"><code class="docutils literal notranslate"><span class="pre">Physics.aliases</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.gradient_names"><code class="docutils literal notranslate"><span class="pre">Physics.gradient_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.flux_names"><code class="docutils literal notranslate"><span class="pre">Physics.flux_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.external_names"><code class="docutils literal notranslate"><span class="pre">Physics.external_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.input_names"><code class="docutils literal notranslate"><span class="pre">Physics.input_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.State"><code class="docutils literal notranslate"><span class="pre">Physics.State</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.Inputs"><code class="docutils literal notranslate"><span class="pre">Physics.Inputs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.Fluxes"><code class="docutils literal notranslate"><span class="pre">Physics.Fluxes</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.make_inputs"><code class="docutils literal notranslate"><span class="pre">Physics.make_inputs()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.make_fluxes"><code class="docutils literal notranslate"><span class="pre">Physics.make_fluxes()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.make_physics"><code class="docutils literal notranslate"><span class="pre">make_physics()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.make_state"><code class="docutils literal notranslate"><span class="pre">make_state()</span></code></a></li>
 </ul>
             </nav>
         </div>
@@ -645,15 +683,190 @@ constitutive information. Defaults to None.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>module</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></span>) – An instance of an equinox Module (e.g., <cite>State</cite>) with array leaves.</p></li>
-<li><p><strong>Nbatch</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The number of batch items to broadcast.</p></li>
+<li><p><strong>module</strong> (<em>eqx.module</em>) – An instance of an equinox Module (e.g., <cite>State</cite>) with array leaves.</p></li>
+<li><p><strong>Nbatch</strong> (<em>int</em>) – The number of batch items to broadcast.</p></li>
+<li><p><strong>Returns</strong> – A new instance of the same class, with each array field having shape (Nbatch, …).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></span></p>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new instance of the same class, with each array field having shape (Nbatch, …).</p>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.state.Scalar">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Scalar</span></span><a class="reference internal" href="../_modules/jaxmat/state.html#Scalar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.state.Scalar" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initializer of a scalar state variable (hashable, so it can key the state factory).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.state.Scalar.default">
+<span class="sig-name descname"><span class="pre">default</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#jaxmat.state.Scalar.default" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.state.Vector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Vector</span></span><a class="reference internal" href="../_modules/jaxmat/state.html#Vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.state.Vector" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initializer of a vector state variable of dimension <code class="docutils literal notranslate"><span class="pre">dim</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.state.Vector.dim">
+<span class="sig-name descname"><span class="pre">dim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#jaxmat.state.Vector.dim" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.state.Vector.default">
+<span class="sig-name descname"><span class="pre">default</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#jaxmat.state.Vector.default" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.state.Physics">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Physics</span></span><a class="reference internal" href="../_modules/jaxmat/state.html#Physics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.state.Physics" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Declaration of the variables exchanged by a (multiphysics) behavior.</p>
+<p>Following the terminology:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">gradients</span></code> are the driving inputs whose conjugates are computed by the behavior
+(strain <span class="math notranslate nohighlight">\(\beps\)</span>, deformation gradient <span class="math notranslate nohighlight">\(\bF\)</span>, pore pressure <span class="math notranslate nohighlight">\(p\)</span>, temperature gradient…);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fluxes</span></code> are the computed outputs, the thermodynamic forces conjugate to the gradients
+(stress <span class="math notranslate nohighlight">\(\bsig\)</span>, fluid content <span class="math notranslate nohighlight">\(\zeta\)</span>, heat flux <span class="math notranslate nohighlight">\(\boldsymbol{q}\)</span>…);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">external</span></code> variables are known inputs with no conjugate output (temperature <span class="math notranslate nohighlight">\(T\)</span>…).</p></li>
+</ul>
+<p>Internal state variables are not declared here: they keep living in <code class="docutils literal notranslate"><span class="pre">state.internal</span></code>.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Physics</span></code> is immutable and hashable, and is built with <a class="reference internal" href="#jaxmat.state.make_physics" title="jaxmat.state.make_physics"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_physics()</span></code></a>. The
+corresponding state class, input and flux containers are generated on first use and
+cached, so equal declarations always give the <em>same</em> classes (stable pytree structures for
+<code class="docutils literal notranslate"><span class="pre">jit</span></code>, <code class="docutils literal notranslate"><span class="pre">scan</span></code> and serialization).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#jaxmat.state.Physics.name" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.gradients">
+<span class="sig-name descname"><span class="pre">gradients</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></em><a class="headerlink" href="#jaxmat.state.Physics.gradients" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.fluxes">
+<span class="sig-name descname"><span class="pre">fluxes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></em><a class="headerlink" href="#jaxmat.state.Physics.fluxes" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.external">
+<span class="sig-name descname"><span class="pre">external</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#jaxmat.state.Physics.external" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.aliases">
+<span class="sig-name descname"><span class="pre">aliases</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#jaxmat.state.Physics.aliases" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.gradient_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gradient_names</span></span><a class="headerlink" href="#jaxmat.state.Physics.gradient_names" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.flux_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">flux_names</span></span><a class="headerlink" href="#jaxmat.state.Physics.flux_names" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.external_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">external_names</span></span><a class="headerlink" href="#jaxmat.state.Physics.external_names" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.input_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_names</span></span><a class="headerlink" href="#jaxmat.state.Physics.input_names" title="Link to this definition">#</a></dt>
+<dd><p>gradients, then external variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Names of the inputs of <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.State">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">State</span></span><a class="headerlink" href="#jaxmat.state.Physics.State" title="Link to this definition">#</a></dt>
+<dd><p>The state class (an <a class="reference internal" href="#jaxmat.state.AbstractState" title="jaxmat.state.AbstractState"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractState</span></code></a>) storing all variables and <code class="docutils literal notranslate"><span class="pre">internal</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.Inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Inputs</span></span><a class="headerlink" href="#jaxmat.state.Physics.Inputs" title="Link to this definition">#</a></dt>
+<dd><p>Named tuple of the inputs (gradients, then external variables).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.Fluxes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Fluxes</span></span><a class="headerlink" href="#jaxmat.state.Physics.Fluxes" title="Link to this definition">#</a></dt>
+<dd><p>Named tuple of the fluxes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.make_inputs">
+<span class="sig-name descname"><span class="pre">make_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/state.html#Physics.make_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.state.Physics.make_inputs" title="Link to this definition">#</a></dt>
+<dd><p>Accept <code class="docutils literal notranslate"><span class="pre">Inputs</span></code>, a positional tuple or a dict, even for a single input.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxmat.state.Physics.make_fluxes">
+<span class="sig-name descname"><span class="pre">make_fluxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fluxes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/state.html#Physics.make_fluxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.state.Physics.make_fluxes" title="Link to this definition">#</a></dt>
+<dd><p>Accept <code class="docutils literal notranslate"><span class="pre">Fluxes</span></code>, a positional tuple or a dict, even for a single flux.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.state.make_physics">
+<span class="sig-name descname"><span class="pre">make_physics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fluxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aliases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/state.html#make_physics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.state.make_physics" title="Link to this definition">#</a></dt>
+<dd><p>Declare the variables of a behavior and get the matching state class for free.</p>
+<p>Each variable is declared by name with an initializer: a tensor class
+(<code class="docutils literal notranslate"><span class="pre">SymmetricTensor2</span></code>), a zero-argument factory (<code class="docutils literal notranslate"><span class="pre">Tensor2.identity</span></code>), a number (a scalar
+with that initial value) or <a class="reference internal" href="#jaxmat.state.Vector" title="jaxmat.state.Vector"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vector</span></code></a>. Gradients and fluxes are listed in matching
+(conjugate) order.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">POROELASTICITY</span> <span class="o">=</span> <span class="n">make_physics</span><span class="p">(</span>
+    <span class="s2">&quot;Poroelasticity&quot;</span><span class="p">,</span>
+    <span class="n">gradients</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span>
+    <span class="n">fluxes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;stress&quot;</span><span class="p">:</span> <span class="n">SymmetricTensor2</span><span class="p">,</span> <span class="s2">&quot;zeta&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span>
+    <span class="n">aliases</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;eps&quot;</span><span class="p">:</span> <span class="s2">&quot;strain&quot;</span><span class="p">,</span> <span class="s2">&quot;sig&quot;</span><span class="p">:</span> <span class="s2">&quot;stress&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">POROELASTICITY</span><span class="o">.</span><span class="n">State</span><span class="p">()</span>  <span class="c1"># fields: internal, strain, p, stress, zeta</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#jaxmat.state.Physics" title="jaxmat.state.Physics"><code class="xref py py-class docutils literal notranslate"><span class="pre">Physics</span></code></a></span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>)</p></li>
+<li><p><strong>gradients</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>)</p></li>
+<li><p><strong>fluxes</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>)</p></li>
+<li><p><strong>external</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>aliases</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>] </em><em>| </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.state.make_state">
+<span class="sig-name descname"><span class="pre">make_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">variables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/state.html#make_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.state.make_state" title="Link to this definition">#</a></dt>
+<dd><p>Shortcut for <code class="docutils literal notranslate"><span class="pre">make_physics(name,</span> <span class="pre">**variables).State</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code>[<a class="reference internal" href="#jaxmat.state.AbstractState" title="jaxmat.state.AbstractState"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractState</span></code></a>]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>name</strong> (<em>str</em>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -755,6 +968,34 @@ constitutive information. Defaults to None.</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.make_batched"><code class="docutils literal notranslate"><span class="pre">make_batched()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Scalar"><code class="docutils literal notranslate"><span class="pre">Scalar</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Scalar.default"><code class="docutils literal notranslate"><span class="pre">Scalar.default</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Vector"><code class="docutils literal notranslate"><span class="pre">Vector</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Vector.dim"><code class="docutils literal notranslate"><span class="pre">Vector.dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Vector.default"><code class="docutils literal notranslate"><span class="pre">Vector.default</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics"><code class="docutils literal notranslate"><span class="pre">Physics</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.name"><code class="docutils literal notranslate"><span class="pre">Physics.name</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.gradients"><code class="docutils literal notranslate"><span class="pre">Physics.gradients</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.fluxes"><code class="docutils literal notranslate"><span class="pre">Physics.fluxes</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.external"><code class="docutils literal notranslate"><span class="pre">Physics.external</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.aliases"><code class="docutils literal notranslate"><span class="pre">Physics.aliases</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.gradient_names"><code class="docutils literal notranslate"><span class="pre">Physics.gradient_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.flux_names"><code class="docutils literal notranslate"><span class="pre">Physics.flux_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.external_names"><code class="docutils literal notranslate"><span class="pre">Physics.external_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.input_names"><code class="docutils literal notranslate"><span class="pre">Physics.input_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.State"><code class="docutils literal notranslate"><span class="pre">Physics.State</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.Inputs"><code class="docutils literal notranslate"><span class="pre">Physics.Inputs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.Fluxes"><code class="docutils literal notranslate"><span class="pre">Physics.Fluxes</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.make_inputs"><code class="docutils literal notranslate"><span class="pre">Physics.make_inputs()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.Physics.make_fluxes"><code class="docutils literal notranslate"><span class="pre">Physics.make_fluxes()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.make_physics"><code class="docutils literal notranslate"><span class="pre">make_physics()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.state.make_state"><code class="docutils literal notranslate"><span class="pre">make_state()</span></code></a></li>
 </ul>
   </nav></div>
 

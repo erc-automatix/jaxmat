@@ -198,12 +198,16 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity: batched inference + calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
 </ul>
 </details></li>
 </ul>
@@ -215,6 +219,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
@@ -226,9 +231,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
@@ -239,11 +246,13 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/jaxmat.utils.html">jaxmat.utils module</a></li>
 </ul>
 
     </div>
@@ -367,9 +376,10 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">jaxmat.materials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">parameter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractState</span><span class="p">,</span> <span class="n">make_batched</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.tensors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymmetricTensor2</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">enforce_dtype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxmat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">assert_max_traces</span>
 
 
 <div class="viewcode-block" id="SLSState">
@@ -408,7 +418,7 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Elastic model for the purely elastic branch.&quot;&quot;&quot;</span>
     <span class="n">maxwell_stiffness</span><span class="p">:</span> <span class="n">jm</span><span class="o">.</span><span class="n">LinearElasticIsotropic</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Isotropic elastic model representing the spring in the Maxwell branch.&quot;&quot;&quot;</span>
-    <span class="n">maxwell_viscosity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">enforce_dtype</span><span class="p">()</span>
+    <span class="n">maxwell_viscosity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">()</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Viscosity $\eta$ of the dashpot in the Maxwell branch.&quot;&quot;&quot;</span>
     <span class="n">internal_type</span> <span class="o">=</span> <span class="n">SLSState</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal state containing the viscous strain.&quot;&quot;&quot;</span>
@@ -416,7 +426,7 @@ document.write(`
 <div class="viewcode-block" id="StandardLinearSolid.constitutive_update">
 <a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.StandardLinearSolid.constitutive_update">[docs]</a>
     <span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
-    <span class="nd">@eqx</span><span class="o">.</span><span class="n">debug</span><span class="o">.</span><span class="n">assert_max_traces</span><span class="p">(</span><span class="n">max_traces</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nd">@assert_max_traces</span><span class="p">(</span><span class="n">max_traces</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="n">eps_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">strain</span>
         <span class="n">epsv_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">epsv</span>
@@ -487,21 +497,23 @@ document.write(`
 
     <span class="n">elasticity</span><span class="p">:</span> <span class="n">jm</span><span class="o">.</span><span class="n">AbstractLinearElastic</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Elastic model of the equilibrium (instantaneous) branch.&quot;&quot;&quot;</span>
+    <span class="n">Nbranch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">static</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of relaxation branches&quot;&quot;&quot;</span>
     <span class="n">viscous_branches</span><span class="p">:</span> <span class="n">jm</span><span class="o">.</span><span class="n">AbstractLinearElastic</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Elastic stiffness models for the Maxwell branches.&quot;&quot;&quot;</span>
-    <span class="n">relaxation_times</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">converter</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">)</span>
+    <span class="n">relaxation_times</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">()</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Array of relaxation times $(\tau_i)$ for the Maxwell branches.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="GeneralizedMaxwell.make_internal_state">
 <a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.GeneralizedMaxwell.make_internal_state">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">make_internal_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">GeneralizedMaxwellState</span><span class="p">(</span><span class="n">Nbranch</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relaxation_times</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">GeneralizedMaxwellState</span><span class="p">(</span><span class="n">Nbranch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Nbranch</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeneralizedMaxwell.constitutive_update">
 <a class="viewcode-back" href="../../../api/jaxmat.materials.viscoelasticity.html#jaxmat.materials.GeneralizedMaxwell.constitutive_update">[docs]</a>
     <span class="nd">@eqx</span><span class="o">.</span><span class="n">filter_jit</span>
-    <span class="nd">@eqx</span><span class="o">.</span><span class="n">debug</span><span class="o">.</span><span class="n">assert_max_traces</span><span class="p">(</span><span class="n">max_traces</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nd">@assert_max_traces</span><span class="p">(</span><span class="n">max_traces</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">constitutive_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="n">sigv_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">sigv</span>
         <span class="n">eps_old</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">strain</span>
@@ -518,9 +530,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">viscous_branches</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">relaxation_times</span><span class="p">,</span> <span class="n">sigv_old</span>
         <span class="p">)</span>
         <span class="n">isv</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">epsv</span><span class="o">=</span><span class="n">epsv_new</span><span class="p">,</span> <span class="n">sigv</span><span class="o">=</span><span class="n">sigv_new</span><span class="p">)</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="n">eps</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sigv_new</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">sym</span>  <span class="c1"># FIXME: make it SymmetricTensor2</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elasticity</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="n">eps</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sigv_new</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">sym</span>
         <span class="n">new_state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">strain</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">stress</span><span class="o">=</span><span class="n">sig</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="n">isv</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">sig</span><span class="p">,</span> <span class="n">new_state</span></div>
 </div>

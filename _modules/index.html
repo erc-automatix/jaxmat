@@ -198,12 +198,16 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
 </ul>
 </details></li>
 </ul>
@@ -215,20 +219,26 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api/jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.logarithmic_strain.html">jaxmat.materials.logarithmic_strain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.multiphysics.html">jaxmat.materials.multiphysics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/jaxmat.nn.html">jaxmat.nn module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
@@ -239,11 +249,13 @@
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/jaxmat.utils.html">jaxmat.utils module</a></li>
 </ul>
 
     </div>
@@ -362,7 +374,7 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>All modules for which code is available</h1>
-<ul><li><a href="jaxlib/_jax.html">jaxlib._jax</a></li>
+<ul><li><a href="jaxmat/config.html">jaxmat.config</a></li>
 <li><a href="jaxmat/loader.html">jaxmat.loader</a></li>
 <li><a href="jaxmat/materials/behavior.html">jaxmat.materials.behavior</a></li>
 <li><a href="jaxmat/materials/elasticity.html">jaxmat.materials.elasticity</a></li>
@@ -370,19 +382,28 @@ document.write(`
 <li><a href="jaxmat/materials/fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity</a></li>
 <li><a href="jaxmat/materials/generalized_standard.html">jaxmat.materials.generalized_standard</a></li>
 <li><a href="jaxmat/materials/hyperelasticity.html">jaxmat.materials.hyperelasticity</a></li>
+<li><a href="jaxmat/materials/logarithmic_strain.html">jaxmat.materials.logarithmic_strain</a></li>
+<li><a href="jaxmat/materials/multiphysics.html">jaxmat.materials.multiphysics</a></li>
 <li><a href="jaxmat/materials/plastic_surfaces.html">jaxmat.materials.plastic_surfaces</a></li>
+<li><a href="jaxmat/materials/thermomechanics.html">jaxmat.materials.thermomechanics</a></li>
 <li><a href="jaxmat/materials/viscoelasticity.html">jaxmat.materials.viscoelasticity</a></li>
 <li><a href="jaxmat/materials/viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows</a></li>
 <li><a href="jaxmat/materials/viscoplasticity.html">jaxmat.materials.viscoplasticity</a></li>
+<li><a href="jaxmat/nn/icnn.html">jaxmat.nn.icnn</a></li>
+<li><a href="jaxmat/parameters/constraints.html">jaxmat.parameters.constraints</a></li>
+<li><a href="jaxmat/parameters/generic_parameters.html">jaxmat.parameters.generic_parameters</a></li>
+<li><a href="jaxmat/parameters/temperature_dependent.html">jaxmat.parameters.temperature_dependent</a></li>
 <li><a href="jaxmat/solvers/custom_newton.html">jaxmat.solvers.custom_newton</a></li>
 <li><a href="jaxmat/solvers/custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
 <li><a href="jaxmat/state.html">jaxmat.state</a></li>
 <li><a href="jaxmat/tensors/generic_tensors.html">jaxmat.tensors.generic_tensors</a></li>
 <li><a href="jaxmat/tensors/linear_algebra.html">jaxmat.tensors.linear_algebra</a></li>
 <li><a href="jaxmat/tensors/mappings.html">jaxmat.tensors.mappings</a></li>
+<li><a href="jaxmat/tensors/rotation.html">jaxmat.tensors.rotation</a></li>
 <li><a href="jaxmat/tensors/symmetry_classes.html">jaxmat.tensors.symmetry_classes</a></li>
 <li><a href="jaxmat/tensors/tensor_utils.html">jaxmat.tensors.tensor_utils</a></li>
 <li><a href="jaxmat/tensors/utils.html">jaxmat.tensors.utils</a></li>
+<li><a href="jaxmat/utils.html">jaxmat.utils</a></li>
 </ul>
 
                 </article>

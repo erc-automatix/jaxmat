@@ -198,12 +198,16 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../demos/identification/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity: batched inference + calibration</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
 </ul>
 </details></li>
 </ul>
@@ -215,6 +219,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.config.html">jaxmat.config module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
@@ -226,9 +231,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.nn.html">jaxmat.nn module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
@@ -239,11 +247,13 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.utils.html">jaxmat.utils module</a></li>
 </ul>
 
     </div>
@@ -362,7 +372,12 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for jaxmat.state</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">keyword</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
@@ -541,9 +556,12 @@ document.write(`
 <span class="k">def</span><span class="w"> </span><span class="nf">make_batched</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Nbatch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Broadcasts all leaf arrays of a single unbatched module into a batched version.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        module: An instance of an equinox Module (e.g., `State`) with array leaves.</span>
-<span class="sd">        Nbatch: The number of batch items to broadcast.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    module: eqx.module</span>
+<span class="sd">        An instance of an equinox Module (e.g., `State`) with array leaves.</span>
+<span class="sd">    Nbatch: int</span>
+<span class="sd">        The number of batch items to broadcast.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A new instance of the same class, with each array field having shape (Nbatch, ...).</span>
@@ -556,6 +574,251 @@ document.write(`
     <span class="n">batched_module</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_broadcast</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">batched_module</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------------------------</span>
+<span class="c1">#  Generic multiphysics states</span>
+<span class="c1"># ---------------------------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="Scalar">
+<a class="viewcode-back" href="../../api/jaxmat.state.html#jaxmat.state.Scalar">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Scalar</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializer of a scalar state variable (hashable, so it can key the state factory).&quot;&quot;&quot;</span>
+
+    <span class="n">default</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Vector">
+<a class="viewcode-back" href="../../api/jaxmat.state.html#jaxmat.state.Vector">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Vector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializer of a vector state variable of dimension ``dim``.&quot;&quot;&quot;</span>
+
+    <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">default</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,),</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_initializer</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize a variable declaration into a zero-argument, hashable initializer.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;A boolean is not a valid variable declaration.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Scalar</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">spec</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>  <span class="c1"># a class such as SymmetricTensor2, or a factory such as Tensor2.identity</span>
+        <span class="k">return</span> <span class="n">spec</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Cannot declare a variable from </span><span class="si">{</span><span class="n">spec</span><span class="si">!r}</span><span class="s2">: use a tensor class (e.g. SymmetricTensor2), &quot;</span>
+        <span class="s2">&quot;a zero-argument factory (e.g. Tensor2.identity), a number (scalar with that initial &quot;</span>
+        <span class="s2">&quot;value) or Vector(dim).&quot;</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_items</span><span class="p">(</span><span class="n">variables</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">_initializer</span><span class="p">(</span><span class="n">spec</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="n">variables</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="Physics">
+<a class="viewcode-back" href="../../api/jaxmat.state.html#jaxmat.state.Physics">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Physics</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Declaration of the variables exchanged by a (multiphysics) behavior.</span>
+
+<span class="sd">    Following the terminology:</span>
+
+<span class="sd">    - ``gradients`` are the driving inputs whose conjugates are computed by the behavior</span>
+<span class="sd">      (strain $\beps$, deformation gradient $\bF$, pore pressure $p$, temperature gradient...);</span>
+<span class="sd">    - ``fluxes`` are the computed outputs, the thermodynamic forces conjugate to the gradients</span>
+<span class="sd">      (stress $\bsig$, fluid content $\zeta$, heat flux $\boldsymbol{q}$...);</span>
+<span class="sd">    - ``external`` variables are known inputs with no conjugate output (temperature $T$...).</span>
+
+<span class="sd">    Internal state variables are not declared here: they keep living in ``state.internal``.</span>
+
+<span class="sd">    A ``Physics`` is immutable and hashable, and is built with :func:`make_physics`. The</span>
+<span class="sd">    corresponding state class, input and flux containers are generated on first use and</span>
+<span class="sd">    cached, so equal declarations always give the *same* classes (stable pytree structures for</span>
+<span class="sd">    ``jit``, ``scan`` and serialization).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">gradients</span><span class="p">:</span> <span class="nb">tuple</span>
+    <span class="n">fluxes</span><span class="p">:</span> <span class="nb">tuple</span>
+    <span class="n">external</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">aliases</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">external</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fluxes</span><span class="p">]</span>
+        <span class="n">reserved</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="s2">&quot;update&quot;</span><span class="p">,</span> <span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;physics&quot;</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span> <span class="o">+</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aliases</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">()</span> <span class="ow">or</span> <span class="n">keyword</span><span class="o">.</span><span class="n">iskeyword</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="ow">or</span> <span class="n">n</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&#39; is not a valid variable name.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">reserved</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&#39; is a reserved name.&quot;</span><span class="p">)</span>
+        <span class="n">duplicates</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">if</span> <span class="n">names</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">duplicates</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variables declared more than once: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">duplicates</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">alias</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aliases</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span> <span class="ow">or</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid alias &#39;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">&#39; -&gt; &#39;</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fluxes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A physics needs at least one gradient and one flux.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gradient_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flux_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fluxes</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">external_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">external</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">input_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of the inputs of ``constitutive_update``: gradients, then external variables.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_names</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_names</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">State</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The state class (an :class:`AbstractState`) storing all variables and ``internal``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_state_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">Inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Named tuple of the inputs (gradients, then external variables).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_named_tuple</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">Inputs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_names</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">Fluxes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Named tuple of the fluxes.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_named_tuple</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">Fluxes&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flux_names</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Physics.make_inputs">
+<a class="viewcode-back" href="../../api/jaxmat.state.html#jaxmat.state.Physics.make_inputs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Accept ``Inputs``, a positional tuple or a dict, even for a single input.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_pack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Inputs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Physics.make_fluxes">
+<a class="viewcode-back" href="../../api/jaxmat.state.html#jaxmat.state.Physics.make_fluxes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_fluxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fluxes</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Accept ``Fluxes``, a positional tuple or a dict, even for a single flux.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_pack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Fluxes</span><span class="p">,</span> <span class="n">fluxes</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cast</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="c1"># numbers given by drivers become strong float64 arrays: no retrace, stable scan carries</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pack</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">cast</span><span class="p">):</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">_fields</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">container</span><span class="p">):</span>
+        <span class="n">packed</span> <span class="o">=</span> <span class="n">values</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">container</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> expects </span><span class="si">{</span><span class="n">fields</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">packed</span> <span class="o">=</span> <span class="n">container</span><span class="p">(</span><span class="o">**</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">container</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> expects </span><span class="si">{</span><span class="n">fields</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2"> values.&quot;</span><span class="p">)</span>
+        <span class="n">packed</span> <span class="o">=</span> <span class="n">container</span><span class="p">(</span><span class="o">*</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">container</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> expects a tuple or dict of </span><span class="si">{</span><span class="n">fields</span><span class="si">}</span><span class="s2">, even for a single value.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">container</span><span class="p">(</span><span class="o">*</span><span class="nb">map</span><span class="p">(</span><span class="n">_cast</span><span class="p">,</span> <span class="n">packed</span><span class="p">))</span> <span class="k">if</span> <span class="n">cast</span> <span class="k">else</span> <span class="n">packed</span>
+
+
+<span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_named_tuple</span><span class="p">(</span><span class="n">typename</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="n">typename</span><span class="p">,</span> <span class="n">fields</span><span class="p">)</span>
+
+
+<span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_state_class</span><span class="p">(</span><span class="n">physics</span><span class="p">:</span> <span class="n">Physics</span><span class="p">):</span>
+    <span class="n">annotations</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;internal&quot;</span><span class="p">:</span> <span class="n">AbstractState</span><span class="p">}</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;internal&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">init</span> <span class="ow">in</span> <span class="n">physics</span><span class="o">.</span><span class="n">gradients</span> <span class="o">+</span> <span class="n">physics</span><span class="o">.</span><span class="n">external</span> <span class="o">+</span> <span class="n">physics</span><span class="o">.</span><span class="n">fluxes</span><span class="p">:</span>
+        <span class="n">annotations</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span>
+        <span class="n">namespace</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">init</span><span class="p">)</span>
+    <span class="n">annotations</span><span class="p">[</span><span class="s2">&quot;__alias_targets__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
+    <span class="n">namespace</span><span class="p">[</span><span class="s2">&quot;__alias_targets__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">physics</span><span class="o">.</span><span class="n">aliases</span><span class="p">)</span>
+    <span class="n">annotations</span><span class="p">[</span><span class="s2">&quot;physics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">ClassVar</span><span class="p">[</span><span class="n">Physics</span><span class="p">]</span>
+    <span class="n">namespace</span><span class="p">[</span><span class="s2">&quot;physics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">physics</span>
+    <span class="k">for</span> <span class="n">alias</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">physics</span><span class="o">.</span><span class="n">aliases</span><span class="p">:</span>
+        <span class="n">namespace</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">attrgetter</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="n">doc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Alias for ``</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">``.&quot;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">physics</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">State&quot;</span>
+    <span class="n">namespace</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="vm">__annotations__</span><span class="o">=</span><span class="n">annotations</span><span class="p">,</span>
+        <span class="vm">__module__</span><span class="o">=</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="vm">__qualname__</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="vm">__doc__</span><span class="o">=</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;State generated for the ``</span><span class="si">{</span><span class="n">physics</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">`` physics. Gradients: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">physics</span><span class="o">.</span><span class="n">gradient_names</span><span class="p">)</span><span class="si">}</span><span class="s2">; fluxes: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">physics</span><span class="o">.</span><span class="n">flux_names</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;; external: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">physics</span><span class="o">.</span><span class="n">external_names</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span> <span class="k">if</span> <span class="n">physics</span><span class="o">.</span><span class="n">external</span> <span class="k">else</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">AbstractState</span><span class="p">,),</span> <span class="n">namespace</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="make_physics">
+<a class="viewcode-back" href="../../api/jaxmat.state.html#jaxmat.state.make_physics">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_physics</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">gradients</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
+    <span class="n">fluxes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
+    <span class="n">external</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">aliases</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Physics</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Declare the variables of a behavior and get the matching state class for free.</span>
+
+<span class="sd">    Each variable is declared by name with an initializer: a tensor class</span>
+<span class="sd">    (``SymmetricTensor2``), a zero-argument factory (``Tensor2.identity``), a number (a scalar</span>
+<span class="sd">    with that initial value) or :class:`Vector`. Gradients and fluxes are listed in matching</span>
+<span class="sd">    (conjugate) order.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        POROELASTICITY = make_physics(</span>
+<span class="sd">            &quot;Poroelasticity&quot;,</span>
+<span class="sd">            gradients={&quot;strain&quot;: SymmetricTensor2, &quot;p&quot;: 0.0},</span>
+<span class="sd">            fluxes={&quot;stress&quot;: SymmetricTensor2, &quot;zeta&quot;: 0.0},</span>
+<span class="sd">            aliases={&quot;eps&quot;: &quot;strain&quot;, &quot;sig&quot;: &quot;stress&quot;},</span>
+<span class="sd">        )</span>
+<span class="sd">        state = POROELASTICITY.State()  # fields: internal, strain, p, stress, zeta</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Physics</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">gradients</span><span class="o">=</span><span class="n">_as_items</span><span class="p">(</span><span class="n">gradients</span><span class="p">),</span>
+        <span class="n">fluxes</span><span class="o">=</span><span class="n">_as_items</span><span class="p">(</span><span class="n">fluxes</span><span class="p">),</span>
+        <span class="n">external</span><span class="o">=</span><span class="n">_as_items</span><span class="p">(</span><span class="n">external</span><span class="p">),</span>
+        <span class="n">aliases</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">aliases</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="make_state">
+<a class="viewcode-back" href="../../api/jaxmat.state.html#jaxmat.state.make_state">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_state</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">AbstractState</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shortcut for ``make_physics(name, **variables).State``.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">make_physics</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">variables</span><span class="p">)</span><span class="o">.</span><span class="n">State</span></div>
 
 </pre></div>
 

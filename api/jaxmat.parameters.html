@@ -1,0 +1,936 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>jaxmat.parameters package &#8212; jaxmat</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "displayMath": [["$$", "$$"], ["\\[", "\\]"]], "macros": {"ba": "\\boldsymbol{a}", "bb": "\\boldsymbol{b}", "bc": "\\boldsymbol{c}", "bd": "\\boldsymbol{d}", "be": "\\boldsymbol{e}", "bf": "\\boldsymbol{f}", "bg": "\\boldsymbol{g}", "bh": "\\boldsymbol{h}", "bi": "\\boldsymbol{i}", "bj": "\\boldsymbol{j}", "bk": "\\boldsymbol{k}", "bl": "\\boldsymbol{l}", "bm": "\\boldsymbol{m}", "bn": "\\boldsymbol{n}", "bo": "\\boldsymbol{o}", "bp": "\\boldsymbol{p}", "bq": "\\boldsymbol{q}", "br": "\\boldsymbol{r}", "bs": "\\boldsymbol{s}", "bt": "\\boldsymbol{t}", "bu": "\\boldsymbol{u}", "bv": "\\boldsymbol{v}", "bw": "\\boldsymbol{w}", "bx": "\\boldsymbol{x}", "by": "\\boldsymbol{y}", "bz": "\\boldsymbol{z}", "bA": "\\boldsymbol{A}", "bB": "\\boldsymbol{B}", "bC": "\\boldsymbol{C}", "bD": "\\boldsymbol{D}", "bE": "\\boldsymbol{E}", "bF": "\\boldsymbol{F}", "bG": "\\boldsymbol{G}", "bH": "\\boldsymbol{H}", "bI": "\\boldsymbol{I}", "bJ": "\\boldsymbol{J}", "bK": "\\boldsymbol{K}", "bL": "\\boldsymbol{L}", "bM": "\\boldsymbol{M}", "bN": "\\boldsymbol{N}", "bO": "\\boldsymbol{O}", "bP": "\\boldsymbol{P}", "bQ": "\\boldsymbol{Q}", "bR": "\\boldsymbol{R}", "bS": "\\boldsymbol{S}", "bT": "\\boldsymbol{T}", "bU": "\\boldsymbol{U}", "bV": "\\boldsymbol{V}", "bW": "\\boldsymbol{W}", "bX": "\\boldsymbol{X}", "bY": "\\boldsymbol{Y}", "bZ": "\\boldsymbol{Z}", "balpha": "\\boldsymbol{\\alpha}", "bbeta": "\\boldsymbol{\\beta}", "bgamma": "\\boldsymbol{\\gamma}", "bdelta": "\\boldsymbol{\\delta}", "bepsilon": "\\boldsymbol{\\epsilon}", "bvarepsilon": "\\boldsymbol{\\varepsilon}", "bzeta": "\\boldsymbol{\\zeta}", "boeta": "\\boldsymbol{\\eta}", "btheta": "\\boldsymbol{\\theta}", "bvartheta": "\\boldsymbol{\\vartheta}", "biota": "\\boldsymbol{\\iota}", "bkappa": "\\boldsymbol{\\kappa}", "blambda": "\\boldsymbol{\\lambda}", "bmu": "\\boldsymbol{\\mu}", "bnu": "\\boldsymbol{\\nu}", "bxi": "\\boldsymbol{\\xi}", "bpi": "\\boldsymbol{\\pi}", "brho": "\\boldsymbol{\\rho}", "bvarrho": "\\boldsymbol{\\varrho}", "bsig": "\\boldsymbol{\\sigma}", "btau": "\\boldsymbol{\\tau}", "bupsilon": "\\boldsymbol{\\upsilon}", "bphi": "\\boldsymbol{\\phi}", "bvarphi": "\\boldsymbol{\\varphi}", "bchi": "\\boldsymbol{\\chi}", "bpsi": "\\boldsymbol{\\psi}", "bomega": "\\boldsymbol{\\omega}", "bGamma": "\\boldsymbol{\\Gamma}", "bDelta": "\\boldsymbol{\\Delta}", "bTheta": "\\boldsymbol{\\Theta}", "bLambda": "\\boldsymbol{\\Lambda}", "bXi": "\\boldsymbol{\\Xi}", "bPi": "\\boldsymbol{\\Pi}", "bSig": "\\boldsymbol{\\Sigma}", "bUpsilon": "\\boldsymbol{\\Upsilon}", "bPhi": "\\boldsymbol{\\Phi}", "bPsi": "\\boldsymbol{\\Psi}", "bOmega": "\\boldsymbol{\\Omega}", "Aa": "\\mathcal{A}", "Bb": "\\mathcal{B}", "Cc": "\\mathcal{C}", "Dd": "\\mathcal{D}", "Ee": "\\mathcal{E}", "Ff": "\\mathcal{F}", "Gg": "\\mathcal{G}", "Hh": "\\mathcal{H}", "Ii": "\\mathcal{I}", "Jj": "\\mathcal{J}", "Kk": "\\mathcal{K}", "Ll": "\\mathcal{L}", "Mm": "\\mathcal{M}", "Nn": "\\mathcal{N}", "Oo": "\\mathcal{O}", "Pp": "\\mathcal{P}", "Qq": "\\mathcal{Q}", "Rr": "\\mathcal{R}", "Ss": "\\mathcal{S}", "Tt": "\\mathcal{T}", "Uu": "\\mathcal{U}", "Vv": "\\mathcal{V}", "Ww": "\\mathcal{W}", "Xx": "\\mathcal{X}", "Yy": "\\mathcal{Y}", "Zz": "\\mathcal{Z}", "AA": "\\mathbb{A}", "BB": "\\mathbb{B}", "CC": "\\mathbb{C}", "DD": "\\mathbb{D}", "EE": "\\mathbb{E}", "FF": "\\mathbb{F}", "GG": "\\mathbb{G}", "HH": "\\mathbb{H}", "II": "\\mathbb{I}", "JJ": "\\mathbb{J}", "KK": "\\mathbb{K}", "LL": "\\mathbb{L}", "MM": "\\mathbb{M}", "NN": "\\mathbb{N}", "OO": "\\mathbb{O}", "PP": "\\mathbb{P}", "QQ": "\\mathbb{Q}", "RR": "\\mathbb{R}", "SS": "\\mathbb{S}", "TT": "\\mathbb{T}", "UU": "\\mathbb{U}", "VV": "\\mathbb{V}", "WW": "\\mathbb{W}", "XX": "\\mathbb{X}", "YY": "\\mathbb{Y}", "ZZ": "\\mathbb{Z}", "diff": "\\,\\text{d}", "div": "\\operatorname{div}", "dev": "\\operatorname{dev}", "sym": "\\operatorname{sym}", "diag": "\\operatorname{diag}", "skew": "\\operatorname{skew}", "tr": "\\operatorname{tr}", "cof": "\\operatorname{cof}", "T": "^{\\text{T}}", "utilde": "\\tilde{#1}", "uttilde": "\\tilde{\\tilde{#1}}", "tgrad": "\\utilde{\\nabla}", "dOm": "\\,\\text{d}\\Omega", "Neumann": "\\partial\\Omega_{\\text{N}}", "Dirichlet": "\\partial\\Omega_{\\text{D}}", "dt": "\\,\\text{d}t", "beps": "\\bvarepsilon", "epsi": "\\varepsilon", "bepsel": "\\bvarepsilon^{\\text{el}}", "bepsp": "\\bvarepsilon^{\\text{p}}", "bepsvp": "\\bvarepsilon^{\\text{vp}}", "epsp": "\\varepsilon^{\\text{p}}"}}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/jaxmat.parameters';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="jaxmat.solvers package" href="jaxmat.solvers.html" />
+    <link rel="prev" title="jaxmat.nn module" href="jaxmat.nn.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/jaxmat_logo.svg" class="logo__image only-light" alt="jaxmat - Home"/>
+    <script>document.write(`<img src="../_static/jaxmat_logo.svg" class="logo__image only-dark" alt="jaxmat - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    Documentation
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Quickstart tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/getting_started.html">Getting started with <code class="docutils literal notranslate"><span class="pre">jaxmat</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/batched_computation.html">Batching across material points</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/material_parameters_batching.html">Batching across material parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/performance.html">Performance of CPU and GPU material integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/quickstart/tensors.html">Working with tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pytrees.html">Composable and differentiable material models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pheno_models.html">Phenomenological models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/green_viscoplasticity.html">Norton viscoplastic model with a Green yield surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/cam_clay.html">Modified Cam-Clay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/phenomenological_models/multisurface_plasticity.html">Multi-surface plasticity model</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../identification.html">Data-driven identification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../demos/identification/hardening_rule.html">Identification of a nonlinear isotropic hardening rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/identification/nonlinear_kinematic_hardening.html">Identification of a nonlinear hardening model from cyclic data</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ml_models.html">Machine-learning based models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/hyperelastic_PANN.html">Physics-Augmented Neural Networks for data-driven hyperelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/neural_network_models/neural_GSM.html">Neural Generalized Standard Material for viscoelasticity</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../multiphysics.html">Multiphysics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../demos/multiphysics/temperature_dependent_viscoelasticity.html">Temperature-dependent viscoelasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demos/multiphysics/poroelastic_consolidation.html">Fully coupled poromechanics: consolidation of a poroelastic column</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">General resources</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../concepts.html">Nonlinear constitutive behaviors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../computational.html">Computational aspects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sharp_bits.html">Sharp bits</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.config.html">jaxmat.config module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.loader.html">jaxmat.loader module</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.elasticity.html">jaxmat.materials.elasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.elastoplasticity.html">jaxmat.materials.elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.fe_fp_elastoplasticity.html">jaxmat.materials.fe_fp_elastoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoplasticity.html">jaxmat.materials.viscoplasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoelasticity.html">jaxmat.materials.viscoelasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.generalized_standard.html">jaxmat.materials.generalized_standard module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.hyperelasticity.html">jaxmat.materials.hyperelasticity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.plastic_surfaces.html">jaxmat.materials.plastic_surfaces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.thermomechanics.html">jaxmat.materials.thermomechanics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.nn.html">jaxmat.nn module</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">jaxmat.parameters package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.state.html">jaxmat.state module</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="jaxmat.tensors.html">jaxmat.tensors package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="jaxmat.utils.html">jaxmat.utils module</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/erc-automatix/jaxmat" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/erc-automatix/jaxmat/edit/main/api/jaxmat.parameters.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>jaxmat.parameters package</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.generic_parameters.parameter"><code class="docutils literal notranslate"><span class="pre">parameter()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-jaxmat.parameters.temperature_dependent">Input-dependent parameters</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.AbstractParameter"><code class="docutils literal notranslate"><span class="pre">AbstractParameter</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.AbstractParameter.depends_on"><code class="docutils literal notranslate"><span class="pre">AbstractParameter.depends_on</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.AbstractParameter.variables"><code class="docutils literal notranslate"><span class="pre">AbstractParameter.variables</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.AbstractParameter.evaluate"><code class="docutils literal notranslate"><span class="pre">AbstractParameter.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Constant"><code class="docutils literal notranslate"><span class="pre">Constant</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Constant.value"><code class="docutils literal notranslate"><span class="pre">Constant.value</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Constant.evaluate"><code class="docutils literal notranslate"><span class="pre">Constant.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine"><code class="docutils literal notranslate"><span class="pre">Affine</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine.ref"><code class="docutils literal notranslate"><span class="pre">Affine.ref</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine.slope"><code class="docutils literal notranslate"><span class="pre">Affine.slope</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine.T_ref"><code class="docutils literal notranslate"><span class="pre">Affine.T_ref</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine.evaluate"><code class="docutils literal notranslate"><span class="pre">Affine.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Polynomial"><code class="docutils literal notranslate"><span class="pre">Polynomial</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Polynomial.coeffs"><code class="docutils literal notranslate"><span class="pre">Polynomial.coeffs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Polynomial.T_ref"><code class="docutils literal notranslate"><span class="pre">Polynomial.T_ref</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Polynomial.evaluate"><code class="docutils literal notranslate"><span class="pre">Polynomial.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius"><code class="docutils literal notranslate"><span class="pre">Arrhenius</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius.A"><code class="docutils literal notranslate"><span class="pre">Arrhenius.A</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius.Q"><code class="docutils literal notranslate"><span class="pre">Arrhenius.Q</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius.R"><code class="docutils literal notranslate"><span class="pre">Arrhenius.R</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius.evaluate"><code class="docutils literal notranslate"><span class="pre">Arrhenius.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Expression"><code class="docutils literal notranslate"><span class="pre">Expression</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Expression.fn"><code class="docutils literal notranslate"><span class="pre">Expression.fn</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Expression.evaluate"><code class="docutils literal notranslate"><span class="pre">Expression.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.has_parameter_dependence"><code class="docutils literal notranslate"><span class="pre">has_parameter_dependence()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.parameter_dependencies"><code class="docutils literal notranslate"><span class="pre">parameter_dependencies()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.evaluate_parameters"><code class="docutils literal notranslate"><span class="pre">evaluate_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-jaxmat.parameters.constraints">Constraints</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Unconstrained"><code class="docutils literal notranslate"><span class="pre">Unconstrained()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Scaled"><code class="docutils literal notranslate"><span class="pre">Scaled()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Positive"><code class="docutils literal notranslate"><span class="pre">Positive()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Interval"><code class="docutils literal notranslate"><span class="pre">Interval()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Bounded"><code class="docutils literal notranslate"><span class="pre">Bounded()</span></code></a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="jaxmat-parameters-package">
+<h1>jaxmat.parameters package<a class="headerlink" href="#jaxmat-parameters-package" title="Link to this heading">#</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.parameters.generic_parameters.parameter">
+<span class="sig-name descname"><span class="pre">parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype=&lt;class</span> <span class="pre">'jax.numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/generic_parameters.html#parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.generic_parameters.parameter" title="Link to this definition">#</a></dt>
+<dd><p>Declare a <em>material coefficient</em> field.</p>
+<p>A coefficient may be supplied either as</p>
+<ul class="simple">
+<li><p>a constant (<code class="docutils literal notranslate"><span class="pre">int</span></code>/<code class="docutils literal notranslate"><span class="pre">float</span></code>/array), cast to <code class="docutils literal notranslate"><span class="pre">dtype</span></code>; or</p></li>
+<li><p>an <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractParameter</span></code> law (e.g. <code class="docutils literal notranslate"><span class="pre">Arrhenius</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Affine</span></code>, <code class="docutils literal notranslate"><span class="pre">Expression</span></code>), which is stored <strong>unchanged</strong> and resolved later
+by a wrapper such as <a class="reference internal" href="jaxmat.materials.thermomechanics.html#jaxmat.materials.thermomechanics.TemperatureDependent" title="jaxmat.materials.thermomechanics.TemperatureDependent"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemperatureDependent</span></code></a>.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">None</span></code> is also passed through, so optional coefficients work. Use this for every
+quantity a <code class="docutils literal notranslate"><span class="pre">constitutive_update</span></code> reads as a material property (moduli, yield
+stresses, relaxation times, hardening coefficients, shape exponents, …). This is
+what makes a behavior composable with input-dependent wrappers.</p>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<p><code class="docutils literal notranslate"><span class="pre">E:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">parameter(default=210e3)</span></code> accepts <code class="docutils literal notranslate"><span class="pre">MyMat(E=210e3)</span></code> (isothermal) or
+<code class="docutils literal notranslate"><span class="pre">MyMat(E=Arrhenius(A=...,</span> <span class="pre">Q=...))</span></code> (temperature-dependent), with no other change.</p>
+</div>
+</dd></dl>
+
+<section id="module-jaxmat.parameters.temperature_dependent">
+<span id="input-dependent-parameters"></span><h2>Input-dependent parameters<a class="headerlink" href="#module-jaxmat.parameters.temperature_dependent" title="Link to this heading">#</a></h2>
+<p>Temperature- (or any external variable-) dependent material parameters.</p>
+<p>A parameter is either a plain constant or an expression <code class="docutils literal notranslate"><span class="pre">p(T)</span></code> carrying its own
+fitting parameters (subclass <a class="reference internal" href="#jaxmat.parameters.temperature_dependent.AbstractParameter" title="jaxmat.parameters.temperature_dependent.AbstractParameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractParameter</span></code></a>, implement <code class="docutils literal notranslate"><span class="pre">evaluate</span></code>).
+<code class="docutils literal notranslate"><span class="pre">evaluate_parameters(model,</span> <span class="pre">T)</span></code> returns a copy of any model in which every
+<code class="docutils literal notranslate"><span class="pre">AbstractParameter</span></code> field has been replaced by its scalar value <code class="docutils literal notranslate"><span class="pre">p.evaluate(T)</span></code>
+– constant fields untouched – so all existing model methods work unchanged.</p>
+<p>Temperature is only the default: a parameter may depend on any named external state
+variable(s) through <code class="docutils literal notranslate"><span class="pre">depends_on</span></code>, resolved with keyword arguments,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">E</span> <span class="o">=</span> <span class="n">Affine</span><span class="p">(</span><span class="n">ref</span><span class="o">=</span><span class="mf">210e3</span><span class="p">,</span> <span class="n">slope</span><span class="o">=-</span><span class="mf">5e3</span><span class="p">,</span> <span class="n">T_ref</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">depends_on</span><span class="o">=</span><span class="s2">&quot;phi&quot;</span><span class="p">)</span>  <span class="c1"># porosity-dependent</span>
+<span class="n">k</span> <span class="o">=</span> <span class="n">Expression</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="n">law</span><span class="p">,</span> <span class="n">depends_on</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;phi&quot;</span><span class="p">))</span>                  <span class="c1"># law(T, phi)</span>
+<span class="n">resolved</span> <span class="o">=</span> <span class="n">evaluate_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mf">400.0</span><span class="p">,</span> <span class="n">phi</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.AbstractParameter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AbstractParameter</span></span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#AbstractParameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.AbstractParameter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A scalar material parameter that depends on temperature, or on other external state
+variables named by <code class="docutils literal notranslate"><span class="pre">depends_on</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.AbstractParameter.depends_on">
+<span class="sig-name descname"><span class="pre">depends_on</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">,</span> <code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code><span class="pre">]]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'T'</span></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.AbstractParameter.depends_on" title="Link to this definition">#</a></dt>
+<dd><p>Name(s) of the external state variable(s) the parameter depends on; <code class="docutils literal notranslate"><span class="pre">evaluate</span></code>
+receives their values in this order. Defaults to temperature <code class="docutils literal notranslate"><span class="pre">&quot;T&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.AbstractParameter.variables">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.AbstractParameter.variables" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">depends_on</span></code> as a tuple of names.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.AbstractParameter.evaluate">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#AbstractParameter.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.AbstractParameter.evaluate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Constant">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Constant</span></span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Constant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Constant" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxmat.parameters.temperature_dependent.AbstractParameter" title="jaxmat.parameters.temperature_dependent.AbstractParameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractParameter</span></code></a></p>
+<p>A constant value (explicitly temperature-independent).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Constant.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Constant.value" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Constant.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Constant.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Constant.evaluate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Affine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Affine</span></span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Affine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Affine" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxmat.parameters.temperature_dependent.AbstractParameter" title="jaxmat.parameters.temperature_dependent.AbstractParameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractParameter</span></code></a></p>
+<p>Linear law</p>
+<p><div class="math notranslate nohighlight">
+\[p(T) = p_{\textrm{ref}} + s (T-T_{\textrm{ref}})\]</div>
+</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Affine.ref">
+<span class="sig-name descname"><span class="pre">ref</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Affine.ref" title="Link to this definition">#</a></dt>
+<dd><p>Reference value <span class="math notranslate nohighlight">\(p_{\textrm{ref}}\)</span></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Affine.slope">
+<span class="sig-name descname"><span class="pre">slope</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Affine.slope" title="Link to this definition">#</a></dt>
+<dd><p>Slope <span class="math notranslate nohighlight">\(s\)</span></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Affine.T_ref">
+<span class="sig-name descname"><span class="pre">T_ref</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">273.15</span></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Affine.T_ref" title="Link to this definition">#</a></dt>
+<dd><p>Reference temperature <span class="math notranslate nohighlight">\(T_{\textrm{ref}}\)</span></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Affine.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Affine.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Affine.evaluate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Polynomial">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Polynomial</span></span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Polynomial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Polynomial" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxmat.parameters.temperature_dependent.AbstractParameter" title="jaxmat.parameters.temperature_dependent.AbstractParameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractParameter</span></code></a></p>
+<p>Polynomial law</p>
+<p><div class="math notranslate nohighlight">
+\[p(T) = \sum_k c_k (T - T_{\textrm{ref}})^k\]</div>
+</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Polynomial.coeffs">
+<span class="sig-name descname"><span class="pre">coeffs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Polynomial.coeffs" title="Link to this definition">#</a></dt>
+<dd><p>Polynomial coefficients, ordered from low to high order.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Polynomial.T_ref">
+<span class="sig-name descname"><span class="pre">T_ref</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">273.15</span></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Polynomial.T_ref" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Polynomial.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Polynomial.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Polynomial.evaluate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Arrhenius">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Arrhenius</span></span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Arrhenius"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Arrhenius" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxmat.parameters.temperature_dependent.AbstractParameter" title="jaxmat.parameters.temperature_dependent.AbstractParameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractParameter</span></code></a></p>
+<p>Arrhenius activation energy law</p>
+<p><div class="math notranslate nohighlight">
+\[p(T) = A\,\exp(-Q / (R\,T))\]</div>
+</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Arrhenius.A">
+<span class="sig-name descname"><span class="pre">A</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Arrhenius.A" title="Link to this definition">#</a></dt>
+<dd><p>Arrhenius factor.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Arrhenius.Q">
+<span class="sig-name descname"><span class="pre">Q</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Arrhenius.Q" title="Link to this definition">#</a></dt>
+<dd><p>Activation energy</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Arrhenius.R">
+<span class="sig-name descname"><span class="pre">R</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8.314462618</span></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Arrhenius.R" title="Link to this definition">#</a></dt>
+<dd><p>Universal gas constant $R=8.314462618 textrm{J}.textrm{K}^{-1}.textrm{mol}^{-1}.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Arrhenius.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Arrhenius.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Arrhenius.evaluate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Expression">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Expression</span></span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Expression" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxmat.parameters.temperature_dependent.AbstractParameter" title="jaxmat.parameters.temperature_dependent.AbstractParameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractParameter</span></code></a></p>
+<p>Wrap any <code class="docutils literal notranslate"><span class="pre">callable</span></code> / <code class="docutils literal notranslate"><span class="pre">eqx.Module</span></code> with signature <code class="docutils literal notranslate"><span class="pre">fn(T)</span> <span class="pre">-&gt;</span> <span class="pre">scalar</span></code> as a parameter.</p>
+<p>With several variables, <code class="docutils literal notranslate"><span class="pre">fn</span></code> receives them in the order of <code class="docutils literal notranslate"><span class="pre">depends_on</span></code>, e.g.
+<code class="docutils literal notranslate"><span class="pre">Expression(fn=law,</span> <span class="pre">depends_on=(&quot;T&quot;,</span> <span class="pre">&quot;phi&quot;))</span></code> evaluates <code class="docutils literal notranslate"><span class="pre">law(T,</span> <span class="pre">phi)</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Expression.fn">
+<span class="sig-name descname"><span class="pre">fn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></em><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Expression.fn" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.Expression.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#Expression.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.Expression.evaluate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.has_parameter_dependence">
+<span class="sig-name descname"><span class="pre">has_parameter_dependence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#has_parameter_dependence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.has_parameter_dependence" title="Link to this definition">#</a></dt>
+<dd><p>True if <code class="docutils literal notranslate"><span class="pre">model</span></code> contains any unresolved <code class="docutils literal notranslate"><span class="pre">AbstractParameter</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.parameter_dependencies">
+<span class="sig-name descname"><span class="pre">parameter_dependencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#parameter_dependencies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.parameter_dependencies" title="Link to this definition">#</a></dt>
+<dd><p>Names of the external variables on which the parameters of <code class="docutils literal notranslate"><span class="pre">model</span></code> depend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.parameters.temperature_dependent.evaluate_parameters">
+<span class="sig-name descname"><span class="pre">evaluate_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">variables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/temperature_dependent.html#evaluate_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.temperature_dependent.evaluate_parameters" title="Link to this definition">#</a></dt>
+<dd><p>Materialize every <code class="docutils literal notranslate"><span class="pre">AbstractParameter</span></code> in <code class="docutils literal notranslate"><span class="pre">model</span></code> at the given external variables.</p>
+<p>Temperature can be passed positionally, other variables by name:
+<code class="docutils literal notranslate"><span class="pre">evaluate_parameters(model,</span> <span class="pre">400.0)</span></code>, <code class="docutils literal notranslate"><span class="pre">evaluate_parameters(model,</span> <span class="pre">T=400.0,</span> <span class="pre">phi=0.1)</span></code>.
+A model without parameter laws is returned unchanged.</p>
+<p>For an isothermal analysis, resolve once and use the result as an ordinary
+constant model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">isothermal</span> <span class="o">=</span> <span class="n">evaluate_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">T_fixed</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-jaxmat.parameters.constraints">
+<span id="constraints"></span><h2>Constraints<a class="headerlink" href="#module-jaxmat.parameters.constraints" title="Link to this heading">#</a></h2>
+<p>Constrained parameter mappings for calibration (backed by <code class="docutils literal notranslate"><span class="pre">paramax</span></code>).</p>
+<p>A material parameter <span class="math notranslate nohighlight">\(\theta\)</span> with physical constraints (e.g. positive) can be reparameterized
+so that gradient-based calibration stays in a feasible region by construction. This typically
+works by introducing a non-linear function <span class="math notranslate nohighlight">\(f\)</span> whose codomain (output domain) is the wanted
+constrained region, e.g. <span class="math notranslate nohighlight">\(f: \mathbb{R} \mapsto \mathbb{R}^+\)</span>. A latent variable representation
+<span class="math notranslate nohighlight">\(z_\theta\)</span> is used under-the-hood such that <span class="math notranslate nohighlight">\(\theta = f(z_{\theta})\)</span> naturally satisfies the
+constraints.</p>
+<p><strong>Usage</strong>: Declare a field with <code class="docutils literal notranslate"><span class="pre">Positive()</span></code> or <code class="docutils literal notranslate"><span class="pre">Interval(lo,</span> <span class="pre">hi)</span></code>; construct the model with
+ordinary physical values, and call <code class="docutils literal notranslate"><span class="pre">paramax.unwrap(model)</span></code> once at the top of the loss. Every
+read then sees the constrained value while the optimiser works on an unconstrained latent
+representation <span class="math notranslate nohighlight">\(z_\theta\)</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Mat</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="n">E</span><span class="p">:</span>  <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">Positive</span><span class="p">()</span>
+    <span class="n">nu</span><span class="p">:</span> <span class="n">jax</span><span class="o">.</span><span class="n">Array</span> <span class="o">=</span> <span class="n">Interval</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">Mat</span><span class="p">(</span><span class="n">E</span><span class="o">=</span><span class="mf">210e3</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>          <span class="c1"># raw values; auto-wrapped</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">loss</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">paramax</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>          <span class="c1"># l is a model with latent values</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.parameters.constraints.Unconstrained">
+<span class="sig-name descname"><span class="pre">Unconstrained</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/constraints.html#Unconstrained"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.constraints.Unconstrained" title="Link to this definition">#</a></dt>
+<dd><p>Unconstrained field.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.parameters.constraints.Scaled">
+<span class="sig-name descname"><span class="pre">Scaled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/constraints.html#Scaled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.constraints.Scaled" title="Link to this definition">#</a></dt>
+<dd><p>Rescaled field storing <span class="math notranslate nohighlight">\(\theta/\text{ref}\)</span> (an <span class="math notranslate nohighlight">\(O(1)\)</span> latent variable); recover
+<span class="math notranslate nohighlight">\(\theta = \text{ref} * z_{\theta}\)</span>.</p>
+<p>Unconstrained value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ref</strong> (<em>float</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.parameters.constraints.Positive">
+<span class="sig-name descname"><span class="pre">Positive</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/constraints.html#Positive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.constraints.Positive" title="Link to this definition">#</a></dt>
+<dd><p>Field constrained to be strictly positive (<span class="math notranslate nohighlight">\(\theta &gt; 0\)</span>), via <span class="math notranslate nohighlight">\(f(z)=\exp(z)\)</span>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.parameters.constraints.Interval">
+<span class="sig-name descname"><span class="pre">Interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/constraints.html#Interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.constraints.Interval" title="Link to this definition">#</a></dt>
+<dd><p>Field constrained to an open interval (<span class="math notranslate nohighlight">\(\text{lo} &lt; \theta &lt; \text{hi}\)</span>),
+via a scaled sigmoid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lo</strong> (<em>float</em>)</p></li>
+<li><p><strong>hi</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxmat.parameters.constraints.Bounded">
+<span class="sig-name descname"><span class="pre">Bounded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jaxmat/parameters/constraints.html#Bounded"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxmat.parameters.constraints.Bounded" title="Link to this definition">#</a></dt>
+<dd><p>Alias for <a class="reference internal" href="#jaxmat.parameters.constraints.Interval" title="jaxmat.parameters.constraints.Interval"><code class="xref py py-func docutils literal notranslate"><span class="pre">Interval()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lo</strong> (<em>float</em>)</p></li>
+<li><p><strong>hi</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./api"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="jaxmat.nn.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">jaxmat.nn module</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="jaxmat.solvers.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">jaxmat.solvers package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.generic_parameters.parameter"><code class="docutils literal notranslate"><span class="pre">parameter()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-jaxmat.parameters.temperature_dependent">Input-dependent parameters</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.AbstractParameter"><code class="docutils literal notranslate"><span class="pre">AbstractParameter</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.AbstractParameter.depends_on"><code class="docutils literal notranslate"><span class="pre">AbstractParameter.depends_on</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.AbstractParameter.variables"><code class="docutils literal notranslate"><span class="pre">AbstractParameter.variables</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.AbstractParameter.evaluate"><code class="docutils literal notranslate"><span class="pre">AbstractParameter.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Constant"><code class="docutils literal notranslate"><span class="pre">Constant</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Constant.value"><code class="docutils literal notranslate"><span class="pre">Constant.value</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Constant.evaluate"><code class="docutils literal notranslate"><span class="pre">Constant.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine"><code class="docutils literal notranslate"><span class="pre">Affine</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine.ref"><code class="docutils literal notranslate"><span class="pre">Affine.ref</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine.slope"><code class="docutils literal notranslate"><span class="pre">Affine.slope</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine.T_ref"><code class="docutils literal notranslate"><span class="pre">Affine.T_ref</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Affine.evaluate"><code class="docutils literal notranslate"><span class="pre">Affine.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Polynomial"><code class="docutils literal notranslate"><span class="pre">Polynomial</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Polynomial.coeffs"><code class="docutils literal notranslate"><span class="pre">Polynomial.coeffs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Polynomial.T_ref"><code class="docutils literal notranslate"><span class="pre">Polynomial.T_ref</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Polynomial.evaluate"><code class="docutils literal notranslate"><span class="pre">Polynomial.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius"><code class="docutils literal notranslate"><span class="pre">Arrhenius</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius.A"><code class="docutils literal notranslate"><span class="pre">Arrhenius.A</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius.Q"><code class="docutils literal notranslate"><span class="pre">Arrhenius.Q</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius.R"><code class="docutils literal notranslate"><span class="pre">Arrhenius.R</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Arrhenius.evaluate"><code class="docutils literal notranslate"><span class="pre">Arrhenius.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Expression"><code class="docutils literal notranslate"><span class="pre">Expression</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Expression.fn"><code class="docutils literal notranslate"><span class="pre">Expression.fn</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.Expression.evaluate"><code class="docutils literal notranslate"><span class="pre">Expression.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.has_parameter_dependence"><code class="docutils literal notranslate"><span class="pre">has_parameter_dependence()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.parameter_dependencies"><code class="docutils literal notranslate"><span class="pre">parameter_dependencies()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.temperature_dependent.evaluate_parameters"><code class="docutils literal notranslate"><span class="pre">evaluate_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-jaxmat.parameters.constraints">Constraints</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Unconstrained"><code class="docutils literal notranslate"><span class="pre">Unconstrained()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Scaled"><code class="docutils literal notranslate"><span class="pre">Scaled()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Positive"><code class="docutils literal notranslate"><span class="pre">Positive()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Interval"><code class="docutils literal notranslate"><span class="pre">Interval()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jaxmat.parameters.constraints.Bounded"><code class="docutils literal notranslate"><span class="pre">Bounded()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Jeremy Bleyer
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -215,9 +215,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Nonlinear constitutive behaviors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../computational.html">Computational aspects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sharp_bits.html">Sharp bits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../misc/icnn_tutorial.html">Input-convex neural networks (ICNN)</a></li>
+
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.constraints.html">jaxmat.constraints package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.loader.html">jaxmat.loader module</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.materials.html">jaxmat.materials package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.behavior.html">jaxmat.materials.behavior module</a></li>
@@ -232,6 +235,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.materials.viscoplastic_flows.html">jaxmat.materials.viscoplastic_flows module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.nn.html">jaxmat.nn package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.nn.icnn.html">jaxmat.nn.icnn package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.parameters.html">jaxmat.parameters package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/jaxmat.solvers.html">jaxmat.solvers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.solvers.custom_newton.html">jaxmat.solvers.custom_newton module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.solvers.custom_optimistix_solvers.html">jaxmat.solvers.custom_optimistix_solvers</a></li>
@@ -242,11 +250,13 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.generic_tensors.html">jaxmat.tensors.generic_tensors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.linear_algebra.html">jaxmat.tensors.linear_algebra module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.mappings.html">jaxmat.tensors.mappings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.rotation.html">jaxmat.tensors.rotation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.symmetry_classes.html">jaxmat.tensors.symmetry_classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.tensor_utils.html">jaxmat.tensors.tensor_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/jaxmat.tensors.utils.html">jaxmat.tensors.utils module</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/jaxmat.utils.html">jaxmat.utils module</a></li>
 </ul>
 
     </div>
@@ -424,7 +434,7 @@ and <strong>calibration</strong> of the temperature-dependent parameters from no
 using <code class="docutils literal notranslate"><span class="pre">jaxmat.constraints</span></code> so every physical parameter stays positive throughout.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
@@ -445,7 +455,7 @@ using <code class="docutils literal notranslate"><span class="pre">jaxmat.constr
 feasible region). The Arrhenius shift factor reuses <code class="docutils literal notranslate"><span class="pre">parameters.Arrhenius</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">T_REF</span> <span class="o">=</span> <span class="mf">300.0</span>  <span class="c1"># K</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">T_REF</span> <span class="o">=</span> <span class="mf">300.0</span>  <span class="c1"># K</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ThermoViscoelastic</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -477,7 +487,7 @@ feasible region). The Arrhenius shift factor reuses <code class="docutils litera
 moduli measured over log-spaced time at several temperatures, plus noise.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">truth</span> <span class="o">=</span> <span class="n">ThermoViscoelastic</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">truth</span> <span class="o">=</span> <span class="n">ThermoViscoelastic</span><span class="p">(</span>
     <span class="n">E_inf</span><span class="o">=</span><span class="mf">200.0</span><span class="p">,</span> <span class="n">E</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">800.0</span><span class="p">,</span> <span class="mf">400.0</span><span class="p">]),</span> <span class="n">tau</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">]),</span> <span class="n">Q</span><span class="o">=</span><span class="mf">6.0e4</span>
 <span class="p">)</span>
 
@@ -499,7 +509,7 @@ moduli measured over log-spaced time at several temperatures, plus noise.</p>
 curves shift left as temperature rises (faster relaxation), the TTS signature.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">T_sweep</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">270.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">T_sweep</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">270.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 <span class="n">curves</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">T</span><span class="p">:</span> <span class="n">unwrap_eval</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">T</span><span class="p">)))(</span><span class="n">T_sweep</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;batched inference:&quot;</span><span class="p">,</span> <span class="n">curves</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(10 temperatures x&quot;</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;times)&quot;</span><span class="p">)</span>
 
@@ -511,15 +521,6 @@ curves shift left as temperature rises (faster relaxation), the TTS signature.</
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Batched inference: 10 temperatures (TTS shift)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>batched inference: (10, 60) (10 temperatures x 60 times)
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Batched inference: 10 temperatures (TTS shift)&#39;)
-</pre></div>
-</div>
-<img alt="../../_images/dbdbf9ba2732a7466231e4d4a3185cf7e8e8308e5f089b332faa40092d5d8184.png" src="../../_images/dbdbf9ba2732a7466231e4d4a3185cf7e8e8308e5f089b332faa40092d5d8184.png" />
 </div>
 </div>
 </section>
@@ -543,7 +544,7 @@ a relative step in <span class="math notranslate nohighlight">\(\theta_i\)</span
 is sensible for all of them simultaneously.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">ThermoViscoelastic</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">ThermoViscoelastic</span><span class="p">(</span>
     <span class="n">E_inf</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">E</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">500.0</span><span class="p">,</span> <span class="mf">500.0</span><span class="p">]),</span> <span class="n">tau</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">]),</span> <span class="n">Q</span><span class="o">=</span><span class="mf">3.0e4</span>
 <span class="p">)</span>
 
@@ -581,27 +582,6 @@ is sensible for all of them simultaneously.</p>
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>step     0  loss =   44421.00
-step    50  loss =     765.32
-step   100  loss =     252.54
-step   150  loss =     232.53
-step   200  loss =     231.45
-step   250  loss =     231.43
-step   300  loss =     231.43
-step   350  loss =     231.43
-step   400  loss =     231.43
-step   450  loss =     231.43
-step   499  loss =     231.43
-
-parameter recovery (fitted vs true):
-  E_inf :   197.6  vs   200.0
-  E     : [799.0, 401.9]  vs [800.0, 400.0]
-  tau   : [1.01, 98.78]  vs [1.0, 100.0]
-  Q     : 5.998e+04  vs 6.000e+04
-</pre></div>
-</div>
-</div>
 </div>
 <p>The calibration processes converges quickly recovering the ground truth value with a very good
 accuracy.</p>
@@ -612,7 +592,7 @@ accuracy.</p>
 very good calibration accuracy.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">T</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">T_data</span><span class="p">):</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span>
@@ -625,18 +605,12 @@ very good calibration accuracy.</p>
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x741b587b6ba0&gt;
-</pre></div>
-</div>
-<img alt="../../_images/88bbc9c2306a9c9464eb6bb97dcc6e74770636456073bc9bb84017ead226dfe8.png" src="../../_images/88bbc9c2306a9c9464eb6bb97dcc6e74770636456073bc9bb84017ead226dfe8.png" />
-</div>
 </div>
 <p>Finally, we check that the time-temperature superposition is well retried by plotting the master
 curve of the relaxation modulus as a function of the reduced time <span class="math notranslate nohighlight">\(\tilde{t} = t/a(T)\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">T</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">T_data</span><span class="p">):</span>
     <span class="c1"># h = plt.semilogx(t, d, &quot;o&quot;, ms=6, alpha=0.4)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span>
@@ -653,12 +627,6 @@ curve of the relaxation modulus as a function of the reduced time <span class="m
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x741be053d010&gt;
-</pre></div>
-</div>
-<img alt="../../_images/e19c3d6a72e77df4ba33f06c52f289c33de2fe5b21792501636e6539c5b61242.png" src="../../_images/e19c3d6a72e77df4ba33f06c52f289c33de2fe5b21792501636e6539c5b61242.png" />
 </div>
 </div>
 </section>
