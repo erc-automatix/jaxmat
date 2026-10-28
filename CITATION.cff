@@ -31,7 +31,6 @@ authors:
     email: ludovic.druette@edf.fr
     affiliation: >-
       "EDF Lab Paris-Saclay"
-    orcid: 'https://orcid.org/0000-0001-7216-861X'
 repository-code: 'https://github.com/erc-automatix/jaxmat'
 url: 'https://erc-automatix.github.io/jaxmat/'
 abstract: >-
@@ -51,3 +50,4 @@ keywords:
   - neural networks
 license: LGPL-3.0-or-later
 version: 0.1
+date-released: 2026-10-28

@@ -5,7 +5,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning aims to follow [Semantic Versioning](https://semver.org/) (with
 the usual 0.x caveat that minor bumps may include breaking changes).
 
-## v0.1
+## v0.1 - 2026-10-28
 
 ### Fixed
 
@@ -14,13 +14,15 @@ the usual 0.x caveat that minor bumps may include breaking changes).
   and shear components of the plastic flow were doubled because of bad tensor conversion after scalar multiply.
 - `FischerBurmeister` used a floored square root (`safe_sqrt`), which made the complementarity residual linear within `sqrt(x**2 + y**2) < 1e-8`. Near the yield onset (`|f| < 1e-8 E`) the return mapping of the `FB`-based behaviors then returned a negative `dp` on the elastic side and a wrong implicit gradient. The square root is now exact, with a zero gradient at the origin.
 - `vonMisesIsotropicHardening` starts its Newton solve from the linearized return mapping instead of `dp = 0`: just past the onset `dp` is below the solver's `atol` and the first step was accepted unconverged, giving a wrong implicit gradient. The new start also needs fewer Newton iterations.
-- The neural GSM demo did not run: `GeneralizedMaxwell` now needs `Nbranch`, and a plot label used `\textrm`, which matplotlib does not support.
+
 
 ### Changed
 
 - The trace-count assertion on the `constitutive_update` of library behaviors is now off by default and controlled by the new `jaxmat.config` module: `jaxmat.config.update("check_max_traces", True)`, the `jaxmat.config.override(check_max_traces=True)` context manager, or the `JAXMAT_CHECK_MAX_TRACES=1` environment variable. Its counter is shared by all instances of a behavior class, so it used to reject legitimate retracing, e.g. two `vonMisesIsotropicHardening` materials with different hardening laws in the same process. Own behaviors can use the same switch with `jaxmat.utils.assert_max_traces` in place of `eqx.debug.assert_max_traces` (#55).
 
 - `nn.ICNN` is reworked. Its output scale grew each time a hidden layer was added at initialization, whatever `scale`. Also, it was non-decreasing in every input, so that it could not represent convex functions such as `x**2`. It now has input skip connections and a `monotone` option, per input (default `True`, i.e. non-decreasing in all inputs as before), non-negative weights through a chosen reparametrization (`positive="softplus"`, `"exp"` or `"square"`), and the shifted softplus `nn.shifted_softplus` as default activation, so that `f(0) = 0` at initialization. The initialization keeps the output of order `scale` for inputs of unit norm, whatever the width and the depth. The parameters are laid out differently (`Us`, `Ws`, `bs`, `final_W`, `final_U`): models trained with the previous version must be retrained.
+
+- The neural GSM demo did not run: `GeneralizedMaxwell` now needs `Nbranch`, and a plot label used `\textrm`, which matplotlib does not support.
 
 ### Deprecated
 
