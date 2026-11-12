@@ -1,4 +1,4 @@
-from .constraints import Bounded, Interval, Positive, Scaled, Unconstrained
+from .constraints import Bounded, Interval, Positive, PositiveDefinite, Scaled, Unconstrained
 from .generic_parameters import parameter
 from .temperature_dependent import (
     AbstractParameter,
@@ -22,6 +22,7 @@ __all__ = [
     "Interval",
     "Polynomial",
     "Positive",
+    "PositiveDefinite",
     "Scaled",
     "Unconstrained",
     "evaluate_parameters",
