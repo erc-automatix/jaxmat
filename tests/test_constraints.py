@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import paramax
 import pytest
 
-from jaxmat.parameters import Bounded, Interval, Positive, Scaled, Unconstrained
+from jaxmat.parameters import Bounded, Interval, Positive, PositiveDefinite, Scaled, Unconstrained
 
 jax.config.update("jax_enable_x64", True)
 
@@ -30,6 +30,10 @@ def S(ref):
         x: jax.Array = Scaled(ref)
 
     return _S
+
+
+class PositiveDefiniteHolder(eqx.Module):
+    M: jax.Array = PositiveDefinite()
 
 
 # --------------------------------------------------------------------------- #
@@ -203,6 +207,25 @@ class TestPyTreeBehaviour:
             mu = paramax.unwrap(m)
             assert float(mu.E) > 0.0 and 0.0 < float(mu.nu) < 0.5
         assert float(paramax.unwrap(m).stiffness()) == pytest.approx(6e5, rel=1e-3)
+
+
+L = jnp.array([[1.0, 0.0, 0.0], [-0.4, 1.5, 0.0], [0.5, -0.3, 0.3]])
+CASES = [  # (M, its lower Cholesky factor)
+    (jnp.diag(jnp.arange(1.0, 5.0) ** 2), jnp.diag(jnp.arange(1.0, 5.0))),
+    (L @ L.T, L),
+]
+
+
+class TestPositiveDefinite:
+    @pytest.mark.parametrize(("M", "L"), CASES)
+    def test_roundtrip(self, M, L):
+        assert jnp.allclose(paramax.unwrap(PositiveDefiniteHolder(M=M)).M, M, rtol=RTOL)
+
+    @pytest.mark.parametrize(("M", "L"), CASES)
+    def test_latent_is_log_cholesky(self, M, L):
+        latent = PositiveDefiniteHolder(M=M).M.args[0]
+        expected = jnp.tril(L, -1) + jnp.diag(jnp.log(jnp.diag(L)))
+        assert jnp.allclose(latent, expected, rtol=RTOL, atol=1e-12)
 
 
 if __name__ == "__main__":

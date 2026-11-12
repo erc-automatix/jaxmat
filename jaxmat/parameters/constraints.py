@@ -91,3 +91,53 @@ def Interval(lo: float, hi: float):
 def Bounded(lo: float, hi: float):
     """Alias for :func:`Interval`."""
     return Interval(lo, hi)
+
+
+def _cholesky_factor(z):
+    """Lower-triangular factor with diagonal exp(z_ii) and strict lower part z_ij."""
+    diagonal = jnp.eye(z.shape[-1], dtype=bool)
+    return jnp.where(diagonal, jnp.exp(z), jnp.tril(z, -1))
+
+
+def _spd_from_latent(z):
+    L = _cholesky_factor(z)
+    return L @ jnp.swapaxes(L, -1, -2)
+
+
+def _latent_from_spd(M):
+    M = jnp.asarray(M, float)
+    if M.ndim < 2 or M.shape[-1] != M.shape[-2]:
+        raise ValueError(f"PositiveDefinite expects square matrices, got shape {M.shape}.")
+    L = jnp.linalg.cholesky(0.5 * (M + jnp.swapaxes(M, -1, -2)))
+    L = eqx.error_if(
+        L, ~jnp.all(jnp.isfinite(L)), "PositiveDefinite expects a positive-definite matrix."
+    )
+    diagonal = jnp.eye(M.shape[-1], dtype=bool)
+    return jnp.where(diagonal, jnp.log(jnp.where(diagonal, L, 1.0)), jnp.tril(L, -1))
+
+
+def PositiveDefinite():
+    r"""Field constrained to be a symmetric positive-definite matrix, via its Cholesky factor.
+
+    The matrix is $\bM = \bL\bL\T$, where $\bL$ is lower triangular with a positive diagonal,
+    $L_{ii} = \exp(z_{ii})$, and a free strict lower part, $L_{ij} = z_{ij}$ for $i > j$. This
+    is a smooth bijection between $\mathbb{R}^{d(d+1)/2}$ and the cone of positive-definite
+    matrices. Semi-definite matrices are its boundary, approached as some $z_{ii} \to -\infty$.
+
+    The value is given as a ``(..., d, d)`` array (only its symmetric part is used). The latent
+    array has the same shape; its strict upper triangle is unused and has a zero gradient.
+
+    .. code-block:: python
+
+        class Anisotropic(eqx.Module):
+            M: jax.Array = PositiveDefinite()
+
+        m = Anisotropic(M=jnp.diag(jnp.array([1.0, 2.0, 0.5])))
+    """
+
+    def convert(v):
+        if _is_wrapped(v):
+            return v
+        return paramax.Parameterize(_spd_from_latent, _latent_from_spd(v))
+
+    return eqx.field(converter=convert)

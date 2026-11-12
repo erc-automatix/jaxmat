@@ -5,6 +5,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning aims to follow [Semantic Versioning](https://semver.org/) (with
 the usual 0.x caveat that minor bumps may include breaking changes).
 
+## Unreleased
+
+### Added
+
+- `PositiveDefinite` parameters are added to represent a PSD matrix with its Cholesky factor.
+
 ## v0.1 - 2026-10-28
 
 ### Fixed
